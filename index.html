@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#a6321f">
-<title>英単熟語中学～高校卒業レベル</title>
+<title>一生使える英単熟語帳</title>
 
   <!-- === PWA（ホーム画面追加・完全オフライン対応）=== -->
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="英単熟語中学～高校卒業レベル">
+  <meta name="apple-mobile-web-app-title" content="一生使える英単熟語帳">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="apple-touch-icon" href="icon-192.png">
 
@@ -276,7 +276,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <div id="app">
   <div id="topbar">
     <div class="back" id="backBtn" onclick="goHome()">←</div>
-    <h1 id="pageTitle">英単熟語中学～高校卒業レベル</h1>
+    <h1 id="pageTitle">一生使える英単熟語帳</h1>
     <div class="stamp">完全版</div>
   </div>
   <div id="main"></div>
@@ -284,7 +284,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <div id="modalRoot"></div>
 
 <!-- ▼ 単語データ。Unitを追加したら、ここに <script src="data/bX_unitN.js"></script> を足す（sw.js の DATA にも追加）
-     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=熟語 -->
+     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=熟語 b6=スーパーハイレベル（英検１級） -->
 <script src="data/b1_unit1.js"></script>
 <script src="data/b1_unit2.js"></script>
 <script src="data/b1_unit3.js"></script>
@@ -341,20 +341,42 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b5_unit12.js"></script>
 <script src="data/b5_unit13.js"></script>
 <script src="data/b5_unit14.js"></script>
+<script src="data/b6_unit1.js"></script>
+<script src="data/b6_unit2.js"></script>
+<script src="data/b6_unit3.js"></script>
+<script src="data/b6_unit4.js"></script>
+<script src="data/b6_unit5.js"></script>
+<script src="data/b6_unit6.js"></script>
+<script src="data/b6_unit7.js"></script>
+<script src="data/b6_unit8.js"></script>
+<script src="data/b6_unit9.js"></script>
+<script src="data/b6_unit10.js"></script>
+<script src="data/b6_unit11.js"></script>
+<script src="data/b6_unit12.js"></script>
+<script src="data/b6_unit13.js"></script>
+<script src="data/b6_unit14.js"></script>
+<script src="data/b6_unit15.js"></script>
+<script src="data/b6_unit16.js"></script>
+<script src="data/b6_unit17.js"></script>
+<script src="data/b6_unit18.js"></script>
+<script src="data/b6_unit19.js"></script>
+<script src="data/b6_unit20.js"></script>
+<script src="data/b6_unit21.js"></script>
 <script>
 /* ============ 単語データ（data/unitN.js から読み込み） ============ */
-/* ============ 単語帳の定義（5冊） ============ */
+/* ============ 単語帳の定義（6冊） ============ */
 // units = その単語帳の全Unit数。変更したいときはここだけ直す。
 const BOOKS = [
   {id:'b1', name:'中学修了～高校基礎レベル', units:8},
   {id:'b2', name:'大学合格必須レベル', units:10},
   {id:'b3', name:'難関大学突破レベル', units:12},
   {id:'b4', name:'ハイレベル', units:12},
-  {id:'b5', name:'熟語', units:14}
+  {id:'b5', name:'熟語', units:14},
+  {id:'b6', name:'スーパーハイレベル（英検１級）', units:21}
 ];
-const POS_LABEL = {n:'名詞', vt:'他動詞', vi:'自動詞', v:'動詞', a:'形容詞', adv:'副詞', idm:'熟語'};
-const POS_S = {n:'名', vt:'他', vi:'自', v:'動', a:'形', adv:'副', idm:'熟'};
-const POS_ORDER = ['n','vt','vi','v','a','adv','idm'];
+const POS_LABEL = {n:'名詞', vt:'他動詞', vi:'自動詞', v:'動詞', a:'形容詞', adv:'副詞', idm:'熟語', conj:'接続詞', prep:'前置詞'};
+const POS_S = {n:'名', vt:'他', vi:'自', v:'動', a:'形', adv:'副', idm:'熟', conj:'接', prep:'前'};
+const POS_ORDER = ['n','vt','vi','v','a','adv','idm','conj','prep'];
 let CUR_BOOK = 'b1';
 let UNITS_TOTAL = 8;       // 選んだ単語帳の全Unit数
 let WORDS = [];            // 選んだ単語帳の単語（selectBookで作る）
@@ -527,7 +549,7 @@ function render(){
 /* ============ ホーム（単語帳の選択） ============ */
 function openBook(id){ selectBook(id); nav('bookMenu'); }
 function renderHome(){
-  titleEl.textContent='英単熟語中学～高校卒業レベル';
+  titleEl.textContent='一生使える英単熟語帳';
   const total = BOOKS.reduce((s,b)=>s+bookWordCount(b.id),0);
   const cards = BOOKS.map((b,i)=>{
     const av = bookUnitsAvail(b.id), cnt = bookWordCount(b.id), ready = av.length>0;
@@ -540,7 +562,7 @@ function renderHome(){
   main.innerHTML = `
     <div class="hero">
       <div class="eyebrow">English Vocabulary Complete</div>
-      <h2>英単熟語中学～高校卒業レベル</h2>
+      <h2>一生使える英単熟語帳</h2>
       <p>単語帳を選んでください（収録 ${total}語）</p>
     </div>
     <div class="menu-grid">${cards}</div>
@@ -553,7 +575,7 @@ function renderBookMenu(){
   const bk=bookInfo(CUR_BOOK); titleEl.textContent=bk.name;
   main.innerHTML = `
     <div class="hero">
-      <div class="eyebrow">英単熟語中学～高校卒業レベル</div>
+      <div class="eyebrow">一生使える英単熟語帳</div>
       <h2>${bk.name}</h2>
       <p>収録 ${UNIT_AVAIL.length} Unit・${WORDS.length}語（全${UNITS_TOTAL}Unit）</p>
       <p style="margin-top:8px;"><span style="text-decoration:underline;cursor:pointer" onclick="goHome()">単語帳を選びなおす</span></p>
@@ -750,7 +772,7 @@ function partInfo(u){
 }
 /* 品詞の絞り込み用：他動詞(vt)・自動詞(vi)・動詞(v)は「動詞」にまとめる（カード表記は変えない） */
 function isVerbPos(p){ return p==='v' || p==='vt' || p==='vi'; }
-const POS_FILTER_ORDER = ['n','v','a','adv','idm'];
+const POS_FILTER_ORDER = ['n','v','a','adv','idm','conj','prep'];
 function fcPool(){
   let ws=unitWords(fcCfg.unit);
   if(fcCfg.part!=='all'){
