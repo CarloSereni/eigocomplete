@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#a6321f">
+<title>英単熟語中学～高校卒業レベル</title>
+
+  <!-- === PWA（ホーム画面追加・完全オフライン対応）=== -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="英単熟語中学～高校卒業レベル">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {
+    reg.update();
+  }).catch(function (e) {
+    console.warn('service worker登録失敗', e);
+  });
+}
+</script>
+
+<style>
+@font-face{font-family:'sysfallback';src:local('sans-serif');}
+:root{
+  --bg:#eee9df; --paper:#fbf8f2; --card:#ffffff;
+  --ink:#1f3350; --ink2:#3b5170; --sub:#8a8172;
+  --accent:#a6321f; --accent-d:#7c2517;
+  --ok:#2f6b4f; --ok-bg:#e2ede6;
+  --keep:#8a6d1f; --keep-bg:#f3ebd6;
+  --line:#ddd6c8; --line2:#cfc6b4;
+  --serif:Georgia,'Charis SIL','Noto Serif','DejaVu Serif','Times New Roman',serif;
+  --ipa:'Charis SIL','Gentium Plus','Noto Sans','DejaVu Sans','Segoe UI','Lucida Sans Unicode',Arial,sans-serif;
+  --shadow:0 3px 10px rgba(31,51,80,.08), 0 1px 3px rgba(31,51,80,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic','Meiryo',-apple-system,'Segoe UI',Roboto,sans-serif;
+  overscroll-behavior-y:contain;}
+#app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--paper);
+  box-shadow:0 0 24px rgba(0,0,0,.06);display:flex;flex-direction:column;}
+
+/* top bar */
+#topbar{display:flex;align-items:center;gap:10px;padding:14px 16px;
+  border-bottom:1px solid var(--line);background:var(--paper);position:sticky;top:0;z-index:20;}
+#topbar .back{width:34px;height:34px;border-radius:8px;border:1px solid var(--line2);
+  background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--ink);font-size:16px;}
+#topbar .back.hidden{visibility:hidden;}
+#topbar h1{font-family:var(--serif);font-size:17px;margin:0;flex:1;
+  letter-spacing:.02em;font-weight:700;}
+#topbar .stamp{font-size:10px;color:var(--sub);border:1px solid var(--line2);border-radius:5px;padding:2px 6px;}
+
+#main{flex:1;padding:16px;padding-bottom:32px;}
+.hidden{display:none !important;}
+
+/* home */
+.hero{text-align:center;padding:22px 8px 26px;}
+.hero .eyebrow{font-size:11px;letter-spacing:.18em;color:var(--sub);text-transform:uppercase;margin-bottom:6px;}
+.hero h2{font-family:var(--serif);font-size:28px;margin:0 0 6px;color:var(--ink);}
+.hero p{font-size:13px;color:var(--sub);margin:0;}
+.menu-grid{display:flex;flex-direction:column;gap:12px;}
+.menu-card{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:16px;box-shadow:var(--shadow);cursor:pointer;text-align:left;}
+.menu-card .ico{width:44px;height:44px;border-radius:10px;background:var(--ink);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.menu-card .tx b{display:block;font-size:15.5px;margin-bottom:2px;}
+.menu-card .tx span{font-size:12px;color:var(--sub);}
+.menu-card .tag{margin-left:auto;font-family:var(--serif);font-size:20px;color:var(--line2);flex-shrink:0;}
+
+/* setup screens */
+.setup-block{margin-bottom:20px;}
+.setup-block h3{font-size:12.5px;color:var(--sub);letter-spacing:.06em;margin:0 0 8px;text-transform:uppercase;}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;}
+.tabrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;}
+.chip{border:1px solid var(--line2);background:#fff;border-radius:999px;padding:8px 14px;font-size:13px;
+  cursor:pointer;color:var(--ink);white-space:nowrap;}
+.chip.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+.chip.disabled{opacity:.4;cursor:not-allowed;}
+.chip small{display:block;font-size:9px;opacity:.7;}
+.startbtn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;
+  font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;box-shadow:0 3px 8px rgba(166,50,31,.28);}
+.startbtn:disabled{background:#c9c2b3;box-shadow:none;cursor:not-allowed;}
+.subnote{font-size:12px;color:var(--sub);margin-top:6px;line-height:1.5;}
+
+/* flashcard */
+#fcHeader{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--sub);margin-bottom:10px;}
+#fcHeader .setbtns{display:flex;gap:6px;}
+#fcHeader .setbtn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:4px 9px;font-size:11.5px;cursor:pointer;color:var(--ink2);}
+.progress-bar{height:4px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:16px;}
+.progress-bar i{display:block;height:100%;background:var(--ink);}
+
+.stage{position:relative;height:470px;}
+@media (max-height:720px){.stage{height:400px;}}
+.card-outer{position:absolute;inset:0;perspective:1400px;transition:transform .25s ease, opacity .25s ease;}
+.card-outer.leaving-l{transform:translateX(-40px);opacity:0;}
+.card-outer.leaving-r{transform:translateX(40px);opacity:0;}
+.card-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;
+  transition:transform .5s cubic-bezier(.2,.8,.2,1);}
+.card-outer.flipped .card-inner{transform:rotateY(180deg);}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:18px;background:var(--card);
+  border:1px solid var(--line);box-shadow:var(--shadow);padding:22px 20px;display:flex;flex-direction:column;}
+.card-face.back{transform:rotateY(180deg);overflow-y:auto;}
+.pos-badge{align-self:flex-start;font-size:10.5px;color:#fff;background:var(--ink2);border-radius:6px;
+  padding:2px 8px;letter-spacing:.03em;margin-bottom:auto;}
+.cf-num{position:absolute;top:16px;right:18px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--line2);}
+.front-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;}
+.en-word{font-family:var(--serif);font-size:34px;font-weight:700;color:var(--ink);}
+.en-ipa{font-size:16px;color:var(--sub);font-family:var(--ipa);}
+.ja-word{font-size:26px;font-weight:700;color:var(--ink);}
+.spk{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;
+  background:var(--paper);border:1px solid var(--line2);color:var(--ink2);cursor:pointer;font-size:20px;flex-shrink:0;}
+.spk:active{background:var(--line);}
+.tapfoot{text-align:center;font-size:11px;color:var(--sub);}
+.back .bhead{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.back .bhead .en{font-family:var(--serif);font-size:20px;font-weight:700;}
+.back .bhead .ipa{font-size:13px;color:var(--sub);font-family:var(--ipa);}
+.back .ja-line{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--ink2);}
+.irr-line{font-size:12px;background:#fdeee9;color:var(--accent-d);border-radius:6px;padding:4px 8px;margin-bottom:8px;display:inline-block;}
+.note-line{font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:10px;}
+.ex-box{background:var(--paper);border-radius:10px;padding:10px 12px;border:1px solid var(--line);}
+.ex-en{font-size:14.5px;line-height:1.5;margin-bottom:4px;font-family:var(--serif);}
+.ex-ja{font-size:12.5px;color:var(--sub);}
+
+.card-actions{display:flex;gap:10px;margin-top:16px;}
+.act-btn{flex:1;padding:13px 6px;border-radius:12px;border:1px solid var(--line2);background:#fff;
+  font-size:13.5px;font-weight:700;cursor:pointer;color:var(--ink);}
+.act-btn.memo{color:var(--ok);border-color:var(--ok);background:var(--ok-bg);}
+.act-btn.later{color:var(--keep);border-color:var(--keep);background:var(--keep-bg);}
+.deckdone{text-align:center;padding:60px 10px;color:var(--sub);}
+.deckdone .big{font-size:40px;margin-bottom:10px;}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(31,25,15,.4);z-index:60;display:flex;align-items:flex-end;}
+.modal-sheet{background:#fff;width:100%;max-width:520px;margin:0 auto;border-radius:18px 18px 0 0;
+  max-height:78vh;overflow-y:auto;padding:18px;}
+.modal-sheet h3{margin:0 0 12px;font-size:15px;}
+.modal-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+.modal-row button{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;}
+.modal-close{width:100%;padding:11px;border:none;border-radius:10px;background:var(--ink);color:#fff;margin-top:14px;font-size:14px;cursor:pointer;}
+.empty-note{color:var(--sub);font-size:13px;padding:12px 0;}
+
+/* quiz */
+.quiz-item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:var(--shadow);}
+.quiz-item .qnum{font-size:11.5px;color:var(--sub);margin-bottom:6px;}
+.quiz-item .stem{font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.quiz-item .stem-read{font-size:12px;color:var(--sub);font-weight:400;}
+.qopt{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line2);border-radius:9px;margin-top:7px;font-size:13.5px;cursor:pointer;}
+.qopt input{margin:0;}
+.qopt.correct{border-color:var(--ok);background:var(--ok-bg);}
+.qopt.wrong{border-color:var(--accent);background:#fbe9e6;}
+.qctrl{display:flex;gap:8px;align-items:center;margin-top:10px;}
+.qctrl button{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:6px 12px;font-size:12.5px;cursor:pointer;}
+.qresult{font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:6px;}
+.qresult.ok{color:var(--ok);background:var(--ok-bg);}
+.qresult.ng{color:var(--accent);background:#fbe9e6;}
+.explain{margin-top:10px;background:var(--paper);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--ink2);line-height:1.6;}
+.scorebar{position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:12px 4px;
+  display:flex;justify-content:space-between;align-items:center;margin:14px -16px -16px;padding-left:16px;padding-right:16px;}
+.scorebar b{font-size:18px;}
+.scorebar button{background:var(--ink);color:#fff;border:none;border-radius:9px;padding:10px 16px;font-size:13px;cursor:pointer;}
+
+/* matching */
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:6px;}
+.mcard{aspect-ratio:1/1.05;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;text-align:center;cursor:pointer;padding:6px;box-shadow:var(--shadow);
+  transition:transform .12s, background .15s, border-color .15s;line-height:1.15;
+  border:2px solid transparent;background:#fff;overflow:hidden;}
+.mcard .mtext{font-size:clamp(14px,5.6vw,22px);font-weight:800;word-break:normal;overflow-wrap:anywhere;}
+.mcard.en{border-color:var(--ink2);}
+.mcard.en .mtext{color:var(--ink);}
+.mcard.ja{border-color:var(--accent);}
+.mcard.ja .mtext{color:var(--accent-d);}
+.mcard.selected{border-color:#2f6b4f;box-shadow:0 0 0 3px rgba(47,107,79,.25);transform:scale(1.05);}
+.mcard.mismatch{border-color:var(--accent);background:#fbe9e6;animation:shake .3s;}
+.mcard.matched{background:#eee9df;border-color:var(--line2);cursor:default;}
+.mcard.matched .mtext{color:#b8b0a0;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+.mcard.facedown{background:var(--ink2);}
+.mcard.facedown.en-back{background:var(--ink2);}
+.mcard.facedown.ja-back{background:var(--accent);}
+.mcard.facedown .mtext{color:rgba(255,255,255,.55);font-size:15px;font-weight:900;letter-spacing:.05em;}
+.mtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:14px;}
+.mtop .timer{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;}
+.mwin{text-align:center;padding:30px 10px;}
+.mwin .big{font-size:32px;font-weight:700;margin:10px 0;}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--sub);margin-bottom:10px;}
+.legend span{display:inline-flex;align-items:center;gap:5px;}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+
+.footer-note{text-align:center;font-size:11px;color:var(--sub);margin-top:26px;line-height:1.7;}
+.fc-range{width:100%;height:34px;margin:0 0 12px;accent-color:var(--ink);}
+table.wl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;}
+.wl th{background:var(--paper);font-size:11.5px;color:var(--sub);text-align:left;padding:6px;border-bottom:1px solid var(--line2);}
+.wl td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5;}
+.wl-a{width:30%;}.wl-b{width:28%;}
+.wl-no{display:block;font-size:10.5px;color:var(--sub);}
+.wl-sub{font-size:11.5px;color:var(--sub);}
+.wl-ex2{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line2);}
+.inv-phone{background:#0b0b2a;border-radius:14px;overflow:hidden;color:#fff;user-select:none;-webkit-user-select:none;}
+.inv-hud{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;font-size:13px;background:#101040;}
+.inv-hud b{font-size:20px;font-variant-numeric:tabular-nums;}
+.inv-mb{display:inline-block;padding:4px 8px;border:1px solid #4a56c8;border-radius:8px;font-size:11px;margin-left:6px;cursor:pointer;}
+.inv-mb.off{opacity:.4;text-decoration:line-through;}
+.inv-field{position:relative;height:clamp(220px,38vh,320px);overflow:hidden;background-color:#0b0b2a;background-image:radial-gradient(#fff 1px,transparent 1.5px),radial-gradient(#9aa3ff 1px,transparent 1.5px);background-size:64px 64px,97px 97px;background-position:0 0,23px 41px;}
+.inv-line{position:absolute;left:0;right:0;bottom:62px;border-top:2px dashed #ff5a4d;opacity:.7;}
+.inv-en{position:absolute;top:0;font-size:40px;line-height:1;margin-left:-20px;animation:invfall 10s linear forwards;}
+@keyframes invfall{from{transform:translateY(0)}to{transform:translateY(var(--fy,200px))}}
+.inv-cn{position:absolute;left:50%;bottom:8px;width:0;}
+.inv-base{position:absolute;left:-30px;bottom:0;width:60px;height:24px;background:#6c7bff;border-radius:6px 6px 0 0;}
+.inv-bar{position:absolute;left:-7px;bottom:16px;width:14px;height:38px;background:#c9d0ff;border-radius:4px 4px 0 0;transform-origin:50% 100%;}
+.inv-beam{position:absolute;left:50%;width:6px;margin-left:-3px;background:#7dfcff;border-radius:3px;transform-origin:50% 100%;display:none;}
+.inv-boom{position:absolute;font-size:46px;margin:-23px 0 0 -23px;animation:invpop .5s ease-out forwards;}
+@keyframes invpop{0%{transform:scale(.3);opacity:1}100%{transform:scale(1.6);opacity:0}}
+.inv-toast{position:absolute;top:8px;left:0;right:0;text-align:center;font-size:15px;font-weight:700;color:#ffb3ab;min-height:22px;z-index:2;}
+.inv-panel{background:#15154a;padding:10px 12px 14px;}
+.inv-q{text-align:center;font-size:30px;font-weight:700;margin-bottom:10px;min-height:42px;line-height:1.3;}
+.inv-q small{font-size:13px;font-weight:400;color:#aab;margin-left:6px;}
+.inv-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.inv-opt{min-height:54px;border:1px solid #4a56c8;background:#1d1d63;color:#fff;border-radius:10px;font-size:17px;font-family:inherit;touch-action:manipulation;}
+.inv-opt small{display:block;font-size:11px;color:#aab;}
+.inv-opt.ng{background:#7a1f1f;border-color:#ff6b6b;animation:invsh .3s;}
+@keyframes invsh{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.iv-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;}
+.iv-tbl th,.iv-tbl td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle;}
+.iv-tbl .spk{width:32px;height:32px;font-size:15px;margin-left:4px;}
+.iv-new{background:#fff3c4;}
+input,textarea{-webkit-user-select:text;user-select:text;}
+.stamp{white-space:nowrap;}
+.ans{color:var(--accent-d);}
+.en-word{font-family:var(--serif);}
+.card-face.front .spk{margin-top:6px;}
+.ja-word{line-height:1.5;text-align:center;}
+.back .bhead .en{font-family:var(--serif);}
+.back .bhead .ipa{margin-right:2px;}
+.ex-box{margin-bottom:8px;}
+.info-box{margin-top:6px;border-top:1px dashed var(--line2);padding-top:6px;}
+.info-row{display:flex;gap:8px;font-size:12.5px;line-height:1.55;margin-bottom:4px;color:var(--ink2);}
+.info-l{flex:0 0 3.6em;font-size:11px;color:#fff;background:var(--sub);border-radius:5px;padding:1px 0;text-align:center;align-self:flex-start;margin-top:2px;}
+.info-t{flex:1;}
+.cloze{margin-bottom:8px;}
+.cz-ja{font-size:14.5px;line-height:1.6;margin-bottom:6px;color:var(--ink2);}
+.cz-en{font-size:16px;line-height:1.6;font-family:var(--serif);font-weight:600;}
+.blank{display:inline-block;border-bottom:2px solid var(--accent);padding:0 3px;color:var(--accent-d);}
+.blank.ok{border-color:var(--ok);color:var(--ok);}
+.blank.ng{border-color:var(--accent);color:var(--accent-d);}
+.qinput{width:100%;padding:11px 12px;font-size:16px;border:1px solid var(--line2);border-radius:9px;background:#fff;color:var(--ink);font-family:var(--serif);}
+.qinput:disabled{background:var(--paper);}
+.ex-head{margin-bottom:6px;font-size:15px;}
+.ex-head .ipa{font-family:var(--ipa);color:var(--sub);font-size:12.5px;}
+.explain .ja-line{font-size:14px;margin-bottom:6px;}
+.stem{font-family:var(--serif);}
+.stem-read{font-family:var(--ipa);}
+.chip small{display:block;font-size:9.5px;opacity:.75;}
+.wl-b .info-box{margin-top:4px;}
+.wl-a .spk{width:28px;height:28px;font-size:13px;margin-left:4px;vertical-align:middle;}
+.mcard .mtext{font-family:var(--serif);}
+.mcard.ja .mtext{font-family:inherit;}
+.ex-ja{font-size:13.5px;line-height:1.55;}
+.ex-en .spk,.ex-head .spk,.stem .spk{width:26px;height:26px;font-size:13px;vertical-align:middle;margin-left:3px;}
+.back .bhead .spk{width:34px;height:34px;font-size:16px;}
+.cf-num{top:10px;right:14px;}
+.card-face.back{padding-top:30px;}
+.card-face.front .spk{width:46px;height:46px;font-size:22px;}
+.hero h2{font-size:24px;line-height:1.35;}
+.menu-card.soon{opacity:.5;cursor:default;box-shadow:none;}
+.mtop .timer{font-variant-numeric:tabular-nums;min-width:6em;text-align:right;}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div class="back" id="backBtn" onclick="goHome()">←</div>
+    <h1 id="pageTitle">英単熟語中学～高校卒業レベル</h1>
+    <div class="stamp">完全版</div>
+  </div>
+  <div id="main"></div>
+</div>
+<div id="modalRoot"></div>
+
+<!-- ▼ 単語データ。Unitを追加したら、ここに <script src="data/bX_unitN.js"></script> を足す（sw.js の DATA にも追加）
+     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=熟語 -->
+<script src="data/b1_unit1.js"></script>
+<script src="data/b1_unit2.js"></script>
+<script src="data/b1_unit3.js"></script>
+<script src="data/b1_unit4.js"></script>
+<script src="data/b1_unit5.js"></script>
+<script src="data/b1_unit6.js"></script>
+<script src="data/b1_unit7.js"></script>
+<script src="data/b1_unit8.js"></script>
+<script src="data/b2_unit1.js"></script>
+<script src="data/b2_unit2.js"></script>
+<script src="data/b2_unit3.js"></script>
+<script src="data/b2_unit4.js"></script>
+<script src="data/b2_unit5.js"></script>
+<script src="data/b2_unit6.js"></script>
+<script src="data/b2_unit7.js"></script>
+<script src="data/b2_unit8.js"></script>
+<script src="data/b2_unit9.js"></script>
+<script src="data/b2_unit10.js"></script>
+<script src="data/b3_unit1.js"></script>
+<script src="data/b3_unit2.js"></script>
+<script src="data/b3_unit3.js"></script>
+<script src="data/b3_unit4.js"></script>
+<script src="data/b3_unit5.js"></script>
+<script src="data/b3_unit6.js"></script>
+<script src="data/b3_unit7.js"></script>
+<script src="data/b3_unit8.js"></script>
+<script src="data/b3_unit9.js"></script>
+<script src="data/b3_unit10.js"></script>
+<script src="data/b3_unit11.js"></script>
+<script src="data/b3_unit12.js"></script>
+<script src="data/b4_unit1.js"></script>
+<script src="data/b4_unit2.js"></script>
+<script src="data/b4_unit3.js"></script>
+<script src="data/b4_unit4.js"></script>
+<script src="data/b4_unit5.js"></script>
+<script src="data/b4_unit6.js"></script>
+<script src="data/b4_unit7.js"></script>
+<script src="data/b4_unit8.js"></script>
+<script src="data/b4_unit9.js"></script>
+<script src="data/b4_unit10.js"></script>
+<script src="data/b4_unit11.js"></script>
+<script src="data/b4_unit12.js"></script>
+<script src="data/b5_unit1.js"></script>
+<script src="data/b5_unit2.js"></script>
+<script src="data/b5_unit3.js"></script>
+<script src="data/b5_unit4.js"></script>
+<script src="data/b5_unit5.js"></script>
+<script src="data/b5_unit6.js"></script>
+<script src="data/b5_unit7.js"></script>
+<script src="data/b5_unit8.js"></script>
+<script src="data/b5_unit9.js"></script>
+<script src="data/b5_unit10.js"></script>
+<script src="data/b5_unit11.js"></script>
+<script src="data/b5_unit12.js"></script>
+<script src="data/b5_unit13.js"></script>
+<script src="data/b5_unit14.js"></script>
+<script>
+/* ============ 単語データ（data/unitN.js から読み込み） ============ */
+/* ============ 単語帳の定義（5冊） ============ */
+// units = その単語帳の全Unit数。変更したいときはここだけ直す。
+const BOOKS = [
+  {id:'b1', name:'中学修了～高校基礎レベル', units:8},
+  {id:'b2', name:'大学合格必須レベル', units:10},
+  {id:'b3', name:'難関大学突破レベル', units:12},
+  {id:'b4', name:'ハイレベル', units:12},
+  {id:'b5', name:'熟語', units:14}
+];
+const POS_LABEL = {n:'名詞', vt:'他動詞', vi:'自動詞', v:'動詞', a:'形容詞', adv:'副詞', idm:'熟語'};
+const POS_S = {n:'名', vt:'他', vi:'自', v:'動', a:'形', adv:'副', idm:'熟'};
+const POS_ORDER = ['n','vt','vi','v','a','adv','idm'];
+let CUR_BOOK = 'b1';
+let UNITS_TOTAL = 8;       // 選んだ単語帳の全Unit数
+let WORDS = [];            // 選んだ単語帳の単語（selectBookで作る）
+let UNIT_AVAIL = [];       // 選んだ単語帳の収録済みUnit
+function bookInfo(id){ return BOOKS.find(b=>b.id===id); }
+function bookIdx(id){ return BOOKS.findIndex(b=>b.id===id)+1; }
+function bookData(id){ return (window.BOOK_DATA||{})[id]||{}; }
+function bookUnitsAvail(id){ return Object.keys(bookData(id)).map(Number).sort((a,b)=>a-b); }
+function bookWordCount(id){ const D=bookData(id); return Object.keys(D).reduce((s,u)=>s+D[u].length,0); }
+function selectBook(id){
+  stopGameTimers();
+  CUR_BOOK = id; UNITS_TOTAL = bookInfo(id).units; WORDS = []; UNIT_AVAIL = [];
+  const D = bookData(id), bi = bookIdx(id);
+  bookUnitsAvail(id).forEach(u=>{
+    UNIT_AVAIL.push(u);
+    D[u].forEach(r=>{
+      const multi = r.s.length>1;
+      WORDS.push({
+        no: bi*100000 + u*1000 + r.n, unit:u, bn:r.n, pos:r.p,
+        ps: POS_ORDER.filter(p=>r.s.some(x=>x[0]===p)),
+        e:r.e, ipa:r.i, s:r.s, x:r.x,
+        ja: r.s.map(x=> multi ? '（'+POS_S[x[0]]+'）'+x[1] : x[1]).join('　'),
+        jm: r.s.map(x=>x[1]).join('／'),
+        et:r.et||'', rl:r.rl||'', dv:r.dv||'', sn:r.sn||'', an:r.an||'', tp:r.tp||''
+      });
+    });
+  });
+  // 各画面の設定を、この単語帳の最初のUnitに合わせてリセット
+  const u0 = UNIT_AVAIL[0]||1;
+  fcCfg.unit=u0; fcCfg.part='all'; fcCfg.pos='all'; fcCfg.src='all';
+  quizCfg.unitFrom=u0; quizCfg.unitTo=u0;
+  matchCfg.unitFrom=u0; matchCfg.unitTo=u0;
+  memoCfg.unitFrom=u0; memoCfg.unitTo=u0;
+  invCfg.unitFrom=u0; invCfg.unitTo=u0;
+  listUnit=u0;
+  fcDeck=[]; fcIdx=0; fcFlipped=false; quizItems=[]; matchState=null; memoState=null;
+}
+function unitWords(u){ return WORDS.filter(w=>w.unit===u); }
+function isAvail(u){ return UNIT_AVAIL.includes(u); }
+function inBook(no){ return Math.floor(no/100000)===bookIdx(CUR_BOOK); }
+function curMastered(){ return store.mastered.filter(inBook); }
+function curReview(){ return store.review.filter(inBook); }
+
+/* ============ 例文ヘルパー ============ */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function exAns(x){ const m=x[0].match(/\[\[(.+?)\]\]/); return m?m[1]:''; }
+function exPlain(x){ return x[0].replace(/\[\[(.+?)\]\]/g,'$1'); }
+function exHtml(x){ return esc(x[0]).replace(/\[\[(.+?)\]\]/g,'<b class="ans">$1</b>'); }
+function exBlank(x, hint){
+  const a=exAns(x);
+  const inner = hint ? esc(a.charAt(0))+'…' : '　　';
+  return esc(x[0]).replace(/\[\[(.+?)\]\]/,'<span class="blank">【'+inner+'】</span>');
+}
+function exFilled(x, ok){
+  return esc(x[0]).replace(/\[\[(.+?)\]\]/,'<span class="blank '+(ok?'ok':'ng')+'">【$1】</span>');
+}
+function jaHtml(s){ return esc(s).replace(/【(.+?)】/g,'<b class="ans">【$1】</b>'); }
+function posBadge(w){ return w.ps.map(p=>POS_LABEL[p]).join('・'); }
+
+/* ============ ストレージ ============ */
+const STORE_KEY='eitan_complete_progress_v1';
+let store = JSON.parse(localStorage.getItem(STORE_KEY)||'null') || {mastered:[], review:[], matchBest:{}};
+function saveStore(){ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
+function isMastered(no){ return store.mastered.includes(no); }
+function isReview(no){ return store.review.includes(no); }
+
+/* ============ TTS（端末の英語音声を使用・オフライン可否は端末依存） ============ */
+let enVoice=null;
+function loadVoices(){
+  const vs=speechSynthesis.getVoices();
+  enVoice = vs.find(v=>v.lang==='en-US') || vs.find(v=>v.lang&&v.lang.replace('_','-').startsWith('en-US')) || vs.find(v=>v.lang&&v.lang.startsWith('en')) || null;
+}
+if('speechSynthesis' in window){
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+function speakEn(text){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(String(text).replace(/[~～]/g,'').replace(/\s+/g,' ').trim());
+  u.lang='en-US';
+  if(enVoice) u.voice=enVoice;
+  u.rate=0.9;
+  speechSynthesis.speak(u);
+}
+function spkBtn(text){
+  return `<span class="spk" onclick="event.stopPropagation();speakEn('${String(text).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">🔊</span>`;
+}
+function shuffleArr(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ============ 単語の詳細表示（フラッシュカード裏・クイズ解説・一覧で共用） ============ */
+function exBox(x){
+  return `<div class="ex-box"><div class="ex-en">${exHtml(x)} ${spkBtn(exPlain(x))}</div><div class="ex-ja">${jaHtml(x[1])}</div></div>`;
+}
+function infoHtml(w){
+  const rows=[['語源',w.et],['関連語',w.rl],['派生語',w.dv],['類義語',w.sn],['反意語',w.an],['用法',w.tp]]
+    .filter(r=>r[1]).map(r=>`<div class="info-row"><span class="info-l">${r[0]}</span><span class="info-t">${esc(r[1])}</span></div>`).join('');
+  return rows?`<div class="info-box">${rows}</div>`:'';
+}
+function detailHtml(w){
+  return `<div class="ja-line">${esc(w.ja)}</div>${exBox(w.x[0])}${exBox(w.x[1])}${infoHtml(w)}`;
+}
+
+
+/* ============ ルーター ============ */
+let screen='home';
+let history_stack=[];
+function nav(to, push=true){
+  stopGameTimers();
+  if(screen==='invView'&&to!=='invView') invStop();
+  if(push) history_stack.push(screen);
+  screen=to;
+  document.getElementById('backBtn').classList.toggle('hidden', history_stack.length===0);
+  render();
+  window.scrollTo(0,0);
+}
+function goBack(){ stopGameTimers(); if(screen==='invView') invStop(); screen = history_stack.pop() || 'home'; document.getElementById('backBtn').classList.toggle('hidden', history_stack.length===0); render(); window.scrollTo(0,0);}
+function goHome(){ stopGameTimers(); if(screen==='invView') invStop(); history_stack=[]; screen='home'; document.getElementById('backBtn').classList.add('hidden'); render(); window.scrollTo(0,0);}
+document.getElementById('backBtn').onclick=goBack;
+
+/* ゲームの時計を止める（画面を離れる・やり直すときに必ず呼ぶ）
+   ※ 以前は止め忘れたタイマーが裏で動き続け、複数のタイマーが同じ表示を書き換えて数字がでたらめになっていた */
+function stopGameTimers(){
+  try{ if(matchState && matchState.timerHandle){ clearInterval(matchState.timerHandle); matchState.timerHandle=null; } }catch(e){}
+  try{ if(memoState && memoState.timerHandle){ clearInterval(memoState.timerHandle); memoState.timerHandle=null; } }catch(e){}
+}
+
+const main = document.getElementById('main');
+const titleEl = document.getElementById('pageTitle');
+
+/* Unit選択などの横スクロール行(.tabrow)は、選択のたびに画面を作り直すと左端に戻ってしまう。
+   同じ画面の再描画のときだけ、各行のスクロール位置を保存して復元する（画面が変わったときは復元しない） */
+(function(){
+  const desc = Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
+  let lastScreen = null;
+  Object.defineProperty(main,'innerHTML',{
+    configurable:true,
+    get(){ return desc.get.call(this); },
+    set(v){
+      const saved = Array.from(this.querySelectorAll('.tabrow')).map(r=>r.scrollLeft);
+      const same = (lastScreen===screen);
+      lastScreen = screen;
+      desc.set.call(this,v);
+      if(same && saved.length){
+        const rows = this.querySelectorAll('.tabrow');
+        if(rows.length===saved.length) rows.forEach((r,i)=>{ r.scrollLeft = saved[i]; });
+      }
+    }
+  });
+})();
+
+function render(){
+  if(screen==='home') renderHome();
+  else if(screen==='bookMenu') renderBookMenu();
+  else if(screen==='fcSetup') renderFcSetup();
+  else if(screen==='fcView') renderFcView();
+  else if(screen==='quizSetup') renderQuizSetup();
+  else if(screen==='quizView') renderQuizView();
+  else if(screen==='matchSetup') renderMatchSetup();
+  else if(screen==='matchView') renderMatchView();
+  else if(screen==='memorySetup') renderMemorySetup();
+  else if(screen==='memoryView') renderMemoryView();
+  else if(screen==='dataManage') renderDataManage();
+  else if(screen==='wordList') renderWordList();
+  else if(screen==='invSetup') renderInvSetup();
+  else if(screen==='invView') renderInvView();
+  else if(screen==='invRank') renderInvRank();
+}
+
+/* ============ ホーム（単語帳の選択） ============ */
+function openBook(id){ selectBook(id); nav('bookMenu'); }
+function renderHome(){
+  titleEl.textContent='英単熟語中学～高校卒業レベル';
+  const total = BOOKS.reduce((s,b)=>s+bookWordCount(b.id),0);
+  const cards = BOOKS.map((b,i)=>{
+    const av = bookUnitsAvail(b.id), cnt = bookWordCount(b.id), ready = av.length>0;
+    return `<div class="menu-card ${ready?'':'soon'}" ${ready?`onclick="openBook('${b.id}')"`:''}>
+        <div class="ico">${i+1}</div>
+        <div class="tx"><b>${b.name}</b><span>${ready?`Unit 1〜${b.units}（収録 ${av.length} Unit・${cnt}語）`:'準備中'}</span></div>
+        <div class="tag">${ready?'›':''}</div>
+      </div>`;
+  }).join('');
+  main.innerHTML = `
+    <div class="hero">
+      <div class="eyebrow">English Vocabulary Complete</div>
+      <h2>英単熟語中学～高校卒業レベル</h2>
+      <p>単語帳を選んでください（収録 ${total}語）</p>
+    </div>
+    <div class="menu-grid">${cards}</div>
+    <div class="footer-note">学習記録・ゲーム記録は単語帳ごとに別々に保存されます。<br>記録はこの端末のブラウザに保存されます。</div>
+  `;
+}
+
+/* ============ 単語帳のメニュー（選んだ単語帳のホーム） ============ */
+function renderBookMenu(){
+  const bk=bookInfo(CUR_BOOK); titleEl.textContent=bk.name;
+  main.innerHTML = `
+    <div class="hero">
+      <div class="eyebrow">英単熟語中学～高校卒業レベル</div>
+      <h2>${bk.name}</h2>
+      <p>収録 ${UNIT_AVAIL.length} Unit・${WORDS.length}語（全${UNITS_TOTAL}Unit）</p>
+      <p style="margin-top:8px;"><span style="text-decoration:underline;cursor:pointer" onclick="goHome()">単語帳を選びなおす</span></p>
+    </div>
+    <div class="menu-grid">
+      <div class="menu-card" onclick="nav('fcSetup')">
+        <div class="ico">🗂</div>
+        <div class="tx"><b>フラッシュカード</b><span>Unit・範囲・品詞・方向を選んで暗記</span></div>
+        <div class="tag">壹</div>
+      </div>
+      <div class="menu-card" onclick="nav('wordList')">
+        <div class="ico">☰</div>
+        <div class="tx"><b>単語一覧</b><span>単語・意味・語源・例文をUnitごとに一覧</span></div>
+        <div class="tag">覧</div>
+      </div>
+      <div class="menu-card" onclick="nav('quizSetup')">
+        <div class="ico">✎</div>
+        <div class="tx"><b>クイズ</b><span>4択・記述（例文穴埋め）10問・自己採点式</span></div>
+        <div class="tag">貳</div>
+      </div>
+      <div class="menu-card" onclick="nav('matchSetup')">
+        <div class="ico">⏱</div>
+        <div class="tx"><b>マッチングゲーム</b><span>3×4・全部表面・スピード勝負</span></div>
+        <div class="tag">參</div>
+      </div>
+      <div class="menu-card" onclick="nav('memorySetup')">
+        <div class="ico">🀫</div>
+        <div class="tx"><b>神経衰弱</b><span>3×4・裏面から記憶で当てる</span></div>
+        <div class="tag">肆</div>
+      </div>
+      <div class="menu-card" onclick="nav('invSetup')">
+        <div class="ico">👾</div>
+        <div class="tx"><b>インベーダー</b><span>60秒で何体倒せる？・記録に挑戦</span></div>
+        <div class="tag">伍</div>
+      </div>
+      <div class="menu-card" onclick="nav('dataManage')">
+        <div class="ico">💾</div>
+        <div class="tx"><b>データ管理</b><span>学習記録の書き出し・読み込み</span></div>
+        <div class="tag">陸</div>
+      </div>
+    </div>
+    <div class="footer-note">記録はこの端末のブラウザに保存されます。<br>ブラウザのデータを消去すると記録も消えるのでご注意ください。<br>「データ管理」から定期的な書き出しをおすすめします。</div>
+  `;
+}
+
+/* 共通：Unit選択チップ */
+function unitChipsHtml(sel, onclickFn){
+  return Array.from({length:UNITS_TOTAL},(_,i)=>i+1).map(u=>{
+    const dis=!isAvail(u);
+    return `<div class="chip ${sel===u?'active':''} ${dis?'disabled':''}" ${dis?'':`onclick="${onclickFn}(${u})"`}>Unit ${u}${dis?'<small>準備中</small>':''}</div>`;
+  }).join('');
+}
+function unitNumChipsHtml(sel, onclickFn, minU){
+  return Array.from({length:UNITS_TOTAL},(_,i)=>i+1).map(u=>{
+    const dis=!isAvail(u) || (minU && u<minU);
+    return `<div class="chip ${sel===u?'active':''} ${dis?'disabled':''}" ${dis?'':`onclick="${onclickFn}(${u})"`}>${u}</div>`;
+  }).join('');
+}
+
+
+/* ============ データ管理（書き出し／読み込み） ============ */
+function renderDataManage(){
+  titleEl.textContent='データ管理';
+  const masteredCount = store.mastered.length;
+  const reviewCount = store.review.length;
+  const matchCount = Object.keys(store.matchBest||{}).length;
+  const todayStr = new Date().toISOString().slice(0,10);
+
+  main.innerHTML = `
+    <div class="setup-block">
+      <h3>現在の記録</h3>
+      <div class="menu-card" style="cursor:default;">
+        <div class="ico">📊</div>
+        <div class="tx"><b>覚えた: ${masteredCount}語 ／ また後で: ${reviewCount}語</b><span>マッチング記録: ${matchCount}件</span></div>
+      </div>
+    </div>
+
+    <div class="setup-block">
+      <h3>書き出し（バックアップ）</h3>
+      <div class="subnote" style="margin-bottom:10px;">学習記録をファイルとして保存します。機種変更やブラウザデータ消去に備えて、定期的に書き出しておくことをおすすめします。</div>
+      <button class="startbtn" onclick="exportStore()">📤 ファイルに書き出す（.json）</button>
+    </div>
+
+    <div class="setup-block">
+      <h3>読み込み（復元・移行）</h3>
+      <div class="subnote" style="margin-bottom:10px;">書き出したファイルを選ぶと、この端末に記録を反映します。<br><b>現在この端末にある記録は上書きされます。</b></div>
+      <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;" onchange="importStoreFromFile(event)">
+      <button class="startbtn" style="background:var(--ink2);" onclick="document.getElementById('importFileInput').click()">📥 ファイルから読み込む</button>
+    </div>
+
+    <div class="setup-block">
+      <h3>テキストとしてコピー／貼り付け</h3>
+      <div class="subnote" style="margin-bottom:10px;">ファイル保存が難しい場合は、下のテキストをコピーして別端末のメモ等に保管し、貼り付けて読み込むこともできます。</div>
+      <textarea id="dataText" readonly style="width:100%;min-height:90px;font-size:11px;padding:10px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);font-family:monospace;" onclick="this.select()">${JSON.stringify(store)}</textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="startbtn" style="flex:1;" onclick="copyDataText()">コピー</button>
+      </div>
+      <textarea id="dataTextIn" placeholder="ここに貼り付けて「このテキストを読み込む」を押してください" style="width:100%;min-height:90px;font-size:11px;padding:10px;margin-top:14px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);font-family:monospace;"></textarea>
+      <button class="startbtn" style="margin-top:8px;background:var(--ink2);" onclick="importStoreFromText()">このテキストを読み込む</button>
+    </div>
+
+    <div class="footer-note">書き出しファイル名の例: eitan_progress_${todayStr}.json</div>
+  `;
+}
+
+function exportStore(){
+  const data = JSON.stringify(store, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const todayStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `eitan_progress_${todayStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function applyImportedStore(obj){
+  if(!obj || typeof obj !== 'object' || !Array.isArray(obj.mastered) || !Array.isArray(obj.review)){
+    alert('読み込みに失敗しました。ファイル／テキストの形式が正しくないようです。');
+    return false;
+  }
+  store = {
+    mastered: obj.mastered || [],
+    review: obj.review || [],
+    matchBest: obj.matchBest || {},
+    lastSession: obj.lastSession || undefined,
+    invRank: obj.invRank || {},
+    invSet: obj.invSet || undefined
+  };
+  invSet = store.invSet || {bgm:true,se:true};
+  saveStore();
+  alert('読み込みが完了しました。');
+  nav('dataManage', false);
+  return true;
+}
+
+function importStoreFromFile(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const obj = JSON.parse(e.target.result);
+      applyImportedStore(obj);
+    }catch(err){
+      alert('読み込みに失敗しました。ファイルの内容が正しいJSON形式か確認してください。');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function importStoreFromText(){
+  const txt = document.getElementById('dataTextIn').value.trim();
+  if(!txt){ alert('テキストが入力されていません。'); return; }
+  try{
+    const obj = JSON.parse(txt);
+    applyImportedStore(obj);
+  }catch(err){
+    alert('読み込みに失敗しました。貼り付けたテキストが正しいJSON形式か確認してください。');
+  }
+}
+
+function copyDataText(){
+  const ta = document.getElementById('dataText');
+  ta.select();
+  ta.setSelectionRange(0, 99999);
+  try{
+    navigator.clipboard.writeText(ta.value).then(()=>{
+      alert('コピーしました。');
+    }).catch(()=>{
+      document.execCommand('copy');
+      alert('コピーしました。');
+    });
+  }catch(err){
+    document.execCommand('copy');
+    alert('コピーしました。');
+  }
+}
+
+/* ============ フラッシュカード：設定 ============ */
+let fcCfg = {unit:1, part:'all', pos:'all', dir:'en2ja', order:'seq', src:'all'};
+const PART_NAMES = ['前半','中盤','後半'];
+function partInfo(u){
+  const ws=unitWords(u), n=ws.length, sz=Math.ceil(n/3), out=[];
+  for(let k=0;k<3;k++){
+    const a=ws.slice(k*sz,(k+1)*sz);
+    if(a.length) out.push({k, lo:a[0].bn, hi:a[a.length-1].bn});
+  }
+  return out;
+}
+/* 品詞の絞り込み用：他動詞(vt)・自動詞(vi)・動詞(v)は「動詞」にまとめる（カード表記は変えない） */
+function isVerbPos(p){ return p==='v' || p==='vt' || p==='vi'; }
+const POS_FILTER_ORDER = ['n','v','a','adv','idm'];
+function fcPool(){
+  let ws=unitWords(fcCfg.unit);
+  if(fcCfg.part!=='all'){
+    const sz=Math.ceil(ws.length/3), k=+fcCfg.part;
+    ws=ws.slice(k*sz,(k+1)*sz);
+  }
+  return ws;
+}
+function setFcUnit(u){ fcCfg.unit=u; fcCfg.part='all'; fcCfg.pos='all'; renderFcSetup(); }
+function setFcPart(p){ fcCfg.part=p; fcCfg.pos='all'; renderFcSetup(); }
+function renderFcSetup(){
+  titleEl.textContent='フラッシュカード設定';
+  if(!isAvail(fcCfg.unit)) fcCfg.unit = UNIT_AVAIL[0]||1;
+  const unitChips = unitChipsHtml(fcCfg.unit,'setFcUnit');
+
+  const parts = partInfo(fcCfg.unit);
+  const total = unitWords(fcCfg.unit).length;
+  const partChips = `<div class="chip ${fcCfg.part==='all'?'active':''}" onclick="setFcPart('all')">Unit全体<small>No.1〜${total}</small></div>` +
+    parts.map(p=>`<div class="chip ${String(fcCfg.part)===String(p.k)?'active':''}" onclick="setFcPart(${p.k})">${PART_NAMES[p.k]}<small>No.${p.lo}〜${p.hi}</small></div>`).join('');
+
+  const pool = fcPool();
+  const posSet = POS_FILTER_ORDER.filter(p=> p==='v' ? pool.some(w=>w.ps.some(isVerbPos)) : pool.some(w=>w.ps.includes(p)));
+  if(fcCfg.pos!=='all' && !posSet.includes(fcCfg.pos)) fcCfg.pos='all';
+  const posChips = ['all',...posSet].map(p=>{
+    const label = p==='all' ? '全て' : POS_LABEL[p];
+    return `<div class="chip ${fcCfg.pos===p?'active':''}" onclick="fcCfg.pos='${p}';renderFcSetup()">${label}</div>`;
+  }).join('');
+
+  const reviewCount = curReview().length;
+  const srcChips = `
+    <div class="chip ${fcCfg.src==='all'?'active':''}" onclick="fcCfg.src='all';renderFcSetup()">通常セット</div>
+    <div class="chip ${fcCfg.src==='review'?'active':''} ${reviewCount===0?'disabled':''}" ${reviewCount===0?'':`onclick="fcCfg.src='review';renderFcSetup()"`}>復習セットのみ (${reviewCount})</div>
+  `;
+
+  const resumeBlock = (store.lastSession && store.lastSession.book===CUR_BOOK) ? `
+    <div class="setup-block">
+      <div class="menu-card" style="padding:14px;" onclick="resumeSession()">
+        <div class="ico">↺</div>
+        <div class="tx"><b>前回の続きから再開</b><span>Unit ${store.lastSession.unit} ・ ${store.lastSession.idx+1}/${store.lastSession.deckNos.length}語目</span></div>
+      </div>
+    </div>` : '';
+
+  main.innerHTML = `
+    ${resumeBlock}
+    <div class="setup-block">
+      <h3>Unit</h3>
+      <div class="tabrow">${unitChips}</div>
+    </div>
+    <div class="setup-block">
+      <h3>範囲</h3>
+      <div class="tabs">${partChips}</div>
+    </div>
+    <div class="setup-block">
+      <h3>品詞</h3>
+      <div class="tabs">${posChips}</div>
+    </div>
+    <div class="setup-block">
+      <h3>方向</h3>
+      <div class="tabs">
+        <div class="chip ${fcCfg.dir==='en2ja'?'active':''}" onclick="fcCfg.dir='en2ja';renderFcSetup()">英語 → 日本語</div>
+        <div class="chip ${fcCfg.dir==='ja2en'?'active':''}" onclick="fcCfg.dir='ja2en';renderFcSetup()">日本語 → 英語</div>
+      </div>
+    </div>
+    <div class="setup-block">
+      <h3>順序</h3>
+      <div class="tabs">
+        <div class="chip ${fcCfg.order==='seq'?'active':''}" onclick="fcCfg.order='seq';renderFcSetup()">順番通り</div>
+        <div class="chip ${fcCfg.order==='rand'?'active':''}" onclick="fcCfg.order='rand';renderFcSetup()">ランダム</div>
+      </div>
+    </div>
+    <div class="setup-block">
+      <h3>出題元</h3>
+      <div class="tabs">${srcChips}</div>
+    </div>
+    <button class="startbtn" onclick="startFc()">この条件で始める</button>
+    <div class="subnote">
+      「覚えた」🟩 ${curMastered().length}語 ／ 「また後で」🟨 ${curReview().length}語<br>
+      <span style="text-decoration:underline;cursor:pointer" onclick="openSetModal('mastered')">覚えたセットを見る</span>　
+      <span style="text-decoration:underline;cursor:pointer" onclick="openSetModal('review')">復習セットを見る</span>
+    </div>
+  `;
+}
+
+function buildFcDeck(){
+  let pool = fcPool();
+  if(fcCfg.pos!=='all') pool = pool.filter(w=> fcCfg.pos==='v' ? w.ps.some(isVerbPos) : w.ps.includes(fcCfg.pos));
+  if(fcCfg.src==='review') pool = pool.filter(w=>isReview(w.no));
+  else pool = pool.filter(w=>!isMastered(w.no));
+  if(fcCfg.order==='rand') pool = shuffleArr(pool.slice());
+  return pool;
+}
+
+let fcDeck=[], fcIdx=0, fcFlipped=false;
+function startFc(){
+  fcDeck = buildFcDeck();
+  fcIdx=0; fcFlipped=false;
+  saveSession();
+  nav('fcView');
+}
+function saveSession(){
+  store.lastSession = {
+    book: CUR_BOOK, unit: fcCfg.unit, part: fcCfg.part, pos: fcCfg.pos, dir: fcCfg.dir, order: fcCfg.order, src: fcCfg.src,
+    deckNos: fcDeck.map(w=>w.no), idx: fcIdx
+  };
+  saveStore();
+}
+function resumeSession(){
+  const s = store.lastSession;
+  if(!s) return;
+  fcCfg = {unit:s.unit, part:(s.part===undefined?'all':s.part), pos:(s.pos==='vt'||s.pos==='vi'?'v':s.pos), dir:s.dir, order:s.order, src:s.src};
+  fcDeck = s.deckNos.map(no=>WORDS.find(w=>w.no===no)).filter(Boolean);
+  fcIdx = Math.min(s.idx, Math.max(0,fcDeck.length-1));
+  fcFlipped = false;
+  nav('fcView');
+}
+
+function renderFcView(){
+  const partTxt = fcCfg.part==='all' ? '' : ' '+PART_NAMES[+fcCfg.part];
+  titleEl.textContent = 'Unit '+fcCfg.unit+partTxt+' · '+(fcCfg.pos==='all'?'全品詞':POS_LABEL[fcCfg.pos]);
+  if(fcDeck.length===0){
+    main.innerHTML = `<div class="deckdone"><div class="big">🎉</div>この条件のカードはありません。<br>（すべて覚えたセットに入っているか、条件に合う単語がありません）
+    <div style="margin-top:16px;"><button class="startbtn" onclick="nav('fcSetup')">設定に戻る</button></div></div>`;
+    return;
+  }
+  if(fcIdx>=fcDeck.length){
+    main.innerHTML = `<div class="deckdone"><div class="big">✅</div>このセットは最後まで確認しました。<br>
+    <div style="margin-top:16px;"><button class="startbtn" onclick="fcIdx=0;renderFcView()">もう一度見る</button></div></div>`;
+    return;
+  }
+  const w = fcDeck[fcIdx];
+  const isE2J = fcCfg.dir==='en2ja';
+
+  const frontHtml = isE2J
+    ? `<div class="en-word">${esc(w.e)}</div><div class="en-ipa">${w.ipa?'['+esc(w.ipa)+']':''}</div>${spkBtn(w.e)}`
+    : `<div class="ja-word">${esc(w.ja)}</div>`;
+
+  const backHtml = `
+    <div class="bhead">
+      <span class="en">${esc(w.e)}</span><span class="ipa">${w.ipa?'['+esc(w.ipa)+']':''}</span>
+      ${spkBtn(w.e)}
+    </div>
+    ${detailHtml(w)}
+  `;
+
+  main.innerHTML = `
+    <div id="fcHeader">
+      <span id="fcPos">${fcIdx+1} / ${fcDeck.length}　·　${posBadge(w)}</span>
+      <div class="setbtns">
+        <div class="setbtn" onclick="openSetModal('mastered')">覚えた${curMastered().length}</div>
+        <div class="setbtn" onclick="openSetModal('review')">復習${curReview().length}</div>
+      </div>
+    </div>
+    <input type="range" class="fc-range" min="1" max="${fcDeck.length}" value="${fcIdx+1}" step="1" aria-label="カード位置" oninput="fcSlideInput(this.value)" onchange="fcSlideChange(this.value)">
+    <div class="stage">
+      <div class="card-outer" id="cardOuter" onclick="cardTap(event)">
+        <div class="card-inner">
+          <div class="card-face front">
+            <span class="cf-num">Unit ${w.unit} · No.${w.bn}</span>
+            <span class="pos-badge">${posBadge(w)}</span>
+            <div class="front-mid">${frontHtml}</div>
+            <div class="tapfoot">タップで裏返す ／ 左右の端をタップ・スワイプで前後移動</div>
+          </div>
+          <div class="card-face back">
+            <span class="cf-num">Unit ${w.unit} · No.${w.bn}</span>
+            ${backHtml}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="act-btn memo" onclick="fcMark('mastered')">✅ 覚えた</button>
+      <button class="act-btn later" onclick="fcMark('review')">🔖 また後で</button>
+    </div>
+  `;
+  const outer=document.getElementById('cardOuter');
+  if(fcFlipped) outer.classList.add('flipped');
+  attachSwipe(outer);
+}
+
+
+function cardTap(e){
+  if(e.target.closest('.spk')) return; // 音声ボタンはこちらの処理をせず優先させる
+  const rect = e.currentTarget.getBoundingClientRect();
+  const ratio = (e.clientX - rect.left) / rect.width;
+  if(ratio < 1/6) fcNav(-1);
+  else if(ratio > 5/6) fcNav(1);
+  else fcFlip();
+}
+function fcFlip(){
+  fcFlipped=!fcFlipped;
+  document.getElementById('cardOuter').classList.toggle('flipped');
+}
+function fcNav(dir){
+  const outer=document.getElementById('cardOuter');
+  outer.classList.add(dir<0?'leaving-r':'leaving-l');
+  setTimeout(()=>{
+    fcIdx += dir;
+    if(fcIdx<0) fcIdx=0;
+    fcFlipped=false;
+    saveSession();
+    renderFcView();
+  },140);
+}
+function fcMark(type){
+  const w=fcDeck[fcIdx];
+  if(type==='mastered'){
+    if(!isMastered(w.no)) store.mastered.push(w.no);
+    store.review = store.review.filter(n=>n!==w.no);
+    saveStore();
+    fcDeck.splice(fcIdx,1);
+    fcFlipped=false;
+    saveSession();
+    renderFcView();
+  } else {
+    if(!isReview(w.no)) store.review.push(w.no);
+    saveStore();
+    fcFlipped=false;
+    fcIdx++;
+    saveSession();
+    renderFcView();
+  }
+}
+function attachSwipe(el){
+  let x0=null,y0=null;
+  el.addEventListener('touchstart',e=>{ x0=e.touches[0].clientX; y0=e.touches[0].clientY; },{passive:true});
+  el.addEventListener('touchend',e=>{
+    if(x0===null) return;
+    const dx=e.changedTouches[0].clientX-x0, dy=e.changedTouches[0].clientY-y0;
+    if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)){
+      fcNav(dx<0?1:-1);
+    }
+    x0=null;
+  },{passive:true});
+}
+
+/* ============ セット管理モーダル ============ */
+function openSetModal(type){
+  const list = type==='mastered'?curMastered():curReview();
+  const title = type==='mastered'?'覚えたセット':'復習セット';
+  const rows = list.map(no=>{
+    const w = WORDS.find(x=>x.no===no);
+    if(!w) return '';
+    return `<div class="modal-row"><span>${esc(w.e)} <span style="color:var(--sub)">${esc(w.jm)}</span></span>
+      <button onclick="restoreWord(${no},'${type}')">もとに戻す</button></div>`;
+  }).join('') || `<div class="empty-note">まだありません。</div>`;
+  document.getElementById('modalRoot').innerHTML = `
+    <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+      <div class="modal-sheet">
+        <h3>${title}（${list.length}）</h3>
+        ${rows}
+        <button class="modal-close" onclick="closeModal()">閉じる</button>
+      </div>
+    </div>`;
+}
+function restoreWord(no,type){
+  if(type==='mastered') store.mastered = store.mastered.filter(n=>n!==no);
+  else store.review = store.review.filter(n=>n!==no);
+  saveStore();
+  openSetModal(type);
+  if(screen==='fcView'){ fcDeck = buildFcDeck(); if(fcIdx>=fcDeck.length) fcIdx=Math.max(0,fcDeck.length-1); saveSession(); }
+}
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; if(screen==='fcSetup') renderFcSetup(); if(screen==='fcView') renderFcView(); }
+
+/* ============ フラッシュカード：スライダー ============ */
+function fcSlideInput(v){
+  const w=fcDeck[+v-1]; if(!w) return;
+  document.getElementById('fcPos').textContent=`${v} / ${fcDeck.length}　·　${fcCfg.dir==='en2ja'?w.e:w.jm}`;
+}
+function fcSlideChange(v){
+  fcIdx=Math.max(0,Math.min(fcDeck.length-1,+v-1));
+  fcFlipped=false; saveSession(); renderFcView();
+}
+
+/* ============ クイズ ============ */
+let quizCfg={mode:'en2ja', unitFrom:1, unitTo:1, hint:false};
+let quizItems=[], quizMode='en2ja', quizHint=false;
+const QUIZ_N = 10;
+const QUIZ_MODES = {
+  en2ja:'英語 → 日本語（4択）',
+  ja2en:'日本語 → 英語（4択・例文穴埋め）',
+  write:'記述（例文穴埋め）'
+};
+function setQuizFrom(u){ quizCfg.unitFrom=u; if(quizCfg.unitTo<u) quizCfg.unitTo=u; renderQuizSetup(); }
+function setQuizTo(u){ quizCfg.unitTo=u; renderQuizSetup(); }
+function renderQuizSetup(){
+  titleEl.textContent='クイズ設定';
+  if(!isAvail(quizCfg.unitFrom)) { quizCfg.unitFrom=UNIT_AVAIL[0]||1; quizCfg.unitTo=Math.max(quizCfg.unitTo,quizCfg.unitFrom); }
+  const modeChips = Object.keys(QUIZ_MODES).map(m=>`<div class="chip ${quizCfg.mode===m?'active':''}" onclick="quizCfg.mode='${m}';renderQuizSetup()">${QUIZ_MODES[m]}</div>`).join('');
+  const hintBlock = quizCfg.mode==='write' ? `
+    <div class="setup-block">
+      <h3>頭文字ヒント</h3>
+      <div class="tabs">
+        <div class="chip ${quizCfg.hint?'active':''}" onclick="quizCfg.hint=true;renderQuizSetup()">ON</div>
+        <div class="chip ${!quizCfg.hint?'active':''}" onclick="quizCfg.hint=false;renderQuizSetup()">OFF</div>
+      </div>
+      <div class="subnote">ONにすると、空欄に答えの頭文字が表示されます（文字数は表示されません）。</div>
+    </div>` : '';
+  const pool = WORDS.filter(w=>w.unit>=quizCfg.unitFrom && w.unit<=quizCfg.unitTo);
+  main.innerHTML = `
+    <div class="setup-block">
+      <h3>形式</h3>
+      <div class="tabs">${modeChips}</div>
+      <div class="subnote">${quizCfg.mode==='en2ja'?'英単語を見て、日本語の意味を4択から選びます。':quizCfg.mode==='ja2en'?'日本語と英語の例文を見て、空欄に入る英語を4択から選びます。':'日本語と英語の例文を見て、空欄に入る英語を入力します。見出し語そのままの形で答えます。'}</div>
+    </div>
+    ${hintBlock}
+    <div class="setup-block">
+      <h3>出題範囲（Unit ${quizCfg.unitFrom} 〜 Unit ${quizCfg.unitTo}）</h3>
+      <div class="tabrow">${unitNumChipsHtml(quizCfg.unitFrom,'setQuizFrom')}</div>
+      <div style="text-align:center;font-size:12px;color:var(--sub);margin:4px 0;">〜</div>
+      <div class="tabrow">${unitNumChipsHtml(quizCfg.unitTo,'setQuizTo',quizCfg.unitFrom)}</div>
+      <div class="subnote">対象 ${pool.length}語から${QUIZ_N}問を出題します。</div>
+    </div>
+    <button class="startbtn" onclick="startQuiz()">${QUIZ_N}問出題する</button>
+  `;
+}
+function startQuiz(){
+  const pool = WORDS.filter(w=>w.unit>=quizCfg.unitFrom && w.unit<=quizCfg.unitTo);
+  if(pool.length<4){ alert('出題範囲の単語が足りません。'); return; }
+  quizMode = quizCfg.mode; quizHint = quizCfg.hint;
+  const picks = shuffleArr(pool.slice()).slice(0,QUIZ_N);
+  quizItems = picks.map(w=>{
+    const it = {word:w, k:Math.floor(Math.random()*2), selected:null, text:'', graded:false, override:false};
+    if(quizMode!=='write'){
+      const same = pool.filter(x=>x.pos===w.pos && x.no!==w.no);
+      const dp = same.length>=3 ? same : pool.filter(x=>x.no!==w.no);
+      it.opts = shuffleArr([w,...shuffleArr(dp.slice()).slice(0,3)]).map(o=>({no:o.no, w:o, text: quizMode==='en2ja'?o.ja:o.e}));
+    }
+    return it;
+  });
+  nav('quizView');
+}
+function normAns(s){ return String(s).toLowerCase().replace(/[’‘]/g,"'").replace(/[~～]/g,'').replace(/\s+/g,' ').trim(); }
+function quizCorrect(q){
+  if(quizMode==='write') return q.override || normAns(q.text)===normAns(exAns(q.word.x[q.k]));
+  return q.selected===q.word.no;
+}
+function renderQuizView(){
+  titleEl.textContent='クイズ（'+QUIZ_MODES[quizMode].split('（')[0]+'）';
+  if(!quizItems.length){ nav('quizSetup',false); return; }
+  const html = quizItems.map((q,i)=>{
+    const w=q.word, ok=q.graded&&quizCorrect(q);
+    let stem='';
+    if(quizMode==='en2ja'){
+      stem = `<div class="stem">${esc(w.e)} ${spkBtn(w.e)}<span class="stem-read">${w.ipa?'['+esc(w.ipa)+']':''}</span></div>`;
+    } else {
+      const x=w.x[q.k];
+      const en = q.graded ? exFilled(x, ok) : exBlank(x, quizMode==='write' && quizHint);
+      stem = `<div class="cloze"><div class="cz-ja">${jaHtml(x[1])}</div><div class="cz-en">${en}</div></div>`;
+    }
+    let body='';
+    if(quizMode==='write'){
+      body = `<input class="qinput" type="text" inputmode="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="英語で入力" value="${esc(q.text)}" ${q.graded?'disabled':''} oninput="quizType(${i},this.value)" onkeydown="if(event.key==='Enter'){gradeQuiz(${i})}">`;
+    } else {
+      body = q.opts.map((o,j)=>{
+        let cls='qopt';
+        if(q.graded){ if(o.no===w.no) cls+=' correct'; else if(o.no===q.selected) cls+=' wrong'; }
+        return `<label class="${cls}"><input type="radio" name="q${i}" ${q.selected===o.no?'checked':''} ${q.graded?'disabled':''} onchange="quizPick(${i},${o.no})"><span>${esc(o.text)}</span></label>`;
+      }).join('');
+    }
+    let ctrl='';
+    if(!q.graded){
+      ctrl = `<div class="qctrl"><button onclick="gradeQuiz(${i})">答え合わせ</button></div>`;
+    } else {
+      const manual = (quizMode==='write' && !ok) ? `<button onclick="quizOverride(${i})">正解にする</button>` : '';
+      const note = (quizMode==='write' && q.override) ? '（手動で正解）' : '';
+      const ansTxt = (quizMode==='write' && !ok) ? `<span style="font-size:12.5px;">あなたの答え: <b>${esc(q.text||'（未入力）')}</b> ／ 正解: <b>${esc(exAns(w.x[q.k]))}</b></span>` : '';
+      ctrl = `<div class="qctrl"><span class="qresult ${ok?'ok':'ng'}">${ok?'○ 正解'+note:'× 不正解'}</span>${ansTxt}${manual}</div>`;
+    }
+    let explain='';
+    if(q.graded){
+      let others='';
+      if(quizMode!=='write'){
+        others = `<div class="info-row"><span class="info-l">選択肢</span><span class="info-t">${q.opts.map(o=>`${esc(o.w.e)}：${esc(o.w.jm)}`).join('<br>')}</span></div>`;
+      }
+      explain = `<div class="explain"><div class="ex-head"><b>${esc(w.e)}</b> <span class="ipa">${w.ipa?'['+esc(w.ipa)+']':''}</span> ${spkBtn(w.e)}</div>${detailHtml(w)}${others?`<div class="info-box">${others}</div>`:''}</div>`;
+    }
+    return `<div class="quiz-item"><div class="qnum">Q${i+1} / ${quizItems.length}</div>${stem}${body}${ctrl}${explain}</div>`;
+  }).join('');
+  const done = quizItems.filter(q=>q.graded).length;
+  const score = quizItems.filter(q=>q.graded&&quizCorrect(q)).length;
+  const all = done===quizItems.length;
+  main.innerHTML = html + `
+    <div class="scorebar"><span>${all?`<b>${score*10}</b> 点（${score}/${quizItems.length}）`:`採点済み ${done}/${quizItems.length}`}</span>
+      <span style="display:flex;gap:8px;">${all?`<button onclick="startQuiz()">もう一度</button>`:`<button onclick="gradeAllQuiz()">全問採点</button>`}<button onclick="nav('quizSetup')">設定へ</button></span></div>
+    ${all&&score===quizItems.length?`<div class="footer-note" style="margin-top:8px;">全問正解です。100点満点！</div>`:''}
+  `;
+}
+function quizPick(i,no){ quizItems[i].selected=no; }
+function quizType(i,v){ quizItems[i].text=v; }
+function gradeQuiz(i){
+  const q=quizItems[i]; if(q.graded) return;
+  if(quizMode!=='write' && q.selected===null){ alert('選択肢を選んでください。'); return; }
+  q.graded=true; renderQuizView();
+}
+function gradeAllQuiz(){
+  quizItems.forEach(q=>{ q.graded=true; });
+  renderQuizView();
+}
+function quizOverride(i){ quizItems[i].override=true; renderQuizView(); }
+
+/* ============ 単語一覧 ============ */
+let listUnit=1;
+function setListUnit(u){ listUnit=u; renderWordList(); window.scrollTo(0,0); }
+function renderWordList(){
+  titleEl.textContent='単語一覧';
+  if(!isAvail(listUnit)) listUnit=UNIT_AVAIL[0]||1;
+  const chips=unitChipsHtml(listUnit,'setListUnit');
+  const ws=unitWords(listUnit);
+  const rows=ws.map(w=>`<tr>
+    <td class="wl-a"><span class="wl-no">${w.bn}　${posBadge(w)}</span><b>${esc(w.e)}</b> ${spkBtn(w.e)}<br><span class="wl-sub">${w.ipa?'['+esc(w.ipa)+']':''}</span></td>
+    <td class="wl-b">${esc(w.ja)}${infoHtml(w)}</td>
+    <td class="wl-c">${exHtml(w.x[0])}<br><span class="wl-sub">${jaHtml(w.x[0][1])}</span><div class="wl-ex2">${exHtml(w.x[1])}<br><span class="wl-sub">${jaHtml(w.x[1][1])}</span></div></td></tr>`).join('');
+  main.innerHTML=`<div class="tabrow" style="margin-bottom:10px">${chips}</div>
+    <div class="subnote" style="margin:0 0 8px">Unit ${listUnit} ・ ${ws.length}語</div>
+    <table class="wl"><thead><tr><th>単語</th><th>意味・語源など</th><th>例文</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+
+/* ============ 共通ユーティリティ ============ */
+function formatTime(s){
+  const t=Math.max(0,Math.floor(s*10+1e-6));      // 0.1秒単位に切り捨て
+  const m=Math.floor(t/600), sec=((t%600)/10).toFixed(1);
+  return (m>0? m+'分':'')+sec+'秒';
+}
+function buildPairCards(unitFrom,unitTo){
+  const pool = WORDS.filter(w=>w.unit>=unitFrom && w.unit<=unitTo);
+  const picks = shuffleArr(pool.slice()).slice(0,6);
+  let cards=[];
+  picks.forEach(w=>{
+    cards.push({no:w.no, side:'en', text:w.e, id:w.no+'-en'});
+    cards.push({no:w.no, side:'ja', text:w.jm, id:w.no+'-ja'});
+  });
+  return shuffleArr(cards);
+}
+
+/* ============ マッチングゲーム（全カード表面・スピード勝負） ============ */
+let matchCfg={unitFrom:1, unitTo:1};
+function renderMatchSetup(){
+  titleEl.textContent='マッチングゲーム設定';
+    const chips = unitChipsHtml(matchCfg.unitFrom,'setMatchUnit');
+  const bestKey = 'speed:'+CUR_BOOK+':'+matchCfg.unitFrom+'-'+matchCfg.unitTo;
+  const best = store.matchBest[bestKey];
+  main.innerHTML = `
+    <div class="setup-block">
+      <h3>出題範囲</h3>
+      <div class="tabrow">${chips}</div>
+      <div class="subnote">6ペア12枚が最初から全て表面で並びます。英語カードと日本語カードをタップしてペアを揃え、最速タイムを目指しましょう。</div>
+    </div>
+    <div class="subnote" style="margin-bottom:14px;">最短記録: ${best?formatTime(best):'まだありません'}</div>
+    <button class="startbtn" onclick="startMatch()">スタート</button>
+  `;
+}
+let matchState=null;
+function startMatch(){
+  stopGameTimers();
+  const cards = buildPairCards(matchCfg.unitFrom, matchCfg.unitTo);
+  matchState = {cards, selected:null, mismatchPair:null, matched:[], startTs:Date.now(), timerHandle:null, finished:false, elapsed:0};
+  nav('matchView', screen!=='matchView');
+  const st = matchState;
+  st.timerHandle = setInterval(()=>{
+    if(st!==matchState || st.finished){ clearInterval(st.timerHandle); return; }
+    st.elapsed = (Date.now()-st.startTs)/1000;
+    const tEl=document.getElementById('matchTimer');
+    if(tEl) tEl.textContent = formatTime(st.elapsed);
+  },100);
+}
+function renderMatchView(){
+  titleEl.textContent='マッチングゲーム';
+  if(!matchState){ nav('matchSetup',false); return; }
+  const cardsHtml = matchState.cards.map((c,i)=>{
+    const isMatched = matchState.matched.includes(c.no);
+    const isSelected = matchState.selected===i;
+    const isMismatch = matchState.mismatchPair && matchState.mismatchPair.includes(i);
+    let cls='mcard '+c.side;
+    if(isMatched) cls+=' matched';
+    else if(isMismatch) cls+=' mismatch';
+    else if(isSelected) cls+=' selected';
+    return `<div class="${cls}" onclick="tapSpeedCard(${i})"><span class="mtext" style="${mtFs(c.text)}">${c.text}</span></div>`;
+  }).join('');
+  main.innerHTML = `
+    <div class="mtop"><span>ペア: ${matchState.matched.length} / 6</span><span class="timer" id="matchTimer">${formatTime(matchState.elapsed)}</span></div>
+    <div class="legend"><span><i style="background:var(--ink2)"></i>英語</span><span><i style="background:var(--accent)"></i>日本語</span></div>
+    <div class="mgrid">${cardsHtml}</div>
+    ${matchState.finished?`<button class="startbtn" style="margin-top:16px;" onclick="showMatchResult()">結果を見る（次へ）</button>`:
+    `<div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="startMatch()">最初からやり直す</span></div>`}
+  `;
+}
+function tapSpeedCard(i){
+  if(matchState.finished || matchState.mismatchPair) return;
+  const c = matchState.cards[i];
+  if(matchState.matched.includes(c.no)) return;
+  if(c.side==='en') speakEn(c.text);
+  if(matchState.selected===null){
+    matchState.selected=i;
+    renderMatchView();
+    return;
+  }
+  if(matchState.selected===i){
+    matchState.selected=null;
+    renderMatchView();
+    return;
+  }
+  const c1 = matchState.cards[matchState.selected];
+  if(c1.no===c.no && c1.side!==c.side){
+    matchState.matched.push(c1.no);
+    matchState.selected=null;
+    renderMatchView();
+    if(matchState.matched.length===6) finishMatch();
+  } else {
+    matchState.mismatchPair=[matchState.selected,i];
+    renderMatchView();
+    setTimeout(()=>{ matchState.mismatchPair=null; matchState.selected=null; renderMatchView(); },450);
+  }
+}
+function finishMatch(){
+  matchState.finished=true;
+  clearInterval(matchState.timerHandle);
+  matchState.finalTime=(Date.now()-matchState.startTs)/1000;
+  matchState.elapsed=matchState.finalTime;
+  renderMatchView();
+}
+function showMatchResult(){
+  const t=matchState.finalTime;
+  const key='speed:'+CUR_BOOK+':'+matchCfg.unitFrom+'-'+matchCfg.unitTo;
+  const prevBest=store.matchBest[key];
+  const isBest = !prevBest || t<prevBest;
+  if(isBest){ store.matchBest[key]=t; saveStore(); }
+  main.innerHTML = `<div class="mwin">
+    <div style="font-size:40px;">🏆</div>
+    <div>クリアタイム</div>
+    <div class="big">${formatTime(t)}</div>
+    ${isBest?'<div style="color:var(--ok);font-weight:700;">最短記録更新！</div>':`<div class="subnote">最短記録: ${formatTime(prevBest)}</div>`}
+    <button class="startbtn" style="margin-top:18px;" onclick="startMatch()">もう一度挑戦</button>
+    <div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="nav('matchSetup')">設定に戻る</span></div>
+  </div>`;
+}
+
+/* ============ 神経衰弱（裏面から記憶で当てる） ============ */
+let memoCfg={unitFrom:1, unitTo:1};
+function renderMemorySetup(){
+  titleEl.textContent='神経衰弱設定';
+    const chips = unitChipsHtml(memoCfg.unitFrom,'setMemoUnit');
+  const bestKey = 'memo:'+CUR_BOOK+':'+memoCfg.unitFrom+'-'+memoCfg.unitTo;
+  const best = store.matchBest[bestKey];
+  main.innerHTML = `
+    <div class="setup-block">
+      <h3>出題範囲</h3>
+      <div class="tabrow">${chips}</div>
+      <div class="subnote">6ペア12枚が裏向きで並びます。英語カードの裏（紺色）と日本語カードの裏（赤茶色）は色が違うので、記憶しながら選びましょう。2枚めくって同じ意味なら成立です。</div>
+    </div>
+    <div class="subnote" style="margin-bottom:14px;">最短記録: ${best?formatTime(best):'まだありません'}</div>
+    <button class="startbtn" onclick="startMemory()">スタート</button>
+  `;
+}
+let memoState=null;
+function startMemory(){
+  stopGameTimers();
+  const cards = buildPairCards(memoCfg.unitFrom, memoCfg.unitTo);
+  memoState = {cards, open:[], matched:[], startTs:Date.now(), timerHandle:null, elapsed:0, awaitingNext:false, finalTime:0};
+  nav('memoryView', screen!=='memoryView');
+  const st = memoState;
+  st.timerHandle = setInterval(()=>{
+    if(st!==memoState || st.awaitingNext){ if(st!==memoState) clearInterval(st.timerHandle); return; }
+    st.elapsed = (Date.now()-st.startTs)/1000;
+    const tEl=document.getElementById('memoTimer');
+    if(tEl) tEl.textContent = formatTime(st.elapsed);
+  },100);
+}
+function renderMemoryView(){
+  titleEl.textContent='神経衰弱';
+  if(!memoState){ nav('memorySetup',false); return; }
+  const cardsHtml = memoState.cards.map((c,i)=>{
+    const isOpen = memoState.open.includes(i);
+    const isMatched = memoState.matched.includes(c.no);
+    let cls='mcard';
+    if(isMatched) cls+=' matched '+c.side;
+    else if(isOpen) cls+=' open '+c.side;
+    else cls+=' facedown '+(c.side==='en'?'en-back':'ja-back');
+    const label = (isOpen||isMatched) ? c.text : (c.side==='en'?'E':'日');
+    return `<div class="${cls}" onclick="tapMemoryCard(${i})"><span class="mtext" style="${mtFs(label)}">${label}</span></div>`;
+  }).join('');
+  main.innerHTML = `
+    <div class="mtop"><span>ペア: ${memoState.matched.length} / 6</span><span class="timer" id="memoTimer">${formatTime(memoState.elapsed)}</span></div>
+    <div class="legend"><span><i style="background:var(--ink2)"></i>英語の裏</span><span><i style="background:var(--accent)"></i>日本語の裏</span></div>
+    <div class="mgrid">${cardsHtml}</div>
+    ${memoState.awaitingNext?`<button class="startbtn" style="margin-top:16px;" onclick="showMemoryResult()">結果を見る（次へ）</button>`:
+    `<div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="startMemory()">最初からやり直す</span></div>`}
+  `;
+}
+function tapMemoryCard(i){
+  if(memoState.awaitingNext) return;
+  const c = memoState.cards[i];
+  if(memoState.matched.includes(c.no)) return;
+  if(memoState.open.includes(i)) return;
+  if(memoState.open.length>=2) return;
+  memoState.open.push(i);
+  if(c.side==='en') speakEn(c.text);
+  renderMemoryView();
+  if(memoState.open.length===2){
+    const [i1,i2]=memoState.open;
+    const c1=memoState.cards[i1], c2=memoState.cards[i2];
+    if(c1.no===c2.no && c1.side!==c2.side){
+      memoState.matched.push(c1.no);
+      memoState.open=[];
+      if(memoState.matched.length===6){
+        memoState.finalTime=(Date.now()-memoState.startTs)/1000;
+        memoState.awaitingNext=true;
+        clearInterval(memoState.timerHandle);
+      }
+      renderMemoryView();
+    } else {
+      setTimeout(()=>{ memoState.open=[]; renderMemoryView(); },800);
+    }
+  }
+}
+function showMemoryResult(){
+  clearInterval(memoState.timerHandle);
+  const t=memoState.finalTime;
+  const key='memo:'+CUR_BOOK+':'+memoCfg.unitFrom+'-'+memoCfg.unitTo;
+  const prevBest=store.matchBest[key];
+  const isBest = !prevBest || t<prevBest;
+  if(isBest){ store.matchBest[key]=t; saveStore(); }
+  main.innerHTML = `<div class="mwin">
+    <div style="font-size:40px;">🧠</div>
+    <div>クリアタイム</div>
+    <div class="big">${formatTime(t)}</div>
+    ${isBest?'<div style="color:var(--ok);font-weight:700;">最短記録更新！</div>':`<div class="subnote">最短記録: ${formatTime(prevBest)}</div>`}
+    <button class="startbtn" style="margin-top:18px;" onclick="startMemory()">もう一度挑戦</button>
+    <div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="nav('memorySetup')">設定に戻る</span></div>
+  </div>`;
+}
+
+function setMatchUnit(u){ matchCfg.unitFrom=u; matchCfg.unitTo=u; renderMatchSetup(); }
+function setMemoUnit(u){ memoCfg.unitFrom=u; memoCfg.unitTo=u; renderMemorySetup(); }
+
+function mtFs(t){ t=String(t); const n=t.length; if(/^[ -~]+$/.test(t)){ return n>13?'font-size:13px':n>10?'font-size:15px':n>7?'font-size:18px':''; } return n>18?'font-size:12px':n>12?'font-size:14px':n>8?'font-size:17px':''; }
+
+/* ============ マッチング：結果画面 ============ */
+function showMatchResultBtn(){ showMatchResult(); }
+
+/* ============ サウンド（Web Audio） ============ */
+const SND={ac:null,master:null,bgmId:null,step:0,next:0};
+let invSet=store.invSet||{bgm:true,se:true};
+function sndInit(){
+  if(!SND.ac){
+    const C=window.AudioContext||window.webkitAudioContext; if(!C) return;
+    SND.ac=new C(); SND.master=SND.ac.createGain(); SND.master.connect(SND.ac.destination);
+  }
+  if(SND.ac.state==='suspended') SND.ac.resume();
+}
+function tone(type,f0,f1,dur,vol,t0){
+  const a=SND.ac; if(!a) return;
+  t0=t0||a.currentTime;
+  const o=a.createOscillator(),g=a.createGain();
+  o.type=type; o.frequency.setValueAtTime(f0,t0);
+  if(f1) o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(vol,t0); g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g); g.connect(SND.master); o.start(t0); o.stop(t0+dur+0.02);
+}
+function noiseBurst(dur,vol){
+  const a=SND.ac; if(!a) return;
+  const n=Math.floor(a.sampleRate*dur),b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=Math.random()*2-1;
+  const s=a.createBufferSource(); s.buffer=b;
+  const f=a.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1800;
+  const g=a.createGain(); g.gain.setValueAtTime(vol,a.currentTime); g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+dur);
+  s.connect(f); f.connect(g); g.connect(SND.master); s.start();
+}
+function seShoot(){ if(invSet.se) tone('square',1100,220,0.16,0.10); }
+function seBoom(){ if(invSet.se){ noiseBurst(0.35,0.5); tone('sawtooth',300,50,0.3,0.12); } }
+function seBuzz(){ if(invSet.se) tone('square',120,100,0.16,0.10); }
+function seEnd(){ if(invSet.se) tone('triangle',660,330,0.5,0.12); }
+function bgmStart(){
+  if(!SND.ac||!invSet.bgm||SND.bgmId) return;
+  SND.step=0; SND.next=SND.ac.currentTime+0.1;
+  SND.bgmId=setInterval(bgmSched,80);
+}
+function bgmSched(){
+  const a=SND.ac;
+  while(SND.next<a.currentTime+0.3){
+    const s=SND.step, root=[0,-2,-4,-2][Math.floor(s/16)%4], p=s%8;
+    tone('sawtooth',110*Math.pow(2,(root+[0,0,12,0,0,7,12,7][p])/12),null,0.18,0.07,SND.next);
+    tone('square',220*Math.pow(2,(root+[12,15,19,15,12,15,19,24][p])/12),null,0.12,0.035,SND.next);
+    SND.next+=0.18; SND.step++;
+  }
+}
+function bgmStop(){ if(SND.bgmId){ clearInterval(SND.bgmId); SND.bgmId=null; } }
+
+/* ============ 演出（花火・紙吹雪） ============ */
+function fxLoop(P,frames,draw){
+  const c=document.createElement('canvas');
+  c.style.cssText='position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999';
+  c.width=innerWidth; c.height=innerHeight; document.body.appendChild(c);
+  const g=c.getContext('2d'); let k=0;
+  (function tick(){ g.clearRect(0,0,c.width,c.height); draw(P,g,k,c); if(++k<frames) requestAnimationFrame(tick); else c.remove(); })();
+}
+function fxFire(){
+  const burst=(P,x,y)=>{ const h=Math.random()*360; for(let i=0;i<48;i++){ const a=i/48*6.283,s=2+Math.random()*3.5; P.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:70,h}); } };
+  fxLoop([],260,(P,g,k,c)=>{
+    if(k%35===0&&k<200) burst(P,c.width*(.2+Math.random()*.6),c.height*(.15+Math.random()*.3));
+    P.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=.05; p.vx*=.985; p.l--;
+      if(p.l>0){ g.fillStyle=`hsla(${p.h},95%,60%,${p.l/70})`; g.beginPath(); g.arc(p.x,p.y,2.6,0,6.283); g.fill(); } });
+  });
+}
+function fxConfetti(){
+  const P=[]; for(let i=0;i<90;i++) P.push({x:Math.random()*innerWidth,y:-20-Math.random()*200,vx:(Math.random()-.5)*2,vy:2+Math.random()*3,r:Math.random()*6,h:Math.random()*360,s:5+Math.random()*5});
+  fxLoop(P,220,(P,g)=>{ P.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.r+=.15; g.save(); g.translate(p.x,p.y); g.rotate(p.r); g.fillStyle=`hsl(${p.h},85%,55%)`; g.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); g.restore(); }); });
+}
+
+/* ============ インベーダー ============ */
+let invCfg={dir:'en2ja',unitFrom:1,unitTo:1};
+let IV=null;
+const INV_EN=['👾','👾','👾','👽','🛸','🤖','👹'];
+function invKey(){ return 'inv:'+CUR_BOOK+':'+invCfg.dir+':'+invCfg.unitFrom+'-'+invCfg.unitTo; }
+function invList(){ return (store.invRank&&store.invRank[invKey()])||[]; }
+function invDate(ts){ const d=new Date(ts),p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+function setInvFrom(u){ invCfg.unitFrom=u; if(invCfg.unitTo<u) invCfg.unitTo=u; render(); }
+function setInvTo(u){ invCfg.unitTo=u; render(); }
+function invRangeHtml(){
+  return `<div class="setup-block"><h3>方向</h3><div class="tabs">
+      <div class="chip ${invCfg.dir==='en2ja'?'active':''}" onclick="invCfg.dir='en2ja';render()">英語 → 日本語</div>
+      <div class="chip ${invCfg.dir==='ja2en'?'active':''}" onclick="invCfg.dir='ja2en';render()">日本語 → 英語</div></div></div>
+    <div class="setup-block"><h3>出題範囲（Unit ${invCfg.unitFrom} 〜 Unit ${invCfg.unitTo}）</h3><div class="tabrow">${unitNumChipsHtml(invCfg.unitFrom,'setInvFrom')}</div>
+      <div style="text-align:center;font-size:12px;color:var(--sub);margin:4px 0;">〜</div><div class="tabrow">${unitNumChipsHtml(invCfg.unitTo,'setInvTo',invCfg.unitFrom)}</div></div>`;
+}
+function invToggle(k){
+  invSet[k]=!invSet[k]; store.invSet=invSet; saveStore();
+  if(k==='bgm'&&IV&&!IV.over&&screen==='invView'){ invSet.bgm?bgmStart():bgmStop(); }
+}
+function invMute(k){ invToggle(k); invMuteLbl(); }
+function invMuteLbl(){
+  const b=document.getElementById('iMb'),s=document.getElementById('iMs');
+  if(b) b.classList.toggle('off',!invSet.bgm);
+  if(s) s.classList.toggle('off',!invSet.se);
+}
+function renderInvSetup(){
+  titleEl.textContent='インベーダー設定';
+  const l=invList();
+  main.innerHTML=`${invRangeHtml()}
+    <div class="setup-block"><h3>サウンド</h3><div class="tabs">
+      <div class="chip ${invSet.bgm?'active':''}" onclick="invToggle('bgm');render()">BGM ${invSet.bgm?'ON':'OFF'}</div>
+      <div class="chip ${invSet.se?'active':''}" onclick="invToggle('se');render()">効果音 ${invSet.se?'ON':'OFF'}</div></div></div>
+    <div class="subnote" style="margin-bottom:14px">制限時間60秒。インベーダーは1体10秒で降りてきます。正しい答えを選ぶと大砲で撃ち落とせます。<br>この条件の最高記録: ${l.length?l[0].n+'体':'まだありません'}</div>
+    <button class="startbtn" onclick="startInv()">スタート</button>
+    <button class="startbtn" style="margin-top:10px;background:var(--ink)" onclick="nav('invRank')">記録を見る</button>`;
+}
+function renderInvRank(){
+  titleEl.textContent='インベーダー記録';
+  main.innerHTML=`${invRangeHtml()}<div class="setup-block"><h3>上位10記録（${invCfg.dir==='en2ja'?'英→日':'日→英'}・Unit ${invCfg.unitFrom}〜${invCfg.unitTo}）</h3>${invRankTable(invList(),null)}</div>
+    <button class="startbtn" onclick="nav('invSetup')">この条件でプレイする</button>`;
+}
+function invRankTable(list,hl){
+  if(!list.length) return '<div class="subnote">まだ記録がありません。</div>';
+  return `<table class="iv-tbl"><thead><tr><th>順位</th><th>倒した数</th><th>日付</th></tr></thead><tbody>${list.map((x,i)=>`<tr class="${x===hl?'iv-new':''}"><td>${i+1}${i===0?' 🏆':''}</td><td>${x.n} 体${x===hl?'　NEW':''}</td><td>${invDate(x.ts)}</td></tr>`).join('')}</tbody></table>`;
+}
+function invStop(){
+  if(IV&&IV.timer) clearInterval(IV.timer);
+  bgmStop();
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  IV=null;
+}
+function startInv(){
+  const pool=WORDS.filter(w=>w.unit>=invCfg.unitFrom&&w.unit<=invCfg.unitTo);
+  if(pool.length<4){ alert('出題範囲の単語が足りません。'); return; }
+  invStop(); sndInit();
+  try{ const u=new SpeechSynthesisUtterance('　'); u.volume=0; speechSynthesis.speak(u); }catch(e){}
+  IV={pool,queue:[],log:[],n:0,end:Date.now()+60000,over:false,done:false,cur:null,lock:false,dir:invCfg.dir,key:invKey(),timer:null};
+  nav('invView');
+  IV.timer=setInterval(invTick,200);
+  bgmStart();
+  invSpawn();
+}
+function renderInvView(){
+  titleEl.textContent='インベーダー（'+(invCfg.dir==='en2ja'?'英→日':'日→英')+'）';
+  if(!IV){ nav('invSetup',false); return; }
+  main.innerHTML=`<div class="inv-phone">
+    <div class="inv-hud"><span>残り <b id="iT">60</b> 秒</span><span>撃破 <b id="iN">${IV.n}</b></span>
+      <span><span class="inv-mb" id="iMb" onclick="invMute('bgm')">BGM</span><span class="inv-mb" id="iMs" onclick="invMute('se')">SE</span></span></div>
+    <div class="inv-field" id="iF"><div class="inv-toast" id="iToast"></div><div class="inv-en" id="iE"></div><div class="inv-line"></div><div class="inv-beam" id="iBeam"></div><div class="inv-cn"><div class="inv-bar" id="iBar"></div><div class="inv-base"></div></div></div>
+    <div class="inv-panel"><div class="inv-q" id="iQ"></div><div class="inv-opts" id="iO"></div></div></div>`;
+  invMuteLbl();
+  const F=document.getElementById('iF'); F.style.setProperty('--fy',(F.clientHeight-96)+'px');
+  document.getElementById('iE').addEventListener('animationend',invLanded);
+}
+function invSpawn(){
+  if(!IV||IV.over) return;
+  if(!IV.queue.length) IV.queue=shuffleArr(IV.pool.slice());
+  const w=IV.queue.pop();
+  const sameP=IV.pool.filter(x=>x.pos===w.pos&&x.no!==w.no);
+  const dp=sameP.length>=3?sameP:IV.pool.filter(x=>x.no!==w.no);
+  const fe=IV.dir==='en2ja';
+  const opts=shuffleArr([w,...shuffleArr(dp.slice()).slice(0,3)]).map(o=>({no:o.no,text:fe?o.jm:o.e,read:''}));
+  IV.cur={w,opts,picks:[]}; IV.lock=false;
+  document.getElementById('iQ').innerHTML=fe?`${esc(w.e)}<small>${w.ipa?'['+esc(w.ipa)+']':''}</small>`:esc(w.jm);
+  document.getElementById('iO').innerHTML=opts.map((o,i)=>`<button class="inv-opt" onclick="invPick(${i})">${o.text}${o.read?`<small>[${o.read}]</small>`:''}</button>`).join('');
+  const e=document.getElementById('iE'), em=INV_EN[Math.floor(Math.random()*INV_EN.length)];
+  e.textContent=em;
+  e.style.filter=em==='👾'?`hue-rotate(${[0,70,150,220,290][Math.floor(Math.random()*5)]}deg)`:'none';
+  e.style.left=(14+Math.random()*72)+'%';
+  e.style.animation='none'; void e.offsetWidth; e.style.animation='';
+  document.getElementById('iBar').style.transform='rotate(0deg)';
+  if(fe) speakEn(w.e);
+}
+function invLanded(){
+  if(!IV||IV.over||IV.lock) return;
+  IV.lock=true;
+  IV.log.push({w:IV.cur.w,picks:IV.cur.picks.slice(),res:'miss'});
+  seBuzz();
+  const t=document.getElementById('iToast'); t.textContent='侵略された！'; setTimeout(()=>{ if(t) t.textContent=''; },900);
+  const g=IV; setTimeout(()=>{ if(IV===g) invSpawn(); },350);
+}
+function invPick(i){
+  if(!IV||IV.over||IV.lock) return;
+  const c=IV.cur,o=c.opts[i],ok=o.no===c.w.no;
+  c.picks.push(o.text);
+  const btn=document.getElementById('iO').children[i];
+  if(!ok){ seBuzz(); btn.classList.add('ng'); setTimeout(()=>btn.classList.remove('ng'),350); return; }
+  IV.lock=true; IV.n++; document.getElementById('iN').textContent=IV.n;
+  IV.log.push({w:c.w,picks:c.picks.slice(),res:c.picks.length===1?'first':'retry'});
+  if(IV.dir==='ja2en') speakEn(c.w.e);
+  const g=IV;
+  invFire(()=>{ if(IV===g&&!g.over) invSpawn(); });
+}
+function invFire(cb){
+  const F=document.getElementById('iF'),E=document.getElementById('iE'),f=F.getBoundingClientRect(),r=E.getBoundingClientRect();
+  E.style.animationPlayState='paused';
+  const cx=f.width/2,cy=f.height-44,tx=r.left+r.width/2-f.left,ty=r.top+r.height/2-f.top;
+  const dx=tx-cx,dy=cy-ty,len=Math.hypot(dx,dy),ang=Math.atan2(dx,dy)*180/Math.PI;
+  document.getElementById('iBar').style.transform=`rotate(${ang}deg)`;
+  const b=document.getElementById('iBeam'); b.style.cssText=`display:block;bottom:44px;height:${len}px;transform:rotate(${ang}deg)`;
+  seShoot();
+  setTimeout(()=>{
+    b.style.display='none'; E.textContent=''; seBoom();
+    const x=document.createElement('div'); x.className='inv-boom'; x.textContent='💥'; x.style.left=tx+'px'; x.style.top=ty+'px'; F.appendChild(x);
+    setTimeout(()=>{ x.remove(); cb(); },500);
+  },180);
+}
+function invTick(){
+  if(!IV||IV.over) return;
+  const left=Math.max(0,Math.ceil((IV.end-Date.now())/1000));
+  const t=document.getElementById('iT'); if(t) t.textContent=left;
+  if(left<=0) invOver();
+}
+function invOver(){
+  IV.over=true; clearInterval(IV.timer); bgmStop(); seEnd();
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  document.getElementById('iE').style.animationPlayState='paused';
+  document.getElementById('iToast').textContent='TIME UP！';
+  document.getElementById('iO').innerHTML=`<button class="startbtn" style="grid-column:1/-1" onclick="showInvResult()">結果を見る（次へ）</button>`;
+}
+function showInvResult(){
+  const g=IV; if(!g||g.done) return; g.done=true;
+  const n=g.n;
+  store.invRank=store.invRank||{};
+  let list=store.invRank[g.key]||[];
+  const prevMax=list.length?Math.max(...list.map(x=>x.n)):0;
+  let entry=null,isBest=false,inTop=false;
+  if(n>0){
+    entry={n,ts:Date.now()};
+    isBest=n>prevMax;
+    list=list.concat([entry]).sort((a,b)=>b.n-a.n||b.ts-a.ts).slice(0,10);
+    inTop=list.includes(entry);
+    store.invRank[g.key]=list; saveStore();
+  }
+  const fe=g.dir==='en2ja';
+  const rows=g.log.map((l,i)=>{
+    const w=l.w;
+    const q=fe?`${esc(w.e)}${spkBtn(w.e)}`:esc(w.jm);
+    const a=fe?esc(w.jm):`${esc(w.e)}${spkBtn(w.e)}`;
+    const sel=l.picks.length?l.picks.join(' → '):'（選択なし）';
+    const mk=l.res==='first'?'<span class="iv-ok">○</span>':l.res==='retry'?'<span class="iv-re">△</span>':'<span class="iv-ng">×</span>';
+    return `<tr><td>${i+1}</td><td>${q}</td><td>${a}</td><td>${sel}</td><td>${mk}</td></tr>`;
+  }).join('');
+  main.innerHTML=`<div style="text-align:center;padding:10px 0 14px">
+      <div style="font-size:40px">👾</div><div>倒したインベーダー</div>
+      <div style="font-size:36px;font-weight:700;margin:4px 0">${n} 体</div>
+      ${isBest?'<div style="color:var(--ok);font-weight:700">最高記録更新！</div>':inTop?'<div style="color:var(--ok);font-weight:700">上位10記録に入りました！</div>':''}</div>
+    <div class="setup-block"><h3>出題と回答の振り返り</h3>
+      <div style="overflow-x:auto"><table class="iv-tbl"><thead><tr><th>#</th><th>問題</th><th>答え</th><th>選んだ選択肢</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="5">撃破・侵略された問題はありませんでした。</td></tr>'}</tbody></table></div>
+      <div class="subnote">○ 一発で撃破　△ 間違えた後に撃破　× 侵略された</div></div>
+    <div class="setup-block"><h3>上位10記録（${g.dir==='en2ja'?'英→日':'日→英'}・Unit ${invCfg.unitFrom}〜${invCfg.unitTo}）</h3>${invRankTable(list,entry)}</div>
+    <button class="startbtn" onclick="startInv()">もう一度挑戦</button>
+    <div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="nav('invSetup')">設定に戻る</span></div>`;
+  window.scrollTo(0,0);
+  setTimeout(()=>{ if(isBest) fxFire(); else if(inTop) fxConfetti(); },250);
+}
+
+/* ============ 初期化 ============ */
+render();
+</script>
+</body>
+</html>
