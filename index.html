@@ -200,6 +200,12 @@ table.wl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;}
 .wl-a{width:30%;}.wl-b{width:28%;}
 .wl-no{display:block;font-size:10.5px;color:var(--sub);}
 .wl-sub{font-size:11.5px;color:var(--sub);}
+.srch-box{display:flex;gap:8px;margin:0 0 14px;}
+.srch-box .qinput{flex:1;min-width:0;}
+.srch-btn{flex-shrink:0;padding:0 20px;border:none;border-radius:9px;background:var(--accent);color:#fff;font-size:15px;font-weight:bold;cursor:pointer;}
+.sr-head td{background:var(--paper);font-size:12px;color:var(--ink2);padding:8px 6px;cursor:pointer;border-top:2px solid var(--line2);}
+.sr-go{float:right;color:var(--accent);font-weight:bold;}
+.wl tr.wl-hit td{background:#fff3c4;}
 .wl-ex2{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line2);}
 .inv-phone{background:#0b0b2a;border-radius:14px;overflow:hidden;color:#fff;user-select:none;-webkit-user-select:none;}
 .inv-hud{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;font-size:13px;background:#101040;}
@@ -284,7 +290,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <div id="modalRoot"></div>
 
 <!-- ▼ 単語データ。Unitを追加したら、ここに <script src="data/bX_unitN.js"></script> を足す（sw.js の DATA にも追加）
-     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=熟語 b6=スーパーハイレベル（英検１級） -->
+     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=熟語 b6=スーパーハイレベル（英検１級） b7=スーパーハイレベル（TOEIC990レベル） -->
 <script src="data/b1_unit1.js"></script>
 <script src="data/b1_unit2.js"></script>
 <script src="data/b1_unit3.js"></script>
@@ -362,9 +368,26 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b6_unit19.js"></script>
 <script src="data/b6_unit20.js"></script>
 <script src="data/b6_unit21.js"></script>
+<script src="data/b7_unit1.js"></script>
+<script src="data/b7_unit2.js"></script>
+<script src="data/b7_unit3.js"></script>
+<script src="data/b7_unit4.js"></script>
+<script src="data/b7_unit5.js"></script>
+<script src="data/b7_unit6.js"></script>
+<script src="data/b7_unit7.js"></script>
+<script src="data/b7_unit8.js"></script>
+<script src="data/b7_unit9.js"></script>
+<script src="data/b7_unit10.js"></script>
+<script src="data/b7_unit11.js"></script>
+<script src="data/b7_unit12.js"></script>
+<script src="data/b7_unit13.js"></script>
+<script src="data/b7_unit14.js"></script>
+<script src="data/b7_unit15.js"></script>
+<script src="data/b7_unit16.js"></script>
+<script src="data/b7_unit17.js"></script>
 <script>
 /* ============ 単語データ（data/unitN.js から読み込み） ============ */
-/* ============ 単語帳の定義（6冊） ============ */
+/* ============ 単語帳の定義（7冊） ============ */
 // units = その単語帳の全Unit数。変更したいときはここだけ直す。
 const BOOKS = [
   {id:'b1', name:'中学修了～高校基礎レベル', units:8},
@@ -372,7 +395,8 @@ const BOOKS = [
   {id:'b3', name:'難関大学突破レベル', units:12},
   {id:'b4', name:'ハイレベル', units:12},
   {id:'b5', name:'熟語', units:14},
-  {id:'b6', name:'スーパーハイレベル（英検１級）', units:21}
+  {id:'b6', name:'スーパーハイレベル（英検１級）', units:21},
+  {id:'b7', name:'スーパーハイレベル（TOEIC990レベル）', units:17}
 ];
 const POS_LABEL = {n:'名詞', vt:'他動詞', vi:'自動詞', v:'動詞', a:'形容詞', adv:'副詞', idm:'熟語', conj:'接続詞', prep:'前置詞'};
 const POS_S = {n:'名', vt:'他', vi:'自', v:'動', a:'形', adv:'副', idm:'熟', conj:'接', prep:'前'};
@@ -386,23 +410,24 @@ function bookIdx(id){ return BOOKS.findIndex(b=>b.id===id)+1; }
 function bookData(id){ return (window.BOOK_DATA||{})[id]||{}; }
 function bookUnitsAvail(id){ return Object.keys(bookData(id)).map(Number).sort((a,b)=>a-b); }
 function bookWordCount(id){ const D=bookData(id); return Object.keys(D).reduce((s,u)=>s+D[u].length,0); }
+function makeWord(id,u,r){
+  const bi = bookIdx(id), multi = r.s.length>1;
+  return {
+    no: bi*100000 + u*1000 + r.n, unit:u, bn:r.n, pos:r.p,
+    ps: POS_ORDER.filter(p=>r.s.some(x=>x[0]===p)),
+    e:r.e, ipa:r.i, s:r.s, x:r.x,
+    ja: r.s.map(x=> multi ? '（'+POS_S[x[0]]+'）'+x[1] : x[1]).join('　'),
+    jm: r.s.map(x=>x[1]).join('／'),
+    et:r.et||'', rl:r.rl||'', dv:r.dv||'', sn:r.sn||'', an:r.an||'', tp:r.tp||''
+  };
+}
 function selectBook(id){
   stopGameTimers();
   CUR_BOOK = id; UNITS_TOTAL = bookInfo(id).units; WORDS = []; UNIT_AVAIL = [];
   const D = bookData(id), bi = bookIdx(id);
   bookUnitsAvail(id).forEach(u=>{
     UNIT_AVAIL.push(u);
-    D[u].forEach(r=>{
-      const multi = r.s.length>1;
-      WORDS.push({
-        no: bi*100000 + u*1000 + r.n, unit:u, bn:r.n, pos:r.p,
-        ps: POS_ORDER.filter(p=>r.s.some(x=>x[0]===p)),
-        e:r.e, ipa:r.i, s:r.s, x:r.x,
-        ja: r.s.map(x=> multi ? '（'+POS_S[x[0]]+'）'+x[1] : x[1]).join('　'),
-        jm: r.s.map(x=>x[1]).join('／'),
-        et:r.et||'', rl:r.rl||'', dv:r.dv||'', sn:r.sn||'', an:r.an||'', tp:r.tp||''
-      });
-    });
+    D[u].forEach(r=>{ WORDS.push(makeWord(id,u,r)); });
   });
   // 各画面の設定を、この単語帳の最初のUnitに合わせてリセット
   const u0 = UNIT_AVAIL[0]||1;
@@ -541,9 +566,97 @@ function render(){
   else if(screen==='memoryView') renderMemoryView();
   else if(screen==='dataManage') renderDataManage();
   else if(screen==='wordList') renderWordList();
+  else if(screen==='search') renderSearch();
   else if(screen==='invSetup') renderInvSetup();
   else if(screen==='invView') renderInvView();
   else if(screen==='invRank') renderInvRank();
+}
+
+
+/* ============ 単語検索（検索ボタンを押したときだけ全冊を検索） ============ */
+const SEARCH_MAX = 100;
+let searchState = {q:'', res:null, total:0};
+let SIDX = null;   // 検索用の索引（初回の検索で1回だけ作る）
+function normQ(s){
+  return String(s).normalize('NFKC').toLowerCase()
+    .replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60))   // カタカナ→ひらがな
+    .replace(/[~〜～]/g,'')
+    .replace(/[【】《》()\[\]「」『』、，。,・･]/g,'')
+    .replace(/\s+/g,' ').trim();
+}
+function buildSearchIndex(){
+  SIDX = [];
+  BOOKS.forEach(b=>{
+    const D = bookData(b.id);
+    bookUnitsAvail(b.id).forEach(u=>{
+      D[u].forEach(r=>{
+        SIDX.push({bk:b.id, bi:bookIdx(b.id), u:u, n:r.n, r:r,
+          e: normQ(r.e.replace(/\s*\b[ABC]\b/g,'')),          // 熟語の A・B などの記号を除いた見出し語
+          m: r.s.map(x=>normQ(x[1]))});                        // 意味（品詞ごと）
+      });
+    });
+  });
+}
+function searchRank(it,q){
+  let best = 99;
+  const e = it.e;
+  if(e===q) best=0;
+  else if(e.startsWith(q)) best=1;
+  else if((' '+e).includes(' '+q)) best=2;
+  else if(e.includes(q)) best=3;
+  if(best>3){
+    for(const m of it.m){
+      let k = (m===q) ? 4 : m.startsWith(q) ? 5 : m.includes(q) ? 6 : 99;
+      if(k<best) best=k;
+    }
+  }
+  return best;
+}
+function runSearch(raw){
+  const q = normQ(raw);
+  if(!q) return {res:[], total:0};
+  if(!SIDX) buildSearchIndex();
+  const hits = [];
+  for(const it of SIDX){ const k=searchRank(it,q); if(k<99) hits.push({it:it,k:k}); }
+  hits.sort((a,b)=> a.k-b.k || a.it.bi-b.it.bi || a.it.u-b.it.u || a.it.n-b.it.n);
+  return {res:hits.slice(0,SEARCH_MAX).map(h=>h.it), total:hits.length};
+}
+function attrEsc(s){ return esc(s).replace(/"/g,'&quot;'); }
+function searchBoxHtml(id){
+  return `<div class="srch-box"><input id="${id}" class="qinput" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false"
+    placeholder="英語・日本語で検索（例：alternative／代わりの）" value="${attrEsc(searchState.q)}"
+    onkeydown="if(event.key==='Enter'){doSearch('${id}')}"><button class="srch-btn" onclick="doSearch('${id}')">検索</button></div>`;
+}
+function doSearch(inputId){
+  const v = document.getElementById(inputId).value;
+  searchState.q = v;
+  const r = runSearch(v);
+  searchState.res = r.res; searchState.total = r.total;
+  if(screen==='search') { renderSearch(); window.scrollTo(0,0); } else nav('search');
+}
+function openHit(bk,u,n){
+  selectBook(bk); listUnit=u; listFocus=n; nav('wordList');
+}
+function renderSearch(){
+  titleEl.textContent='単語検索';
+  let body='';
+  if(searchState.res===null){
+    body=`<div class="subnote" style="margin:6px 0">英語でも日本語でも検索できます。検索ボタンを押すと、全${BOOKS.length}冊をまとめて検索します。</div>`;
+  } else if(!normQ(searchState.q)){
+    body=`<div class="subnote" style="margin:6px 0">検索する語を入力してください。</div>`;
+  } else if(searchState.total===0){
+    body=`<div class="subnote" style="margin:6px 0">「${esc(searchState.q)}」に当てはまる単語は見つかりませんでした。</div>`;
+  } else {
+    const more = searchState.total>searchState.res.length;
+    const rows = searchState.res.map(it=>{
+      const w = makeWord(it.bk,it.u,it.r), b = bookInfo(it.bk);
+      return `<tr class="sr-head" onclick="openHit('${it.bk}',${it.u},${it.n})"><td colspan="3"><b>第${it.bi}冊</b> ${esc(b.name)} ／ Unit ${it.u} ／ No.${it.n}<span class="sr-go">単語一覧で見る ›</span></td></tr>`
+        + wlRowHtml(w,false);
+    }).join('');
+    body=`<div class="subnote" style="margin:6px 0 8px">「${esc(searchState.q)}」： ${searchState.total}件${more?`（上位${searchState.res.length}件を表示。語を足して絞り込んでください）`:''}　／　上の帯をタップすると、その単語帳の単語一覧が開きます</div>
+      <table class="wl"><thead><tr><th>単語</th><th>意味・語源など</th><th>例文</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  main.innerHTML = searchBoxHtml('srchQ') + body;
 }
 
 /* ============ ホーム（単語帳の選択） ============ */
@@ -565,6 +678,7 @@ function renderHome(){
       <h2>一生使える英単熟語帳</h2>
       <p>単語帳を選んでください（収録 ${total}語）</p>
     </div>
+    ${searchBoxHtml('homeQ')}
     <div class="menu-grid">${cards}</div>
     <div class="footer-note">学習記録・ゲーム記録は単語帳ごとに別々に保存されます。<br>記録はこの端末のブラウザに保存されます。</div>
   `;
@@ -1176,18 +1290,26 @@ function quizOverride(i){ quizItems[i].override=true; renderQuizView(); }
 /* ============ 単語一覧 ============ */
 let listUnit=1;
 function setListUnit(u){ listUnit=u; renderWordList(); window.scrollTo(0,0); }
+function wlRowHtml(w, withId){
+  return `<tr${withId?` id="wl-${w.bn}"`:''}>
+    <td class="wl-a"><span class="wl-no">${w.bn}　${posBadge(w)}</span><b>${esc(w.e)}</b> ${spkBtn(w.e)}<br><span class="wl-sub">${w.ipa?'['+esc(w.ipa)+']':''}</span></td>
+    <td class="wl-b">${esc(w.ja)}${infoHtml(w)}</td>
+    <td class="wl-c">${exHtml(w.x[0])}<br><span class="wl-sub">${jaHtml(w.x[0][1])}</span><div class="wl-ex2">${exHtml(w.x[1])}<br><span class="wl-sub">${jaHtml(w.x[1][1])}</span></div></td></tr>`;
+}
+let listFocus=0;   // 検索結果から開いたとき、強調して表示する単語の番号
 function renderWordList(){
   titleEl.textContent='単語一覧';
   if(!isAvail(listUnit)) listUnit=UNIT_AVAIL[0]||1;
   const chips=unitChipsHtml(listUnit,'setListUnit');
   const ws=unitWords(listUnit);
-  const rows=ws.map(w=>`<tr>
-    <td class="wl-a"><span class="wl-no">${w.bn}　${posBadge(w)}</span><b>${esc(w.e)}</b> ${spkBtn(w.e)}<br><span class="wl-sub">${w.ipa?'['+esc(w.ipa)+']':''}</span></td>
-    <td class="wl-b">${esc(w.ja)}${infoHtml(w)}</td>
-    <td class="wl-c">${exHtml(w.x[0])}<br><span class="wl-sub">${jaHtml(w.x[0][1])}</span><div class="wl-ex2">${exHtml(w.x[1])}<br><span class="wl-sub">${jaHtml(w.x[1][1])}</span></div></td></tr>`).join('');
+  const rows=ws.map(w=>wlRowHtml(w,true)).join('');
   main.innerHTML=`<div class="tabrow" style="margin-bottom:10px">${chips}</div>
     <div class="subnote" style="margin:0 0 8px">Unit ${listUnit} ・ ${ws.length}語</div>
     <table class="wl"><thead><tr><th>単語</th><th>意味・語源など</th><th>例文</th></tr></thead><tbody>${rows}</tbody></table>`;
+  if(listFocus){
+    const el=document.getElementById('wl-'+listFocus); listFocus=0;
+    if(el){ el.classList.add('wl-hit'); setTimeout(()=>el.scrollIntoView({block:'center'}),40); }
+  }
 }
 
 
