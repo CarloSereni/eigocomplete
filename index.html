@@ -90,6 +90,7 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 /* flashcard */
 #fcHeader{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--sub);margin-bottom:10px;}
 #fcHeader .setbtns{display:flex;gap:6px;}
+#fcHeader .setbtn.on{background:var(--ink);border-color:var(--ink);color:#fff;}
 #fcHeader .setbtn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:4px 9px;font-size:11.5px;cursor:pointer;color:var(--ink2);}
 .progress-bar{height:4px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:16px;}
 .progress-bar i{display:block;height:100%;background:var(--ink);}
@@ -442,8 +443,8 @@ function selectBook(id){
 function unitWords(u){ return WORDS.filter(w=>w.unit===u); }
 function isAvail(u){ return UNIT_AVAIL.includes(u); }
 function inBook(no){ return Math.floor(no/100000)===bookIdx(CUR_BOOK); }
-function curMastered(){ return store.mastered.filter(inBook); }
-function curReview(){ return store.review.filter(inBook); }
+function curMastered(dir){ return store.mastered[dir||fcCfg.dir].filter(inBook); }
+function curReview(dir){ return store.review[dir||fcCfg.dir].filter(inBook); }
 
 /* ============ 例文ヘルパー ============ */
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -462,11 +463,27 @@ function jaHtml(s){ return esc(s).replace(/【(.+?)】/g,'<b class="ans">【$1�
 function posBadge(w){ return w.ps.map(p=>POS_LABEL[p]).join('・'); }
 
 /* ============ ストレージ ============ */
-const STORE_KEY='eitan_complete_progress_v1';
-let store = JSON.parse(localStorage.getItem(STORE_KEY)||'null') || {mastered:[], review:[], matchBest:{}};
+/* v2：「覚えた」「また後で」を方向別（en2ja＝英→日／ja2en＝日→英）に管理する。v1の記録は引き継がない（公開前のためリセット） */
+const STORE_KEY='eitan_complete_progress_v2';
+try{ localStorage.removeItem('eitan_complete_progress_v1'); }catch(e){}
+function normStore(o){
+  o = (o && typeof o==='object') ? o : {};
+  const dirs = x => ({
+    en2ja: Array.isArray(x && x.en2ja) ? x.en2ja : [],
+    ja2en: Array.isArray(x && x.ja2en) ? x.ja2en : []
+  });
+  o.mastered = dirs(o.mastered);
+  o.review = dirs(o.review);
+  o.matchBest = o.matchBest || {};
+  o.autoSpeak = o.autoSpeak === true;   // 自動音声：初期値はOFF
+  return o;
+}
+let store;
+try{ store = normStore(JSON.parse(localStorage.getItem(STORE_KEY)||'null')); }catch(e){ store = normStore(null); }
 function saveStore(){ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
-function isMastered(no){ return store.mastered.includes(no); }
-function isReview(no){ return store.review.includes(no); }
+function isMastered(no,dir){ return store.mastered[dir||fcCfg.dir].includes(no); }
+function isReview(no,dir){ return store.review[dir||fcCfg.dir].includes(no); }
+const DIR_LABEL = {en2ja:'英→日', ja2en:'日→英'};
 
 /* ============ TTS（端末の英語音声を使用・オフライン可否は端末依存） ============ */
 let enVoice=null;
@@ -487,6 +504,20 @@ function speakEn(text){
   u.rate=0.9;
   speechSynthesis.speak(u);
 }
+/* 複数の文を順番に読み上げる。呼ぶたびに、それまでの音声はすぐ止めて切り替える */
+function speakSeq(texts){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  texts.forEach(t=>{
+    const u = new SpeechSynthesisUtterance(String(t).replace(/[~～]/g,'').replace(/\s+/g,' ').trim());
+    u.lang='en-US';
+    if(enVoice) u.voice=enVoice;
+    u.rate=0.9;
+    speechSynthesis.speak(u);
+  });
+}
+function stopSpeech(){ try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){} }
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) stopSpeech(); });
 function spkBtn(text){
   return `<span class="spk" onclick="event.stopPropagation();speakEn('${String(text).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">🔊</span>`;
 }
@@ -525,6 +556,7 @@ document.getElementById('backBtn').onclick=goBack;
 /* ゲームの時計を止める（画面を離れる・やり直すときに必ず呼ぶ）
    ※ 以前は止め忘れたタイマーが裏で動き続け、複数のタイマーが同じ表示を書き換えて数字がでたらめになっていた */
 function stopGameTimers(){
+  stopSpeech();
   try{ if(matchState && matchState.timerHandle){ clearInterval(matchState.timerHandle); matchState.timerHandle=null; } }catch(e){}
   try{ if(memoState && memoState.timerHandle){ clearInterval(memoState.timerHandle); memoState.timerHandle=null; } }catch(e){}
 }
@@ -753,8 +785,7 @@ function unitNumChipsHtml(sel, onclickFn, minU){
 /* ============ データ管理（書き出し／読み込み） ============ */
 function renderDataManage(){
   titleEl.textContent='データ管理';
-  const masteredCount = store.mastered.length;
-  const reviewCount = store.review.length;
+  const mc = store.mastered, rc = store.review;
   const matchCount = Object.keys(store.matchBest||{}).length;
   const todayStr = new Date().toISOString().slice(0,10);
 
@@ -763,7 +794,7 @@ function renderDataManage(){
       <h3>現在の記録</h3>
       <div class="menu-card" style="cursor:default;">
         <div class="ico">📊</div>
-        <div class="tx"><b>覚えた: ${masteredCount}語 ／ また後で: ${reviewCount}語</b><span>マッチング記録: ${matchCount}件</span></div>
+        <div class="tx"><b>英→日　覚えた: ${mc.en2ja.length}語 ／ また後で: ${rc.en2ja.length}語</b><b>日→英　覚えた: ${mc.ja2en.length}語 ／ また後で: ${rc.ja2en.length}語</b><span>マッチング記録: ${matchCount}件</span></div>
       </div>
     </div>
 
@@ -810,18 +841,19 @@ function exportStore(){
 }
 
 function applyImportedStore(obj){
-  if(!obj || typeof obj !== 'object' || !Array.isArray(obj.mastered) || !Array.isArray(obj.review)){
+  if(!obj || typeof obj !== 'object' || !obj.mastered || !obj.review || Array.isArray(obj.mastered) || Array.isArray(obj.review)){
     alert('読み込みに失敗しました。ファイル／テキストの形式が正しくないようです。');
     return false;
   }
-  store = {
-    mastered: obj.mastered || [],
-    review: obj.review || [],
-    matchBest: obj.matchBest || {},
+  store = normStore({
+    mastered: obj.mastered,
+    review: obj.review,
+    matchBest: obj.matchBest,
+    autoSpeak: obj.autoSpeak,
     lastSession: obj.lastSession || undefined,
     invRank: obj.invRank || {},
     invSet: obj.invSet || undefined
-  };
+  });
   invSet = store.invSet || {bgm:true,se:true};
   saveStore();
   alert('読み込みが完了しました。');
@@ -915,7 +947,7 @@ function renderFcSetup(){
     return `<div class="chip ${fcCfg.pos===p?'active':''}" onclick="fcCfg.pos='${p}';renderFcSetup()">${label}</div>`;
   }).join('');
 
-  const reviewCount = curReview().length;
+  const reviewCount = curReview(fcCfg.dir).length;
   const srcChips = `
     <div class="chip ${fcCfg.src==='all'?'active':''}" onclick="fcCfg.src='all';renderFcSetup()">通常セット</div>
     <div class="chip ${fcCfg.src==='review'?'active':''} ${reviewCount===0?'disabled':''}" ${reviewCount===0?'':`onclick="fcCfg.src='review';renderFcSetup()"`}>復習セットのみ (${reviewCount})</div>
@@ -951,6 +983,13 @@ function renderFcSetup(){
       </div>
     </div>
     <div class="setup-block">
+      <h3>自動音声（カードが表示されたら自動で読み上げ）</h3>
+      <div class="tabs">
+        <div class="chip ${store.autoSpeak?'active':''}" onclick="setAutoSpeak(true);renderFcSetup()">ON</div>
+        <div class="chip ${!store.autoSpeak?'active':''}" onclick="setAutoSpeak(false);renderFcSetup()">OFF</div>
+      </div>
+    </div>
+    <div class="setup-block">
       <h3>順序</h3>
       <div class="tabs">
         <div class="chip ${fcCfg.order==='seq'?'active':''}" onclick="fcCfg.order='seq';renderFcSetup()">順番通り</div>
@@ -963,7 +1002,7 @@ function renderFcSetup(){
     </div>
     <button class="startbtn" onclick="startFc()">この条件で始める</button>
     <div class="subnote">
-      「覚えた」🟩 ${curMastered().length}語 ／ 「また後で」🟨 ${curReview().length}語<br>
+      【${DIR_LABEL[fcCfg.dir]}】「覚えた」🟩 ${curMastered().length}語 ／ 「また後で」🟨 ${curReview().length}語<br>
       <span style="text-decoration:underline;cursor:pointer" onclick="openSetModal('mastered')">覚えたセットを見る</span>　
       <span style="text-decoration:underline;cursor:pointer" onclick="openSetModal('review')">復習セットを見る</span>
     </div>
@@ -973,16 +1012,26 @@ function renderFcSetup(){
 function buildFcDeck(){
   let pool = fcPool();
   if(fcCfg.pos!=='all') pool = pool.filter(w=> fcCfg.pos==='v' ? w.ps.some(isVerbPos) : w.ps.includes(fcCfg.pos));
-  if(fcCfg.src==='review') pool = pool.filter(w=>isReview(w.no));
-  else pool = pool.filter(w=>!isMastered(w.no));
+  if(fcCfg.src==='review') pool = pool.filter(w=>isReview(w.no,fcCfg.dir));
+  else pool = pool.filter(w=>!isMastered(w.no,fcCfg.dir));
   if(fcCfg.order==='rand') pool = shuffleArr(pool.slice());
   return pool;
 }
 
 let fcDeck=[], fcIdx=0, fcFlipped=false;
+let fcAutoPending=false;   // 新しいカードが表示されたときだけ自動音声を鳴らすための印（モーダルを閉じた再描画などでは鳴らさない）
+function setAutoSpeak(on){
+  store.autoSpeak = !!on; saveStore();
+  if(!on) stopSpeech();
+}
+function toggleAutoSpeak(){
+  setAutoSpeak(!store.autoSpeak);
+  const b=document.getElementById('autoBtn');
+  if(b){ b.textContent = '🔊自動 '+(store.autoSpeak?'ON':'OFF'); b.classList.toggle('on', store.autoSpeak); }
+}
 function startFc(){
   fcDeck = buildFcDeck();
-  fcIdx=0; fcFlipped=false;
+  fcIdx=0; fcFlipped=false; fcAutoPending=true;
   saveSession();
   nav('fcView');
 }
@@ -999,7 +1048,7 @@ function resumeSession(){
   fcCfg = {unit:s.unit, part:(s.part===undefined?'all':s.part), pos:(s.pos==='vt'||s.pos==='vi'?'v':s.pos), dir:s.dir, order:s.order, src:s.src};
   fcDeck = s.deckNos.map(no=>WORDS.find(w=>w.no===no)).filter(Boolean);
   fcIdx = Math.min(s.idx, Math.max(0,fcDeck.length-1));
-  fcFlipped = false;
+  fcFlipped = false; fcAutoPending=true;
   nav('fcView');
 }
 
@@ -1007,13 +1056,15 @@ function renderFcView(){
   const partTxt = fcCfg.part==='all' ? '' : ' '+PART_NAMES[+fcCfg.part];
   titleEl.textContent = 'Unit '+fcCfg.unit+partTxt+' · '+(fcCfg.pos==='all'?'全品詞':POS_LABEL[fcCfg.pos]);
   if(fcDeck.length===0){
+    stopSpeech();
     main.innerHTML = `<div class="deckdone"><div class="big">🎉</div>この条件のカードはありません。<br>（すべて覚えたセットに入っているか、条件に合う単語がありません）
     <div style="margin-top:16px;"><button class="startbtn" onclick="nav('fcSetup')">設定に戻る</button></div></div>`;
     return;
   }
   if(fcIdx>=fcDeck.length){
+    stopSpeech();
     main.innerHTML = `<div class="deckdone"><div class="big">✅</div>このセットは最後まで確認しました。<br>
-    <div style="margin-top:16px;"><button class="startbtn" onclick="fcIdx=0;renderFcView()">もう一度見る</button></div></div>`;
+    <div style="margin-top:16px;"><button class="startbtn" onclick="fcIdx=0;fcAutoPending=true;renderFcView()">もう一度見る</button></div></div>`;
     return;
   }
   const w = fcDeck[fcIdx];
@@ -1035,6 +1086,7 @@ function renderFcView(){
     <div id="fcHeader">
       <span id="fcPos">${fcIdx+1} / ${fcDeck.length}　·　${posBadge(w)}</span>
       <div class="setbtns">
+        <div class="setbtn ${store.autoSpeak?'on':''}" id="autoBtn" onclick="toggleAutoSpeak()">🔊自動 ${store.autoSpeak?'ON':'OFF'}</div>
         <div class="setbtn" onclick="openSetModal('mastered')">覚えた${curMastered().length}</div>
         <div class="setbtn" onclick="openSetModal('review')">復習${curReview().length}</div>
       </div>
@@ -1064,6 +1116,12 @@ function renderFcView(){
   const outer=document.getElementById('cardOuter');
   if(fcFlipped) outer.classList.add('flipped');
   attachSwipe(outer);
+  /* 新しいカードが表示されたとき：前の音声を止め、表面が英語なら単語を自動再生（日本語だけの面は無音） */
+  if(fcAutoPending){
+    fcAutoPending=false;
+    stopSpeech();
+    if(store.autoSpeak && isE2J) speakSeq([w.e]);
+  }
 }
 
 
@@ -1078,6 +1136,13 @@ function cardTap(e){
 function fcFlip(){
   fcFlipped=!fcFlipped;
   document.getElementById('cardOuter').classList.toggle('flipped');
+  const w=fcDeck[fcIdx];
+  stopSpeech();
+  /* 裏返したとき：英→日は例文1→例文2、日→英は（表で単語が鳴っていないので）単語→例文1→例文2。表に戻したときは鳴らさない */
+  if(fcFlipped && store.autoSpeak && w){
+    const ex=[exPlain(w.x[0]), exPlain(w.x[1])];
+    speakSeq(fcCfg.dir==='en2ja' ? ex : [w.e, ...ex]);
+  }
 }
 function fcNav(dir){
   const outer=document.getElementById('cardOuter');
@@ -1085,23 +1150,24 @@ function fcNav(dir){
   setTimeout(()=>{
     fcIdx += dir;
     if(fcIdx<0) fcIdx=0;
-    fcFlipped=false;
+    fcFlipped=false; fcAutoPending=true;
     saveSession();
     renderFcView();
   },140);
 }
 function fcMark(type){
-  const w=fcDeck[fcIdx];
+  const w=fcDeck[fcIdx], d=fcCfg.dir;
+  fcAutoPending=true;
   if(type==='mastered'){
-    if(!isMastered(w.no)) store.mastered.push(w.no);
-    store.review = store.review.filter(n=>n!==w.no);
+    if(!isMastered(w.no,d)) store.mastered[d].push(w.no);
+    store.review[d] = store.review[d].filter(n=>n!==w.no);
     saveStore();
     fcDeck.splice(fcIdx,1);
     fcFlipped=false;
     saveSession();
     renderFcView();
   } else {
-    if(!isReview(w.no)) store.review.push(w.no);
+    if(!isReview(w.no,d)) store.review[d].push(w.no);
     saveStore();
     fcFlipped=false;
     fcIdx++;
@@ -1125,7 +1191,7 @@ function attachSwipe(el){
 /* ============ セット管理モーダル ============ */
 function openSetModal(type){
   const list = type==='mastered'?curMastered():curReview();
-  const title = type==='mastered'?'覚えたセット':'復習セット';
+  const title = (type==='mastered'?'覚えたセット':'復習セット')+'【'+DIR_LABEL[fcCfg.dir]+'】';
   const rows = list.map(no=>{
     const w = WORDS.find(x=>x.no===no);
     if(!w) return '';
@@ -1142,8 +1208,9 @@ function openSetModal(type){
     </div>`;
 }
 function restoreWord(no,type){
-  if(type==='mastered') store.mastered = store.mastered.filter(n=>n!==no);
-  else store.review = store.review.filter(n=>n!==no);
+  const d=fcCfg.dir;
+  if(type==='mastered') store.mastered[d] = store.mastered[d].filter(n=>n!==no);
+  else store.review[d] = store.review[d].filter(n=>n!==no);
   saveStore();
   openSetModal(type);
   if(screen==='fcView'){ fcDeck = buildFcDeck(); if(fcIdx>=fcDeck.length) fcIdx=Math.max(0,fcDeck.length-1); saveSession(); }
@@ -1157,7 +1224,7 @@ function fcSlideInput(v){
 }
 function fcSlideChange(v){
   fcIdx=Math.max(0,Math.min(fcDeck.length-1,+v-1));
-  fcFlipped=false; saveSession(); renderFcView();
+  fcFlipped=false; fcAutoPending=true; saveSession(); renderFcView();
 }
 
 /* ============ クイズ ============ */
