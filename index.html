@@ -84,6 +84,16 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .chip small{display:block;font-size:9px;opacity:.7;}
 .startbtn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;
   font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;box-shadow:0 3px 8px rgba(166,50,31,.28);}
+.setview-row{display:flex;gap:10px;margin-top:14px;}
+.setview-btn{flex:1;border-radius:12px;padding:12px 8px;font-size:15px;font-weight:700;cursor:pointer;text-align:center;line-height:1.35;border:2px solid;font-family:inherit;}
+.setview-btn small{display:block;font-size:12px;font-weight:600;margin-top:2px;opacity:.85;}
+.setview-btn.memo{color:#fff;background:var(--ok);border-color:var(--ok);box-shadow:0 3px 8px rgba(47,107,79,.28);}
+.setview-btn.later{color:#5c4710;background:#f6e2a0;border-color:#c9a227;box-shadow:0 3px 8px rgba(201,162,39,.30);}
+.bk-banner{background:#fff4d6;border:2px solid #c9a227;border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:13px;line-height:1.6;color:#5c4710;}
+.bk-banner b{display:block;font-size:14px;margin-bottom:2px;}
+.bk-banner .bk-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.bk-banner button{flex:1;min-width:120px;padding:10px 8px;border-radius:9px;border:none;font-size:13.5px;font-weight:700;cursor:pointer;background:var(--ink);color:#fff;font-family:inherit;}
+.bk-banner button.sub{background:transparent;color:#5c4710;border:1px solid #c9a227;flex:0 0 auto;min-width:0;padding:10px 14px;}
 .startbtn:disabled{background:#c9c2b3;box-shadow:none;cursor:not-allowed;}
 .subnote{font-size:12px;color:var(--sub);margin-top:6px;line-height:1.5;}
 
@@ -480,6 +490,47 @@ function normStore(o){
 }
 let store;
 try{ store = normStore(JSON.parse(localStorage.getItem(STORE_KEY)||'null')); }catch(e){ store = normStore(null); }
+/* ---- バックアップ管理（前回の書き出し日時など。進捗データ本体とは別キー） ---- */
+const META_KEY='eitan_complete_meta_v2';
+const BK_DUE_DAYS=7, BK_SNOOZE_DAYS=3;
+function getMeta(){ try{ return JSON.parse(localStorage.getItem(META_KEY)||'{}')||{}; }catch(e){ return {}; } }
+function setMeta(m){ try{ localStorage.setItem(META_KEY, JSON.stringify(m)); }catch(e){} }
+function markBackedUp(){ const m=getMeta(); m.last=Date.now(); delete m.snooze; setMeta(m); }
+function localDateStr(d){ d=d||new Date(); const p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+function hasProgress(){
+  const m=store.mastered, r=store.review;
+  return m.en2ja.length+m.ja2en.length+r.en2ja.length+r.ja2en.length>0
+    || Object.keys(store.matchBest||{}).length>0 || Object.keys(store.invRank||{}).length>0;
+}
+function backupDue(){
+  if(!hasProgress()) return false;
+  const m=getMeta(), now=Date.now();
+  if(m.snooze && now<m.snooze) return false;
+  return !m.last || (now-m.last)>=BK_DUE_DAYS*86400000;
+}
+function backupBannerHtml(){
+  if(!backupDue()) return '';
+  const m=getMeta();
+  const msg = m.last
+    ? `前回の書き出しから${Math.floor((Date.now()-m.last)/86400000)}日たちました。`
+    : 'まだ進捗データを書き出していません。';
+  return `<div class="bk-banner" id="bkBanner"><b>📦 進捗データのバックアップをおすすめします</b>${msg}ブラウザの「サイトデータ」を削除すると、記録が消えてしまいます。
+    <div class="bk-btns">
+      <button onclick="exportStore();hideBkBanner()">ファイルに書き出す</button>
+      <button onclick="copyBackupCode()">コードをコピー</button>
+      <button class="sub" onclick="snoozeBackup()">あとで</button>
+    </div></div>`;
+}
+function hideBkBanner(){ const b=document.getElementById('bkBanner'); if(b) b.remove(); }
+function snoozeBackup(){ const m=getMeta(); m.snooze=Date.now()+BK_SNOOZE_DAYS*86400000; setMeta(m); hideBkBanner(); }
+function copyBackupCode(){
+  const txt=JSON.stringify(store);
+  const done=()=>{ markBackedUp(); hideBkBanner(); alert('コードをコピーしました。メモアプリなどに貼り付けて保管してください。\n復元するときは「データ管理」の貼り付け欄に入れます。'); };
+  const fallback=()=>{ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); done(); }catch(e){ alert('コピーに失敗しました。データ管理画面から操作してください。'); } document.body.removeChild(ta); };
+  try{ navigator.clipboard.writeText(txt).then(done).catch(fallback); }catch(e){ fallback(); }
+}
+/* 永続ストレージを要求（端末の空き容量不足などによる自動削除を防ぐ。ユーザー操作による「サイトデータ削除」は防げない） */
+try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
 function saveStore(){ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
 function isMastered(no,dir){ return store.mastered[dir||fcCfg.dir].includes(no); }
 function isReview(no,dir){ return store.review[dir||fcCfg.dir].includes(no); }
@@ -710,6 +761,7 @@ function renderHome(){
       <h2>一生使える英単熟語帳</h2>
       <p>単語帳を選んでください（収録 ${total}語）</p>
     </div>
+    ${backupBannerHtml()}
     ${searchBoxHtml('homeQ')}
     <div class="menu-grid">${cards}</div>
     <div class="footer-note">学習記録・ゲーム記録は単語帳ごとに別々に保存されます。<br>記録はこの端末のブラウザに保存されます。</div>
@@ -726,6 +778,7 @@ function renderBookMenu(){
       <p>収録 ${UNIT_AVAIL.length} Unit・${WORDS.length}語（全${UNITS_TOTAL}Unit）</p>
       <p style="margin-top:8px;"><span style="text-decoration:underline;cursor:pointer" onclick="goHome()">単語帳を選びなおす</span></p>
     </div>
+    ${backupBannerHtml()}
     <div class="menu-grid">
       <div class="menu-card" onclick="nav('fcSetup')">
         <div class="ico">🗂</div>
@@ -787,7 +840,8 @@ function renderDataManage(){
   titleEl.textContent='データ管理';
   const mc = store.mastered, rc = store.review;
   const matchCount = Object.keys(store.matchBest||{}).length;
-  const todayStr = new Date().toISOString().slice(0,10);
+  const meta = getMeta();
+  const lastTxt = meta.last ? `${localDateStr(new Date(meta.last))}（${Math.floor((Date.now()-meta.last)/86400000)}日前）` : '未実施';
 
   main.innerHTML = `
     <div class="setup-block">
@@ -800,7 +854,10 @@ function renderDataManage(){
 
     <div class="setup-block">
       <h3>書き出し（バックアップ）</h3>
-      <div class="subnote" style="margin-bottom:10px;">学習記録をファイルとして保存します。機種変更やブラウザデータ消去に備えて、定期的に書き出しておくことをおすすめします。</div>
+      <div class="subnote" style="margin-bottom:10px;">学習記録をファイルとして保存します。機種変更やブラウザデータ消去に備えて、定期的に書き出しておくことをおすすめします。<br>
+        <b>前回の書き出し: ${lastTxt}</b><br>
+        永続保存（端末による自動削除の防止）: <b id="persistState">確認中…</b><br>
+        ※ブラウザの設定で「サイトデータ」「Cookieとサイトデータ」を削除すると、進捗も消えます。「キャッシュのみ」の削除なら消えません。</div>
       <button class="startbtn" onclick="exportStore()">📤 ファイルに書き出す（.json）</button>
     </div>
 
@@ -822,8 +879,13 @@ function renderDataManage(){
       <button class="startbtn" style="margin-top:8px;background:var(--ink2);" onclick="importStoreFromText()">このテキストを読み込む</button>
     </div>
 
-    <div class="footer-note">書き出しファイル名の例: eitan_progress_${todayStr}.json</div>
+    <div class="footer-note">書き出しファイル名の例: 一生使える英単熟語帳進捗データ（${localDateStr()}）.json</div>
   `;
+  try{
+    if(navigator.storage && navigator.storage.persisted){
+      navigator.storage.persisted().then(v=>{ const e=document.getElementById('persistState'); if(e) e.textContent = v ? '有効' : '無効（ホーム画面に追加して使うと有効になりやすくなります）'; });
+    } else { const e=document.getElementById('persistState'); if(e) e.textContent='この端末では未対応'; }
+  }catch(e){}
 }
 
 function exportStore(){
@@ -831,13 +893,13 @@ function exportStore(){
   const blob = new Blob([data], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const todayStr = new Date().toISOString().slice(0,10);
   a.href = url;
-  a.download = `eitan_progress_${todayStr}.json`;
+  a.download = `一生使える英単熟語帳進捗データ（${localDateStr()}）.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  markBackedUp();
 }
 
 function applyImportedStore(obj){
@@ -894,13 +956,16 @@ function copyDataText(){
   ta.setSelectionRange(0, 99999);
   try{
     navigator.clipboard.writeText(ta.value).then(()=>{
+      markBackedUp();
       alert('コピーしました。');
     }).catch(()=>{
       document.execCommand('copy');
+      markBackedUp();
       alert('コピーしました。');
     });
   }catch(err){
     document.execCommand('copy');
+    markBackedUp();
     alert('コピーしました。');
   }
 }
@@ -1001,10 +1066,10 @@ function renderFcSetup(){
       <div class="tabs">${srcChips}</div>
     </div>
     <button class="startbtn" onclick="startFc()">この条件で始める</button>
-    <div class="subnote">
-      【${DIR_LABEL[fcCfg.dir]}】「覚えた」🟩 ${curMastered().length}語 ／ 「また後で」🟨 ${curReview().length}語<br>
-      <span style="text-decoration:underline;cursor:pointer" onclick="openSetModal('mastered')">覚えたセットを見る</span>　
-      <span style="text-decoration:underline;cursor:pointer" onclick="openSetModal('review')">復習セットを見る</span>
+    <div class="subnote">【${DIR_LABEL[fcCfg.dir]}】「覚えた」🟩 ${curMastered().length}語 ／ 「また後で」🟨 ${curReview().length}語</div>
+    <div class="setview-row">
+      <button class="setview-btn memo" onclick="openSetModal('mastered')">🟩 覚えたセットを見る<small>${curMastered().length}語</small></button>
+      <button class="setview-btn later" onclick="openSetModal('review')">🟨 復習セットを見る<small>${curReview().length}語</small></button>
     </div>
   `;
 }
