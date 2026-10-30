@@ -763,7 +763,13 @@ function renderHome(){
     </div>
     ${backupBannerHtml()}
     ${searchBoxHtml('homeQ')}
-    <div class="menu-grid">${cards}</div>
+    <div class="menu-grid">${cards}
+      <div class="menu-card" onclick="nav('dataManage')">
+        <div class="ico">💾</div>
+        <div class="tx"><b>データ管理</b><span>学習記録の書き出し・読み込み</span></div>
+        <div class="tag">›</div>
+      </div>
+    </div>
     <div class="footer-note">学習記録・ゲーム記録は単語帳ごとに別々に保存されます。<br>記録はこの端末のブラウザに保存されます。</div>
   `;
 }
@@ -810,13 +816,8 @@ function renderBookMenu(){
         <div class="tx"><b>インベーダー</b><span>60秒で何体倒せる？・記録に挑戦</span></div>
         <div class="tag">伍</div>
       </div>
-      <div class="menu-card" onclick="nav('dataManage')">
-        <div class="ico">💾</div>
-        <div class="tx"><b>データ管理</b><span>学習記録の書き出し・読み込み</span></div>
-        <div class="tag">陸</div>
-      </div>
     </div>
-    <div class="footer-note">記録はこの端末のブラウザに保存されます。<br>ブラウザのデータを消去すると記録も消えるのでご注意ください。<br>「データ管理」から定期的な書き出しをおすすめします。</div>
+    <div class="footer-note">記録はこの端末のブラウザに保存されます。<br>ブラウザのデータを消去すると記録も消えるのでご注意ください。<br>トップページの「データ管理」から定期的な書き出しをおすすめします。</div>
   `;
 }
 
