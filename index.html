@@ -195,6 +195,10 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .back .bhead{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
 .back .bhead .en{font-family:var(--serif);font-size:20px;font-weight:700;}
 .back .bhead .ipa{font-size:13px;color:var(--sub);font-family:var(--ipa);}
+.cu-badge{display:inline-block;font-size:10.5px;color:#fff;background:var(--ink2);border-radius:6px;padding:2px 8px;white-space:nowrap;}
+.back .bhead{flex-wrap:wrap;}
+.back .bhead .cu-badge{margin-left:auto;}
+.cu-note{font-size:12px;font-weight:400;color:var(--sub);margin-left:6px;}
 .back .ja-line{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--ink2);}
 .irr-line{font-size:12px;background:#fdeee9;color:var(--accent-d);border-radius:6px;padding:4px 8px;margin-bottom:8px;display:inline-block;}
 .note-line{font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:10px;}
@@ -494,7 +498,8 @@ function makeWord(id,u,r){
     e:r.e, ipa:r.i, s:r.s, x:r.x,
     ja: r.s.map(x=> multi ? '（'+POS_S[x[0]]+'）'+x[1] : x[1]).join('　'),
     jm: r.s.map(x=>x[1]).join('／'),
-    et:r.et||'', rl:r.rl||'', dv:r.dv||'', sn:r.sn||'', an:r.an||'', tp:r.tp||''
+    et:r.et||'', rl:r.rl||'', dv:r.dv||'', sn:r.sn||'', an:r.an||'', tp:r.tp||'',
+    c:r.c||'', cn:r.cn||''      // c：名詞の可算／不可算（C・U・CU）　cn：C/Uの補足（CUの意味ごとの違い、複数形など）
   };
 }
 function selectBook(id){
@@ -537,6 +542,10 @@ function exFilled(x, ok){
 }
 function jaHtml(s){ return esc(s).replace(/【(.+?)】/g,'<b class="ans">【$1】</b>'); }
 function posBadge(w){ return w.ps.map(p=>POS_LABEL[p]).join('・'); }
+/* 名詞に C／U／C/U を付けた品詞バッジ（フラッシュカード裏面・単語一覧で使う。おもて面・クイズ・ゲームは posBadge のまま） */
+function cuLabel(c){ return c==='CU' ? 'C/U' : c; }
+function posBadgeCU(w){ return w.ps.map(p=> (p==='n' && w.c) ? POS_LABEL[p]+' '+cuLabel(w.c) : POS_LABEL[p]).join('・'); }
+function cuNoteHtml(w){ return (w.c && w.cn) ? `<span class="cu-note">〈${esc(w.cn)}〉</span>` : ''; }
 
 /* ============ ストレージ ============ */
 /* v2：「覚えた」「また後で」を方向別（en2ja＝英→日／ja2en＝日→英）に管理する。v1の記録は引き継がない（公開前のためリセット） */
@@ -831,8 +840,8 @@ function infoHtml(w){
     .filter(r=>r[1]).map(r=>`<div class="info-row"><span class="info-l">${r[0]}</span><span class="info-t">${esc(r[1])}</span></div>`).join('');
   return rows?`<div class="info-box">${rows}</div>`:'';
 }
-function detailHtml(w){
-  return `<div class="ja-line">${esc(w.ja)}</div>${exBox(w.x[0])}${exBox(w.x[1])}${infoHtml(w)}`;
+function detailHtml(w, cu){
+  return `<div class="ja-line">${esc(w.ja)}${cu?cuNoteHtml(w):''}</div>${exBox(w.x[0])}${exBox(w.x[1])}${infoHtml(w)}`;
 }
 
 
@@ -1943,8 +1952,9 @@ function renderFcView(){
     <div class="bhead">
       <span class="en">${esc(w.e)}</span><span class="ipa">${w.ipa?'['+esc(w.ipa)+']':''}</span>
       ${spkBtn(w.e)}
+      ${w.c?`<span class="cu-badge">${posBadgeCU(w)}</span>`:''}
     </div>
-    ${detailHtml(w)}
+    ${detailHtml(w,true)}
   `;
 
   main.innerHTML = `
@@ -2232,8 +2242,8 @@ let listUnit=1;
 function setListUnit(u){ listUnit=u; renderWordList(); window.scrollTo(0,0); }
 function wlRowHtml(w, withId){
   return `<tr${withId?` id="wl-${w.bn}"`:''}>
-    <td class="wl-a"><span class="wl-no">${w.bn}　${posBadge(w)}</span><b>${esc(w.e)}</b> ${spkBtn(w.e)}<br><span class="wl-sub">${w.ipa?'['+esc(w.ipa)+']':''}</span></td>
-    <td class="wl-b">${esc(w.ja)}${infoHtml(w)}</td>
+    <td class="wl-a"><span class="wl-no">${w.bn}　${posBadgeCU(w)}</span><b>${esc(w.e)}</b> ${spkBtn(w.e)}<br><span class="wl-sub">${w.ipa?'['+esc(w.ipa)+']':''}</span></td>
+    <td class="wl-b">${esc(w.ja)}${cuNoteHtml(w)}${infoHtml(w)}</td>
     <td class="wl-c">${exHtml(w.x[0])}<br><span class="wl-sub">${jaHtml(w.x[0][1])}</span><div class="wl-ex2">${exHtml(w.x[1])}<br><span class="wl-sub">${jaHtml(w.x[1][1])}</span></div></td></tr>`;
 }
 let listFocus=0;   // 検索結果から開いたとき、強調して表示する単語の番号
