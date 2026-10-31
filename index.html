@@ -569,6 +569,7 @@ function normStore(o){
     g.created = /^\d{4}-\d{2}-\d{2}$/.test(g.created||'') ? g.created : g.deadline;
     g.name = String(g.name||'目標');
     g.targetPct = [0,70,80,90].includes(g.targetPct) ? g.targetPct : 0;
+    g.pv = g.pv===2 ? 2 : undefined;
     g.base = (Number.isFinite(g.base) && g.base>=0) ? g.base : undefined;   // 目標を作った（計画を引き直した）時点で、すでに済んでいた延べ語数（旧バージョンの目標は未設定）
     g.tests = Array.isArray(g.tests) ? g.tests.slice(-20) : [];
     return g;
@@ -642,10 +643,12 @@ function goalNos(g){
   return nos;
 }
 function goalSet(g){ goalNos(g); return GOAL_CACHE[goalSig(g)].set; }
-/* 各語の到達周回（0〜周回数）。「覚えた」（この方向）に入れた語は全周済みとして扱う */
+/* 各語の到達周回（0〜周回数）。「覚えた」（この方向）に入れた語は出題しないが、「今の周は済ませた」ものとして数える
+   （最も進んでいない語の周回＋1。周回数を変えても進捗の語数が増減しないようにするため） */
 function goalLevels(g){
-  const dir=store.lastDir||'en2ja', P=g.passes, ms=new Set(store.mastered[dir]);
-  return goalNos(g).map(no=> ms.has(no) ? P : Math.min(P,g.cnt[no]||0));
+  const dir=store.lastDir||'en2ja', P=g.passes, ms=new Set(store.mastered[dir]), nos=goalNos(g);
+  let L=P; nos.forEach(no=>{ if(!ms.has(no)){ const c=Math.min(P,g.cnt[no]||0); if(c<L) L=c; } });
+  return nos.map(no=> ms.has(no) ? Math.min(P, Math.max(g.cnt[no]||0, L+1)) : Math.min(P,g.cnt[no]||0));
 }
 function goalEligibleNos(g){   // 今の周でまだ進めていない語（最も周回の少ない語）
   const lv=goalLevels(g), nos=goalNos(g), P=g.passes;
@@ -661,7 +664,7 @@ function goalStats(g){
   const curPass = Math.min(P, minL+1);
   const tk=todayKey(), ti=keyToIdx(tk), di=keyToIdx(g.deadline);
   const todayN=(g.today && g.today.d===tk) ? g.today.n : 0;
-  if(g.base===undefined){ g.base=Math.max(0,done-todayN); g.created=tk; }   // 旧バージョンで作った目標：計画を今日から引き直す
+  if(g.pv!==2){ g.pv=2; g.base=Math.max(0,done-todayN); g.created=tk; }   // 計算方法が変わる前に作った目標：計画を今日から引き直す
   const si=keyToIdx(g.created);
   const remain=Math.max(0,total-done), remainStart=remain+todayN;
   const daysLeft=di-ti+1;      // 今日を含めた残り日数
@@ -1387,7 +1390,11 @@ function renderGoals(){
     else if(g.passesDone && g.targetPct>0) state='🎯 到達度テスト待ち';
     else if(s.overdue) state='⚠ 期限を過ぎています';
     else state='🎯 '+dateJa(g.deadline)+'まで（あと'+(s.daysLeft-1)+'日）';
-    const aheadTxt = g.doneAt ? '' : (s.ahead>0 ? '<span class="ahead">計画より '+s.ahead+'語 先行</span>' : s.ahead<0 ? '<span class="behind">計画より '+(-s.ahead)+'語 遅れ</span>' : '<span>計画どおり</span>');
+    const diff=Math.round(s.done-s.expected);   // 進捗バーの黒線（今日のノルマを終えた時点の計画位置）との差
+    const aheadTxt = g.doneAt ? '' : (diff>0 ? '<span class="ahead">計画より '+diff+'語 先行</span>'
+      : diff===0 ? '<span>計画どおり</span>'
+      : s.ahead<0 ? '<span class="behind">計画より '+(-diff)+'語 遅れ</span>'
+      : '<span>今日の計画まで あと'+(-diff)+'語</span>');
     const behindNote = (!g.doneAt && s.total && -s.ahead > Math.max(10, s.total*0.1))
       ? '<div class="goal-note">計画より遅れています。「✎編集」で期限を延ばす・範囲を減らす・週の学習日を増やす、のいずれかで、毎日のノルマを調整できます。</div>' : '';
     const pace = g.doneAt ? '' : `<div class="goal-pace">今日のノルマ <b>${s.todayN}/${s.quota}語</b><br>ペース：1日 ${s.quota}語 ／ 1週 約${s.weekly}語 ／ 1ヶ月 約${s.monthly}語（週${g.spw}日学習で計算）</div>`;
@@ -1407,7 +1414,7 @@ function renderGoals(){
   main.innerHTML=`
     ${cards || '<div class="footer-note" style="margin:18px 0;">まだ目標がありません。<br>「テストまでにUnit 1〜3を3周」のような目標を作ると、期限から毎日のノルマを自動で計算します。</div>'}
     ${store.goals.length<GOAL_MAX ? '<button class="startbtn" onclick="goalNew()">＋ 新しい目標を作る</button>' : '<div class="footer-note">目標は'+GOAL_MAX+'つまで作れます。</div>'}
-    <div class="footer-note">進捗バーの黒い線は「今日のノルマを終えたとき、計画ならここまで進んでいる」位置です。「計画より◯語 先行／遅れ」は、今日の学習を始める前の時点での、計画との差です。<br>「語」は延べ語数です（3周なら、同じ単語を3回数えます）。<br>ノルマは毎日、残りの回数と残りの日数から計算し直します。<br>「1周」は、範囲の全単語をひと通り学習することです。最後までやりきるまで次の周にはならず、同じ周で同じ語を何度学習しても進捗は進みません（1日の学習数には数えます）。<br>「覚えた」（その方向）に入れた語は周回済みとして扱い、出題しません。</div>`;
+    <div class="footer-note">進捗バーの黒い線は「今日のノルマを終えたとき、計画ならここまで進んでいる」位置です。「計画より◯語 先行／遅れ」は、この黒い線との差です。今日の分に届いていないだけのときは「今日の計画まで あと◯語」と表示します。<br>「語」は延べ語数です（3周なら、同じ単語を3回数えます）。<br>ノルマは毎日、残りの回数と残りの日数から計算し直します。<br>「1周」は、範囲の全単語をひと通り学習することです。最後までやりきるまで次の周にはならず、同じ周で同じ語を何度学習しても進捗は進みません（1日の学習数には数えます）。<br>「覚えた」（その方向）に入れた語は周回済みとして扱い、出題しません。</div>`;
 }
 function goalDelete(id){
   const g=store.goals.find(x=>x.id===id); if(!g) return;
@@ -1474,10 +1481,10 @@ function goalSave(){
     const replan = g.book!==gf.book || goalSig(g)!==goalSig(gf) || g.passes!==gf.passes || g.deadline!==gf.deadline || g.spw!==gf.spw;
     Object.assign(g,{name:name,autoName:auto,book:gf.book,from:gf.from,to:gf.to,passes:gf.passes,deadline:gf.deadline,spw:gf.spw,targetPct:gf.targetPct||0});
     goalInitCnt(g);
-    if(replan){ g.created=todayKey(); g.base=0; const s0=goalStats(g); g.base=Math.max(0,s0.done-s0.todayN); }   // 計画を今日から引き直す
+    if(replan){ g.pv=2; g.created=todayKey(); g.base=0; const s0=goalStats(g); g.base=Math.max(0,s0.done-s0.todayN); }   // 計画を今日から引き直す
     goalRefreshDone(g);
   } else {
-    const ng={id:'g'+Date.now().toString(36),name:name,autoName:auto,base:0,book:gf.book,from:gf.from,to:gf.to,passes:gf.passes,deadline:gf.deadline,spw:gf.spw,targetPct:gf.targetPct||0,tests:[],created:todayKey(),cnt:{},today:{d:'',n:0},doneAt:null,passesDone:null};
+    const ng={id:'g'+Date.now().toString(36),name:name,autoName:auto,base:0,pv:2,book:gf.book,from:gf.from,to:gf.to,passes:gf.passes,deadline:gf.deadline,spw:gf.spw,targetPct:gf.targetPct||0,tests:[],created:todayKey(),cnt:{},today:{d:'',n:0},doneAt:null,passesDone:null};
     goalInitCnt(ng); ng.base=goalStats(ng).done; goalRefreshDone(ng); store.goals.push(ng);
   }
   saveStore(); gf=null; goBack();
