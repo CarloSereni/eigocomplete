@@ -84,6 +84,38 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .chip small{display:block;font-size:9px;opacity:.7;}
 .startbtn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;
   font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;box-shadow:0 3px 8px rgba(166,50,31,.28);}
+.today-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;margin:0 0 14px;box-shadow:var(--shadow);}
+.today-top{display:flex;align-items:center;gap:14px;}
+.ring-wrap{position:relative;width:88px;height:88px;flex-shrink:0;cursor:pointer;}
+.ring-tx{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;}
+.ring-tx b{font-size:24px;color:var(--ink);} .ring-tx span{font-size:11px;color:var(--sub);}
+.today-info{flex:1;min-width:0;}
+.stat-row{display:flex;gap:6px;}
+.stat-row>div{flex:1;text-align:center;background:var(--bg);border-radius:10px;padding:6px 2px;}
+.stat-row b{font-size:20px;color:var(--ink);} .stat-row i{font-style:normal;font-size:11px;color:var(--sub);}
+.stat-row small{display:block;font-size:10.5px;color:var(--sub);margin-top:1px;}
+.today-msg{font-size:12.5px;color:var(--ink);margin-top:8px;line-height:1.5;}
+.today-btn{width:100%;margin-top:12px;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 8px rgba(166,50,31,.25);}
+.today-link{text-align:center;margin-top:10px;font-size:13px;color:var(--ink);text-decoration:underline;cursor:pointer;}
+.app-toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:24px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:999;max-width:88%;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.25);}
+.app-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin:6px 0 8px;}
+.cal-head b{font-size:17px;color:var(--ink);font-family:var(--serif);}
+.cal-head button{border:1px solid var(--line);background:var(--card);border-radius:10px;width:42px;height:38px;font-size:18px;cursor:pointer;color:var(--ink);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-dow{text-align:center;font-size:11px;color:var(--sub);padding:2px 0;}
+.cal-cell{aspect-ratio:1/1;border-radius:9px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;color:var(--ink);cursor:pointer;line-height:1.15;}
+.cal-cell small{font-size:10px;opacity:.85;}
+.cal-cell.blank{background:transparent;border:none;cursor:default;}
+.cal-cell.fut{opacity:.4;}
+.cal-cell.l1{background:#f6e2a0;border-color:#c9a227;}
+.cal-cell.l2{background:#9fcdb3;border-color:#2f6b4f;}
+.cal-cell.l3{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700;}
+.cal-cell.today{outline:3px solid var(--accent);outline-offset:-1px;}
+.cal-cell.sel{box-shadow:0 0 0 2px var(--ink);}
+.cal-detail{margin-top:12px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:14px;color:var(--ink);}
+.cal-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--sub);align-items:center;}
+.cal-legend i{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:3px;border:1px solid var(--line);}
 .setview-row{display:flex;gap:10px;margin-top:14px;}
 .setview-btn{flex:1;border-radius:12px;padding:12px 8px;font-size:15px;font-weight:700;cursor:pointer;text-align:center;line-height:1.35;border:2px solid;font-family:inherit;}
 .setview-btn small{display:block;font-size:12px;font-weight:600;margin-top:2px;opacity:.85;}
@@ -435,6 +467,7 @@ function makeWord(id,u,r){
 function selectBook(id){
   stopGameTimers();
   CUR_BOOK = id; UNITS_TOTAL = bookInfo(id).units; WORDS = []; UNIT_AVAIL = [];
+  if(store.lastBook!==id){ store.lastBook=id; saveStore(); }
   const D = bookData(id), bi = bookIdx(id);
   bookUnitsAvail(id).forEach(u=>{
     UNIT_AVAIL.push(u);
@@ -486,10 +519,63 @@ function normStore(o){
   o.review = dirs(o.review);
   o.matchBest = o.matchBest || {};
   o.autoSpeak = o.autoSpeak === true;   // 自動音声：初期値はOFF
+  /* 学習ログ */
+  o.days = (o.days && typeof o.days==='object' && !Array.isArray(o.days)) ? o.days : {};      // {'2026-10-31': その日に触れた語数}
+  o.seen = (o.seen && typeof o.seen==='object' && !Array.isArray(o.seen)) ? o.seen : {};      // {語番号: 最後に触れた日(1970からの通算日)}
+  o.today = (o.today && Array.isArray(o.today.n)) ? o.today : {d:'', n:[]};                    // 今日すでに数えた語（重複防止）
+  o.dailyGoal = (Number.isInteger(o.dailyGoal) && o.dailyGoal>=1 && o.dailyGoal<=500) ? o.dailyGoal : 20;
   return o;
 }
 let store;
 try{ store = normStore(JSON.parse(localStorage.getItem(STORE_KEY)||'null')); }catch(e){ store = normStore(null); }
+/* ---- 学習ログ：めくった（裏面を見た）語を、1日1語1回まで数える。日付の切り替えは朝4時 ---- */
+const DAY_START_HOUR=4, MIN_DAY=5;   // MIN_DAY：この語数以上で「学習した日」
+function dayKeyOf(ms){ return localDateStr(new Date(ms-DAY_START_HOUR*3600000)); }
+function todayKey(){ return dayKeyOf(Date.now()); }
+function keyToIdx(k){ const a=k.split('-').map(Number); return Math.round(Date.UTC(a[0],a[1]-1,a[2])/86400000); }
+function todayCount(){ return store.days[todayKey()]||0; }
+function studied(k){ return (store.days[k]||0)>=MIN_DAY; }
+function showToast(msg){
+  let t=document.getElementById('appToast');
+  if(!t){ t=document.createElement('div'); t.id='appToast'; t.className='app-toast'; document.body.appendChild(t); }
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600);
+}
+function touchWord(no){
+  if(!no) return;
+  const k=todayKey();
+  if(store.today.d!==k) store.today={d:k,n:[]};
+  if(store.today.n.includes(no)) return;
+  const before=store.days[k]||0, after=before+1;
+  store.today.n.push(no);
+  store.days[k]=after;
+  store.seen[no]=keyToIdx(k);
+  saveStore();
+  const g=store.dailyGoal;
+  if(before<MIN_DAY && after>=MIN_DAY){
+    const c=computeStreaks().total;
+    showToast([1,10,30,50,100,200,300,365,500,1000].includes(c) ? `🎉 累計${c}日達成！` : '✅ 今日の学習日にカウントされました');
+  } else if(before<g && after>=g){
+    showToast('🏆 今日の目標達成！');
+  }
+}
+/* 累計日数（減らない）・連続日数・最長連続。未学習の日は、前回のお休みから7日以上あいていれば1日だけ「お休み」として連続を保つ */
+function computeStreaks(){
+  const keys=Object.keys(store.days).filter(studied);
+  if(!keys.length) return {cur:0,best:0,total:0};
+  const set=new Set(keys.map(keyToIdx));
+  const first=Math.min.apply(null,[...set]), todayI=keyToIdx(todayKey());
+  let run=0,best=0,lastPass=-999;
+  for(let i=first;i<=todayI;i++){
+    if(set.has(i)){ run++; if(run>best) best=run; }
+    else if(i===todayI){ /* 今日はまだ終わっていない */ }
+    else if(run>0 && i-lastPass>=7){ lastPass=i; }
+    else { run=0; }
+  }
+  return {cur:run,best:best,total:set.size};
+}
+function setDailyGoal(n){ store.dailyGoal=n; saveStore(); }
+
 /* ---- バックアップ管理（前回の書き出し日時など。進捗データ本体とは別キー） ---- */
 const META_KEY='eitan_complete_meta_v2';
 const BK_DUE_DAYS=7, BK_SNOOZE_DAYS=3;
@@ -500,6 +586,7 @@ function localDateStr(d){ d=d||new Date(); const p=n=>String(n).padStart(2,'0');
 function hasProgress(){
   const m=store.mastered, r=store.review;
   return m.en2ja.length+m.ja2en.length+r.en2ja.length+r.ja2en.length>0
+    || Object.keys(store.days).length>0
     || Object.keys(store.matchBest||{}).length>0 || Object.keys(store.invRank||{}).length>0;
 }
 function backupDue(){
@@ -648,6 +735,7 @@ function render(){
   else if(screen==='memorySetup') renderMemorySetup();
   else if(screen==='memoryView') renderMemoryView();
   else if(screen==='dataManage') renderDataManage();
+  else if(screen==='calendar') renderCalendar();
   else if(screen==='wordList') renderWordList();
   else if(screen==='search') renderSearch();
   else if(screen==='invSetup') renderInvSetup();
@@ -744,6 +832,32 @@ function renderSearch(){
 
 /* ============ ホーム（単語帳の選択） ============ */
 function openBook(id){ selectBook(id); nav('bookMenu'); }
+function todayCardHtml(){
+  const n=todayCount(), g=store.dailyGoal, st=computeStreaks();
+  const C=2*Math.PI*36, p=Math.min(1,n/g), done=n>=g;
+  const msg = done ? '🏆 今日の目標達成！すばらしい！'
+    : n>=MIN_DAY ? `✅ 今日の学習日にカウント済み。目標まであと${g-n}語`
+    : `あと${MIN_DAY-n}語で今日の「学習した日」になります`;
+  return `<div class="today-card">
+    <div class="today-top">
+      <div class="ring-wrap" onclick="nav('calendar')">
+        <svg width="88" height="88" viewBox="0 0 88 88"><circle cx="44" cy="44" r="36" fill="none" stroke="#e7dfcf" stroke-width="9"/>
+          <circle cx="44" cy="44" r="36" fill="none" stroke="${done?'#2f6b4f':'#a6321f'}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C*p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 44 44)"/></svg>
+        <div class="ring-tx"><b>${n}</b><span>/ ${g}語</span></div>
+      </div>
+      <div class="today-info">
+        <div class="stat-row">
+          <div><b>${st.cur}</b><i>日</i><small>🔥連続</small></div>
+          <div><b>${st.total}</b><i>日</i><small>累計</small></div>
+          <div><b>${st.best}</b><i>日</i><small>最長連続</small></div>
+        </div>
+        <div class="today-msg">${msg}</div>
+      </div>
+    </div>
+    <button class="today-btn" onclick="startToday()">▶ 今日の10語を始める</button>
+    <div class="today-link" onclick="nav('calendar')">📅 カレンダー・1日の目標</div>
+  </div>`;
+}
 function renderHome(){
   titleEl.textContent='一生使える英単熟語帳';
   const total = BOOKS.reduce((s,b)=>s+bookWordCount(b.id),0);
@@ -761,6 +875,7 @@ function renderHome(){
       <h2>一生使える英単熟語帳</h2>
       <p>単語帳を選んでください（収録 ${total}語）</p>
     </div>
+    ${todayCardHtml()}
     ${backupBannerHtml()}
     ${searchBoxHtml('homeQ')}
     <div class="menu-grid">${cards}
@@ -835,6 +950,43 @@ function unitNumChipsHtml(sel, onclickFn, minU){
   }).join('');
 }
 
+
+/* ============ 学習カレンダー ============ */
+let calY=0, calM=0, calSel=null;
+function calMove(d){ calM+=d; if(calM<1){ calM=12; calY--; } if(calM>12){ calM=1; calY++; } calSel=null; renderCalendar(); }
+function calPick(k){ calSel=k; renderCalendar(); }
+function renderCalendar(){
+  titleEl.textContent='学習カレンダー';
+  if(!calY){ const n=new Date(Date.now()-DAY_START_HOUR*3600000); calY=n.getFullYear(); calM=n.getMonth()+1; }
+  const tk=todayKey(), g=store.dailyGoal, st=computeStreaks();
+  const first=new Date(calY,calM-1,1).getDay(), dim=new Date(calY,calM,0).getDate();
+  const p2=n=>String(n).padStart(2,'0');
+  let cells='';
+  for(let i=0;i<first;i++) cells+='<div class="cal-cell blank"></div>';
+  for(let d=1; d<=dim; d++){
+    const k=calY+'-'+p2(calM)+'-'+p2(d), n=store.days[k]||0;
+    const lv = n>=g?'l3':n>=MIN_DAY?'l2':n>0?'l1':'';
+    cells+=`<div class="cal-cell ${lv} ${k>tk?'fut':''} ${k===tk?'today':''} ${k===calSel?'sel':''}" onclick="calPick('${k}')">${d}${n?`<small>${n}</small>`:''}</div>`;
+  }
+  let detail='日付をタップすると、その日の学習数が見られます。';
+  if(calSel){
+    const n=store.days[calSel]||0, a=calSel.split('-');
+    detail=`<b>${+a[1]}月${+a[2]}日</b>　${n}語 ${n>=g?'🏆目標達成':n>=MIN_DAY?'✅学習した日':n>0?'（学習日には あと'+(MIN_DAY-n)+'語）':'（学習なし）'}`;
+  }
+  const goalChips=[10,20,30,50,100].map(v=>`<div class="chip ${g===v?'active':''}" onclick="setDailyGoal(${v});renderCalendar()">${v}語</div>`).join('');
+  main.innerHTML=`
+    <div class="stat-row" style="margin-bottom:12px;">
+      <div><b>${st.cur}</b><i>日</i><small>🔥連続</small></div>
+      <div><b>${st.total}</b><i>日</i><small>累計</small></div>
+      <div><b>${st.best}</b><i>日</i><small>最長連続</small></div>
+    </div>
+    <div class="setup-block"><h3>1日の目標（めくった語数）</h3><div class="tabs">${goalChips}</div></div>
+    <div class="cal-head"><button onclick="calMove(-1)">‹</button><b>${calY}年${calM}月</b><button onclick="calMove(1)">›</button></div>
+    <div class="cal-grid">${['日','月','火','水','木','金','土'].map(x=>`<div class="cal-dow">${x}</div>`).join('')}${cells}</div>
+    <div class="cal-detail">${detail}</div>
+    <div class="cal-legend"><span><i style="background:#f6e2a0"></i>1〜${MIN_DAY-1}語</span><span><i style="background:#9fcdb3"></i>学習した日（${MIN_DAY}語〜）</span><span><i style="background:var(--ok)"></i>目標達成</span></div>
+    <div class="footer-note">カードを裏返した語（ゲームで正解した語も）を、1日に1語1回まで数えます。<br>日付は朝4時に切り替わります。<br>1週間に1日までのお休みなら、連続日数は途切れません。<br>累計日数は減りません。</div>`;
+}
 
 /* ============ データ管理（書き出し／読み込み） ============ */
 function renderDataManage(){
@@ -913,6 +1065,8 @@ function applyImportedStore(obj){
     review: obj.review,
     matchBest: obj.matchBest,
     autoSpeak: obj.autoSpeak,
+    days: obj.days, seen: obj.seen, today: obj.today, dailyGoal: obj.dailyGoal,
+    lastBook: obj.lastBook, lastDir: obj.lastDir,
     lastSession: obj.lastSession || undefined,
     invRank: obj.invRank || {},
     invSet: obj.invSet || undefined
@@ -1095,7 +1249,36 @@ function toggleAutoSpeak(){
   const b=document.getElementById('autoBtn');
   if(b){ b.textContent = '🔊自動 '+(store.autoSpeak?'ON':'OFF'); b.classList.toggle('on', store.autoSpeak); }
 }
+/* 今日の10語：復習（また後で）を最大3語＋まだ触れていない新しい語。足りなければ、最も長く触れていない語で埋める */
+let fcTodayMode=false;
+function pickTodayBook(){
+  if(store.lastBook && bookUnitsAvail(store.lastBook).length) return store.lastBook;
+  const b=BOOKS.find(b=>bookUnitsAvail(b.id).length>0); return b?b.id:null;
+}
+function buildTodayDeck(dir){
+  const N=10, picked=[], has=new Set();
+  const add=w=>{ if(picked.length<N && !has.has(w.no)){ picked.push(w); has.add(w.no); } };
+  WORDS.filter(w=>isReview(w.no,dir)).sort((a,b)=>(store.seen[a.no]||0)-(store.seen[b.no]||0)).slice(0,3).forEach(add);
+  WORDS.filter(w=>!store.seen[w.no] && !isMastered(w.no,dir)).forEach(add);
+  WORDS.filter(w=>!isMastered(w.no,dir)).sort((a,b)=>(store.seen[a.no]||0)-(store.seen[b.no]||0)).forEach(add);
+  WORDS.forEach(add);
+  return picked;
+}
+function startToday(){
+  const bid=pickTodayBook();
+  if(!bid){ alert('収録済みの単語帳がありません。'); return; }
+  if(CUR_BOOK!==bid || WORDS.length===0) selectBook(bid);
+  const dir = store.lastDir || 'en2ja';
+  fcCfg.dir = dir; fcCfg.src='all'; fcCfg.order='seq';
+  fcTodayMode = true;
+  fcDeck = buildTodayDeck(dir);
+  fcIdx=0; fcFlipped=false; fcAutoPending=true;
+  saveSession();
+  nav('fcView');
+}
 function startFc(){
+  fcTodayMode=false;
+  store.lastDir = fcCfg.dir;
   fcDeck = buildFcDeck();
   fcIdx=0; fcFlipped=false; fcAutoPending=true;
   saveSession();
@@ -1104,7 +1287,7 @@ function startFc(){
 function saveSession(){
   store.lastSession = {
     book: CUR_BOOK, unit: fcCfg.unit, part: fcCfg.part, pos: fcCfg.pos, dir: fcCfg.dir, order: fcCfg.order, src: fcCfg.src,
-    deckNos: fcDeck.map(w=>w.no), idx: fcIdx
+    deckNos: fcDeck.map(w=>w.no), idx: fcIdx, today: fcTodayMode
   };
   saveStore();
 }
@@ -1114,13 +1297,13 @@ function resumeSession(){
   fcCfg = {unit:s.unit, part:(s.part===undefined?'all':s.part), pos:(s.pos==='vt'||s.pos==='vi'?'v':s.pos), dir:s.dir, order:s.order, src:s.src};
   fcDeck = s.deckNos.map(no=>WORDS.find(w=>w.no===no)).filter(Boolean);
   fcIdx = Math.min(s.idx, Math.max(0,fcDeck.length-1));
-  fcFlipped = false; fcAutoPending=true;
+  fcFlipped = false; fcAutoPending=true; fcTodayMode = !!s.today;
   nav('fcView');
 }
 
 function renderFcView(){
   const partTxt = fcCfg.part==='all' ? '' : ' '+PART_NAMES[+fcCfg.part];
-  titleEl.textContent = 'Unit '+fcCfg.unit+partTxt+' · '+(fcCfg.pos==='all'?'全品詞':POS_LABEL[fcCfg.pos]);
+  titleEl.textContent = fcTodayMode ? '今日の10語' : 'Unit '+fcCfg.unit+partTxt+' · '+(fcCfg.pos==='all'?'全品詞':POS_LABEL[fcCfg.pos]);
   if(fcDeck.length===0){
     stopSpeech();
     main.innerHTML = `<div class="deckdone"><div class="big">🎉</div>この条件のカードはありません。<br>（すべて覚えたセットに入っているか、条件に合う単語がありません）
@@ -1130,7 +1313,8 @@ function renderFcView(){
   if(fcIdx>=fcDeck.length){
     stopSpeech();
     main.innerHTML = `<div class="deckdone"><div class="big">✅</div>このセットは最後まで確認しました。<br>
-    <div style="margin-top:16px;"><button class="startbtn" onclick="fcIdx=0;fcAutoPending=true;renderFcView()">もう一度見る</button></div></div>`;
+    ${fcTodayMode?`<div style="margin:10px 0 4px;font-size:14px;">今日 <b>${todayCount()}</b> / ${store.dailyGoal}語　🔥${computeStreaks().cur}日連続</div>`:''}
+    <div style="margin-top:16px;">${fcTodayMode?`<button class="startbtn" onclick="startToday()">続けてもう10語</button><div style="height:10px"></div>`:''}<button class="startbtn" style="${fcTodayMode?'background:var(--ink)':''}" onclick="fcIdx=0;fcAutoPending=true;renderFcView()">もう一度見る</button>${fcTodayMode?`<div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="goHome()">トップへ戻る</span></div>`:''}</div></div>`;
     return;
   }
   const w = fcDeck[fcIdx];
@@ -1203,6 +1387,7 @@ function fcFlip(){
   fcFlipped=!fcFlipped;
   document.getElementById('cardOuter').classList.toggle('flipped');
   const w=fcDeck[fcIdx];
+  if(fcFlipped && w) touchWord(w.no);     // 裏面まで見たら1語として数える
   stopSpeech();
   /* 裏返したとき：英→日は例文1→例文2、日→英は（表で単語が鳴っていないので）単語→例文1→例文2。表に戻したときは鳴らさない */
   if(fcFlipped && store.autoSpeak && w){
@@ -1412,10 +1597,10 @@ function quizType(i,v){ quizItems[i].text=v; }
 function gradeQuiz(i){
   const q=quizItems[i]; if(q.graded) return;
   if(quizMode!=='write' && q.selected===null){ alert('選択肢を選んでください。'); return; }
-  q.graded=true; renderQuizView();
+  q.graded=true; if(quizCorrect(q)) touchWord(q.word.no); renderQuizView();
 }
 function gradeAllQuiz(){
-  quizItems.forEach(q=>{ q.graded=true; });
+  quizItems.forEach(q=>{ if(!q.graded){ q.graded=true; if(quizCorrect(q)) touchWord(q.word.no); } });
   renderQuizView();
 }
 function quizOverride(i){ quizItems[i].override=true; renderQuizView(); }
@@ -1532,7 +1717,7 @@ function tapSpeedCard(i){
   }
   const c1 = matchState.cards[matchState.selected];
   if(c1.no===c.no && c1.side!==c.side){
-    matchState.matched.push(c1.no);
+    matchState.matched.push(c1.no); touchWord(c1.no);
     matchState.selected=null;
     renderMatchView();
     if(matchState.matched.length===6) finishMatch();
@@ -1630,7 +1815,7 @@ function tapMemoryCard(i){
     const [i1,i2]=memoState.open;
     const c1=memoState.cards[i1], c2=memoState.cards[i2];
     if(c1.no===c2.no && c1.side!==c2.side){
-      memoState.matched.push(c1.no);
+      memoState.matched.push(c1.no); touchWord(c1.no);
       memoState.open=[];
       if(memoState.matched.length===6){
         memoState.finalTime=(Date.now()-memoState.startTs)/1000;
@@ -1845,6 +2030,7 @@ function invPick(i){
   c.picks.push(o.text);
   const btn=document.getElementById('iO').children[i];
   if(!ok){ seBuzz(); btn.classList.add('ng'); setTimeout(()=>btn.classList.remove('ng'),350); return; }
+  touchWord(c.w.no);
   IV.lock=true; IV.n++; document.getElementById('iN').textContent=IV.n;
   IV.log.push({w:c.w,picks:c.picks.slice(),res:c.picks.length===1?'first':'retry'});
   if(IV.dir==='ja2en') speakEn(c.w.e);
