@@ -569,6 +569,7 @@ function normStore(o){
     g.created = /^\d{4}-\d{2}-\d{2}$/.test(g.created||'') ? g.created : g.deadline;
     g.name = String(g.name||'目標');
     g.targetPct = [0,70,80,90].includes(g.targetPct) ? g.targetPct : 0;
+    g.base = (Number.isFinite(g.base) && g.base>=0) ? g.base : undefined;   // 目標を作った（計画を引き直した）時点で、すでに済んでいた延べ語数（旧バージョンの目標は未設定）
     g.tests = Array.isArray(g.tests) ? g.tests.slice(-20) : [];
     return g;
   }) : [];
@@ -658,8 +659,10 @@ function goalStats(g){
   if(!W) minL=0;
   const passLeft = minL<P ? lv.filter(l=>l===minL).length : 0;
   const curPass = Math.min(P, minL+1);
-  const tk=todayKey(), ti=keyToIdx(tk), di=keyToIdx(g.deadline), si=keyToIdx(g.created);
+  const tk=todayKey(), ti=keyToIdx(tk), di=keyToIdx(g.deadline);
   const todayN=(g.today && g.today.d===tk) ? g.today.n : 0;
+  if(g.base===undefined){ g.base=Math.max(0,done-todayN); g.created=tk; }   // 旧バージョンで作った目標：計画を今日から引き直す
+  const si=keyToIdx(g.created);
   const remain=Math.max(0,total-done), remainStart=remain+todayN;
   const daysLeft=di-ti+1;      // 今日を含めた残り日数
   let quota=0, overdue=false;
@@ -667,10 +670,12 @@ function goalStats(g){
     if(daysLeft<=0){ overdue=true; quota=remainStart; }
     else{ const sd=Math.max(1,Math.ceil(daysLeft*g.spw/7)); quota=Math.ceil(remainStart/sd); }
   }
-  const span=Math.max(1,di-si+1);
-  /* 計画ライン＝「今日のノルマを終えた時点で、ここまで進んでいるはず」の位置。先行／遅れは、今日の学習を始める前の時点で比べる */
-  const expected=total*Math.min(1,Math.max(0,(ti-si+1)/span));
-  const expectedStart=total*Math.min(1,Math.max(0,(ti-si)/span));
+  /* 計画ライン：作成時点で済んでいた分（base）から、残りの作業を「学習日」で均等に進める想定の位置（ノルマの計算と同じ考え方）。
+     expected＝今日のノルマを終えた時点でいるはずの位置。先行／遅れは、今日の学習を始める前の時点（done-todayN）で比べる */
+  const sdf=n=>Math.ceil(Math.max(0,n)*g.spw/7);
+  const span=Math.max(1,di-si+1), spanSd=Math.max(1,sdf(span)), base=Math.min(total,g.base||0);
+  const fe=Math.min(1,sdf(ti-si+1)/spanSd), fs=Math.min(1,sdf(ti-si)/spanSd);
+  const expected=base+(total-base)*fe, expectedStart=base+(total-base)*fs;
   const ahead=Math.round((done-todayN)-expectedStart);
   const weekly=Math.min(remainStart, quota*g.spw), monthly=Math.min(remainStart, Math.round(quota*g.spw*30/7));
   return {W:W,P:P,total:total,done:done,remain:remain,todayN:todayN,quota:quota,daysLeft:daysLeft,overdue:overdue,expected:expected,ahead:ahead,weekly:weekly,monthly:monthly,curPass:curPass,passLeft:passLeft,minL:minL};
@@ -709,6 +714,14 @@ function goalTouch(no){
   });
   return msg;
 }
+function goalAutoName(g){
+  const f=g.from, t=g.to, whole=(f[1]===1 && t[1]===unitMaxN(g.book,t[0]));
+  let r;
+  if(f[0]===t[0]) r = whole ? 'Unit '+f[0] : 'Unit '+f[0]+' No.'+f[1]+'〜'+t[1];
+  else r = whole ? 'Unit '+f[0]+'〜'+t[0] : 'Unit '+f[0]+' No.'+f[1]+'〜Unit '+t[0]+' No.'+t[1];
+  return r+'を'+g.passes+'周';
+}
+function isAutoGoalName(g){ return g.autoName===true || (g.autoName===undefined && /^Unit .*を\d+周$/.test(g.name)); }
 function dateJa(k){ const a=k.split('-'); return (+a[1])+'月'+(+a[2])+'日'; }
 function addToKey(k,kind){
   const a=k.split('-').map(Number), d=new Date(a[0],a[1]-1,a[2]);
@@ -1374,15 +1387,15 @@ function renderGoals(){
     else if(g.passesDone && g.targetPct>0) state='🎯 到達度テスト待ち';
     else if(s.overdue) state='⚠ 期限を過ぎています';
     else state='🎯 '+dateJa(g.deadline)+'まで（あと'+(s.daysLeft-1)+'日）';
-    const aheadTxt = g.doneAt ? '' : (s.ahead>0 ? '<span class="ahead">計画より '+s.ahead+'回 先行</span>' : s.ahead<0 ? '<span class="behind">計画より '+(-s.ahead)+'回 遅れ</span>' : '<span>計画どおり</span>');
+    const aheadTxt = g.doneAt ? '' : (s.ahead>0 ? '<span class="ahead">計画より '+s.ahead+'語 先行</span>' : s.ahead<0 ? '<span class="behind">計画より '+(-s.ahead)+'語 遅れ</span>' : '<span>計画どおり</span>');
     const behindNote = (!g.doneAt && s.total && -s.ahead > Math.max(10, s.total*0.1))
       ? '<div class="goal-note">計画より遅れています。「✎編集」で期限を延ばす・範囲を減らす・週の学習日を増やす、のいずれかで、毎日のノルマを調整できます。</div>' : '';
     const pace = g.doneAt ? '' : `<div class="goal-pace">今日のノルマ <b>${s.todayN}/${s.quota}語</b><br>ペース：1日 ${s.quota}語 ／ 1週 約${s.weekly}語 ／ 1ヶ月 約${s.monthly}語（週${g.spw}日学習で計算）</div>`;
     return `<div class="goal-card ${g.doneAt?'done':''}">
       <div class="goal-top"><b>${esc(g.name)}</b><span class="goal-dl">${state}</span></div>
-      <div class="goal-range">${esc(goalRangeText(g))}<br>全${s.W}語 × ${s.P}周 ＝ 合計${s.total}回${g.doneAt?'':`<br>いま <b>${s.curPass}周目</b>・この周の残り ${s.passLeft}語`}</div>
+      <div class="goal-range">${esc(goalRangeText(g))}<br>全${s.W}語 × ${s.P}周 ＝ 延べ${s.total}語${g.doneAt?'':`<br>いま <b>${s.curPass}周目</b>（この周の残り ${s.passLeft}語）`}</div>
       <div class="goal-bar"><div class="goal-fill" style="width:${pct.toFixed(1)}%"></div>${g.doneAt?'':`<div class="goal-plan" style="left:calc(${plan.toFixed(1)}% - 1px)"></div>`}</div>
-      <div class="goal-meta"><span>進捗 ${s.done}/${s.total}回（${Math.floor(pct)}%）</span>${aheadTxt}</div>
+      <div class="goal-meta"><span>進捗 ${s.done} / ${s.total}語（${Math.floor(pct)}%）</span>${aheadTxt}</div>
       ${pace}${behindNote}
       ${assessDue(g)?'<div class="goal-note">📊 到達度テストの時期です。いまの実力を確かめましょう。</div>':''}
       ${(g.passesDone && !g.doneAt && g.targetPct>0)?'<div class="goal-note">🎯 周回は完了しました。到達度テストで'+g.targetPct+'％以上を取ると目標達成です。</div>':''}
@@ -1394,7 +1407,7 @@ function renderGoals(){
   main.innerHTML=`
     ${cards || '<div class="footer-note" style="margin:18px 0;">まだ目標がありません。<br>「テストまでにUnit 1〜3を3周」のような目標を作ると、期限から毎日のノルマを自動で計算します。</div>'}
     ${store.goals.length<GOAL_MAX ? '<button class="startbtn" onclick="goalNew()">＋ 新しい目標を作る</button>' : '<div class="footer-note">目標は'+GOAL_MAX+'つまで作れます。</div>'}
-    <div class="footer-note">進捗バーの黒い線は「計画どおりならここまで進んでいる」位置です。<br>ノルマは毎日、残りの回数と残りの日数から計算し直します。<br>「1周」は、範囲の全単語をひと通り学習することです。最後までやりきるまで次の周にはならず、同じ周で同じ語を何度学習しても進捗は進みません（1日の学習数には数えます）。<br>「覚えた」（その方向）に入れた語は周回済みとして扱い、出題しません。</div>`;
+    <div class="footer-note">進捗バーの黒い線は「今日のノルマを終えたとき、計画ならここまで進んでいる」位置です。「計画より◯語 先行／遅れ」は、今日の学習を始める前の時点での、計画との差です。<br>「語」は延べ語数です（3周なら、同じ単語を3回数えます）。<br>ノルマは毎日、残りの回数と残りの日数から計算し直します。<br>「1周」は、範囲の全単語をひと通り学習することです。最後までやりきるまで次の周にはならず、同じ周で同じ語を何度学習しても進捗は進みません（1日の学習数には数えます）。<br>「覚えた」（その方向）に入れた語は周回済みとして扱い、出題しません。</div>`;
 }
 function goalDelete(id){
   const g=store.goals.find(x=>x.id===id); if(!g) return;
@@ -1430,7 +1443,7 @@ function goalNew(){
 }
 function goalEditOpen(id){
   const g=store.goals.find(x=>x.id===id); if(!g) return;
-  gf={id:g.id,name:g.name,book:g.book,from:g.from.slice(),to:g.to.slice(),passes:g.passes,deadline:g.deadline,spw:g.spw,targetPct:g.targetPct||0};
+  gf={id:g.id,name:isAutoGoalName(g)?'':g.name,book:g.book,from:g.from.slice(),to:g.to.slice(),passes:g.passes,deadline:g.deadline,spw:g.spw,targetPct:g.targetPct||0};
   gfCalSync(); nav('goalEdit');
 }
 function gfTemp(){
@@ -1454,14 +1467,18 @@ function goalSave(){
   const t=gfTemp(), ns=goalNos(t);
   if(!ns.length){ alert('この範囲に単語がありません。範囲を確認してください。'); return; }
   if(gf.deadline < todayKey()){ alert('期限は今日以降の日付にしてください。'); return; }
-  const name = gf.name || ('Unit '+gf.from[0]+'〜'+gf.to[0]+'を'+gf.passes+'周');
+  const auto = !gf.name.trim();     // 空欄なら、範囲・周回数から名前を自動で付ける（編集して範囲などを変えると名前も変わる）
+  const name = auto ? goalAutoName(gf) : gf.name.trim();
   if(gf.id){
     const g=store.goals.find(x=>x.id===gf.id);
-    Object.assign(g,{name:name,book:gf.book,from:gf.from,to:gf.to,passes:gf.passes,deadline:gf.deadline,spw:gf.spw,targetPct:gf.targetPct||0});
-    goalInitCnt(g); goalRefreshDone(g);
+    const replan = g.book!==gf.book || goalSig(g)!==goalSig(gf) || g.passes!==gf.passes || g.deadline!==gf.deadline || g.spw!==gf.spw;
+    Object.assign(g,{name:name,autoName:auto,book:gf.book,from:gf.from,to:gf.to,passes:gf.passes,deadline:gf.deadline,spw:gf.spw,targetPct:gf.targetPct||0});
+    goalInitCnt(g);
+    if(replan){ g.created=todayKey(); g.base=0; const s0=goalStats(g); g.base=Math.max(0,s0.done-s0.todayN); }   // 計画を今日から引き直す
+    goalRefreshDone(g);
   } else {
-    const ng={id:'g'+Date.now().toString(36),name:name,book:gf.book,from:gf.from,to:gf.to,passes:gf.passes,deadline:gf.deadline,spw:gf.spw,targetPct:gf.targetPct||0,tests:[],created:todayKey(),cnt:{},today:{d:'',n:0},doneAt:null,passesDone:null};
-    goalInitCnt(ng); goalRefreshDone(ng); store.goals.push(ng);
+    const ng={id:'g'+Date.now().toString(36),name:name,autoName:auto,base:0,book:gf.book,from:gf.from,to:gf.to,passes:gf.passes,deadline:gf.deadline,spw:gf.spw,targetPct:gf.targetPct||0,tests:[],created:todayKey(),cnt:{},today:{d:'',n:0},doneAt:null,passesDone:null};
+    goalInitCnt(ng); ng.base=goalStats(ng).done; goalRefreshDone(ng); store.goals.push(ng);
   }
   saveStore(); gf=null; goBack();
 }
@@ -1475,10 +1492,10 @@ function renderGoalEdit(){
   const chips=(arr,cur,fn,unit)=>arr.map(v=>`<div class="chip ${cur===v?'active':''}" onclick="${fn}(${v})">${v}${unit}</div>`).join('');
   const t=gfTemp(), s=goalStats(t);
   const prev = !s.W ? 'この範囲に単語がありません。'
-    : `対象 <b>${s.W}語</b> × ${s.P}周 ＝ 合計 <b>${s.total}回</b><br>`+(gf.deadline<todayKey() ? '期限は今日以降にしてください。'
+    : `対象 <b>${s.W}語</b> × ${s.P}周 ＝ 延べ <b>${s.total}語</b><br>`+(gf.deadline<todayKey() ? '期限は今日以降にしてください。'
       : `期限まであと${s.daysLeft-1}日（週${gf.spw}日学習）→ <b>1日 ${s.quota}語</b>／1週 約${s.weekly}語／1ヶ月 約${s.monthly}語`);
   main.innerHTML=`<div class="gf">
-    <div class="setup-block"><h3>目標の名前（空欄なら自動）</h3><input id="gfName" type="text" maxlength="30" placeholder="例：中間テスト／受験まで" value="${esc(gf.name)}" oninput="gf.name=this.value"></div>
+    <div class="setup-block"><h3>目標の名前（空欄なら自動）</h3><input id="gfName" type="text" maxlength="30"  placeholder="空欄なら自動：${esc(goalAutoName(gf))}" value="${esc(gf.name)}" oninput="gf.name=this.value"></div>
     <div class="setup-block"><h3>単語帳</h3><div class="row"><select onchange="gfBook(this.value)">${readyBooks.map(b=>`<option value="${b.id}" ${b.id===gf.book?'selected':''}>${esc(b.name)}</option>`).join('')}</select></div></div>
     <div class="setup-block"><h3>範囲（ここから）</h3><div class="row"><select onchange="gfFromUnit(this.value)">${uopt(gf.from[0])}</select><span class="lbl">No.</span><input type="number" min="1" max="${unitMaxN(gf.book,gf.from[0])}" value="${gf.from[1]}" onchange="gfFromN(this.value)"></div></div>
     <div class="setup-block"><h3>範囲（ここまで）</h3><div class="row"><select onchange="gfToUnit(this.value)">${uopt(gf.to[0])}</select><span class="lbl">No.</span><input type="number" min="1" max="${unitMaxN(gf.book,gf.to[0])}" value="${gf.to[1]}" onchange="gfToN(this.value)"></div></div>
