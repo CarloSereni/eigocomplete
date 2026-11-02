@@ -151,6 +151,13 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .stat-row>div{flex:1;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 2px;}
 .stat-row b{font-size:20px;color:var(--ink);} .stat-row i{font-style:normal;font-size:11px;color:var(--sub);}
 .stat-row small{display:block;font-size:10.5px;color:var(--sub);margin-top:1px;}
+.home-stats{display:flex;justify-content:center;gap:6px;margin:2px 0 8px;}
+.home-stats>div{flex:1;min-width:0;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:5px 2px;white-space:nowrap;}
+.home-stats b{font-size:18px;color:var(--ink);} .home-stats i{font-style:normal;font-size:11px;color:var(--sub);}
+.home-stats small{font-size:11px;color:var(--sub);margin-left:1px;}
+.gp-summary{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin:-2px 0 12px;font-size:12.5px;line-height:1.55;color:var(--ink);}
+.gp-summary .gp-sum-range{font-weight:700;}
+.gp-summary .gp-sum-meta{color:var(--sub);margin-top:1px;} .gp-summary .gp-sum-meta b{color:var(--ink);} .gp-summary .gp-sum-meta .over{color:#d2691e;font-weight:700;}
 .today-msg{font-size:12.5px;color:var(--ink);margin-top:8px;line-height:1.5;}
 .today-btn{width:100%;margin-top:12px;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 8px rgba(166,50,31,.25);}
 .today-link{text-align:center;margin-top:10px;font-size:13px;color:var(--ink);text-decoration:underline;cursor:pointer;}
@@ -1081,8 +1088,16 @@ function gpBlock(label,pct,numTxt,cls,planPct,sub){
   return `<div class="gp-block"><div class="gp-top"><span class="gp-label">${label}</span><span class="gp-val"><b class="${cls}">${pct}%</b>${numTxt}</span></div>
     <div class="gp-bar"><div class="gp-fill ${cls}" style="width:${pct}%"></div>${planPct==null?'':`<div class="gp-plan" style="left:calc(${planPct.toFixed(1)}% - 1px)"></div>`}</div>${sub?`<div class="gp-sub">${sub}</div>`:''}</div>`;
 }
+function homeStatsHtml(){
+  const st=computeStreaks();
+  return `<div class="home-stats">
+      <div><b>${st.cur}</b><i>日</i><small>🔥連続</small></div>
+      <div><b>${st.total}</b><i>日</i><small>累計</small></div>
+      <div><b>${st.best}</b><i>日</i><small>最長連続</small></div>
+    </div>`;
+}
 function todayCardHtml(){
-  const st=computeStreaks(), tab=store.goalTab, tg=goalOf(tab), pg=primaryGoal();
+  const tab=store.goalTab, tg=goalOf(tab), pg=primaryGoal();
   /* 本日の目標（短期目標から。目標がなければ、カレンダーで決めた1日の目標） */
   let n,q;
   if(pg){ const gs=goalStats(pg); n=gs.todayN; q=Math.max(1,gs.quota); } else { n=todayCount(); q=store.dailyGoal; }
@@ -1094,9 +1109,15 @@ function todayCardHtml(){
       <button class="goal-btns-inline" style="width:100%;padding:11px;border-radius:10px;border:1px dashed var(--ink);background:var(--bg);color:var(--ink);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="goalEditOpen('${tab}')">＋ ${GOAL_NAME[tab]}を設定する</button></div>`;
   } else {
     const gs=goalStats(tg), pct=pctOf(gs.done,gs.total), diff=Math.round(gs.done-gs.expected);
-    const days = gs.overdue ? '期限を過ぎています' : '期限 '+dateJa(tg.deadline)+'（あと'+(gs.daysLeft-1)+'日）';
     const stat = tg.doneAt ? '🎉 達成！' : (diff>0 ? '計画より '+diff+'問 先行' : diff===0 ? '計画どおり' : gs.ahead<0 ? '計画より '+(-diff)+'問 遅れ' : '今日の計画まで あと'+(-diff)+'問');
-    goalBar=gpBlock(GOAL_NAME[tab],pct,`${gs.done}/${gs.total}問`,(tg.doneAt||diff>=0)?'ok':'warn',tg.doneAt?null:(gs.total?gs.expected/gs.total*100:null),days+'　'+stat);
+    goalBar=gpBlock(GOAL_NAME[tab],pct,`${gs.done}/${gs.total}問`,(tg.doneAt||diff>=0)?'ok':'warn',tg.doneAt?null:(gs.total?gs.expected/gs.total*100:null),stat);
+  }
+  /* 設定した目標の範囲・周回数・期限（短期／長期ボタンのすぐ下に常に表示） */
+  let summary='';
+  if(tg){
+    const gs0=goalStats(tg);
+    const dl = tg.doneAt ? '🎉 達成' : (gs0.overdue ? '<span class="over">期限を過ぎています</span>' : '期限 <b>'+dateJa(tg.deadline)+'</b>（あと'+(gs0.daysLeft-1)+'日）');
+    summary=`<div class="gp-summary"><div class="gp-sum-range">${esc(goalRangeText(tg))}</div><div class="gp-sum-meta"><b>${tg.passes}周</b>　${dl}</div></div>`;
   }
   /* 前回の続きから */
   const sg=goalOf('short'), lg=goalOf('long'), main=(sg&&!sg.doneAt)?sg:((lg&&!lg.doneAt)?lg:null);
@@ -1113,12 +1134,7 @@ function todayCardHtml(){
   }
   return `<div class="gp-card">
     <div class="gp-tabs"><button class="gp-tab ${tab==='short'?'on':''}" onclick="setGoalTab('short')">短期目標</button><button class="gp-tab ${tab==='long'?'on':''}" onclick="setGoalTab('long')">長期目標</button></div>
-    ${todayBar}${goalBar}
-    <div class="stat-row" style="margin:4px 0 12px;">
-      <div><b>${st.cur}</b><i>日</i><small>🔥連続</small></div>
-      <div><b>${st.total}</b><i>日</i><small>累計</small></div>
-      <div><b>${st.best}</b><i>日</i><small>最長連続</small></div>
-    </div>
+    ${summary}${todayBar}${goalBar}
     ${btn}
     <div class="today-links" style="margin-top:10px;">
       <div class="today-link" style="margin-top:0" onclick="nav('goals')">🎯 目標の設定・テスト</div>
@@ -1142,6 +1158,7 @@ function renderHome(){
     <div class="hero">
       <div class="eyebrow">English Vocabulary Complete</div>
       <h2>一生使える英単熟語帳</h2>
+      ${homeStatsHtml()}
       <p>単語帳を選んでください（収録 ${total}語）</p>
     </div>
     ${todayCardHtml()}
