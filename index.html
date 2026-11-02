@@ -125,6 +125,22 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .gf .lbl{font-size:12.5px;color:var(--sub);min-width:2.6em;}
 .gf-preview{background:#eef5f0;border:1px solid #9fcdb3;border-radius:12px;padding:11px 13px;font-size:13.5px;line-height:1.65;color:var(--ink);margin:6px 0 14px;}
 .today-links{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;}
+.gp-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px 14px;margin:0 0 14px;box-shadow:var(--shadow);}
+.gp-tabs{display:flex;gap:8px;margin-bottom:12px;}
+.gp-tab{flex:1;padding:9px 6px;border-radius:999px;border:2px solid var(--ink);background:var(--card);color:var(--ink);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;}
+.gp-tab.on{background:var(--ok);border-color:var(--ok);color:#fff;}
+.gp-block{margin-bottom:12px;}
+.gp-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px;}
+.gp-label{font-size:14px;font-weight:700;color:var(--ink);}
+.gp-val{font-size:13px;color:var(--ink);} .gp-val b{font-size:20px;margin-right:6px;}
+.gp-val b.blue{color:#2860b8;} .gp-val b.ok{color:var(--ok);} .gp-val b.warn{color:#d2691e;}
+.gp-bar{position:relative;height:18px;border-radius:9px;background:#e7dfcf;border:1px solid #bdb29b;overflow:visible;}
+.gp-fill{height:100%;border-radius:9px;min-width:0;}
+.gp-fill.blue{background:#4a90e2;} .gp-fill.ok{background:var(--ok);} .gp-fill.warn{background:#e8923a;}
+.gp-plan{position:absolute;top:-4px;width:3px;height:24px;background:var(--ink);border-radius:2px;}
+.gp-sub{font-size:12px;color:var(--sub);margin-top:5px;line-height:1.5;}
+.gp-dir{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--sub);}
+.gp-dir .chip{padding:5px 12px;font-size:13px;}
 .today-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;margin:0 0 14px;box-shadow:var(--shadow);}
 .today-top{display:flex;align-items:center;gap:14px;}
 .ring-wrap{position:relative;width:88px;height:88px;flex-shrink:0;cursor:pointer;}
@@ -132,7 +148,7 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .ring-tx b{font-size:24px;color:var(--ink);} .ring-tx span{font-size:11px;color:var(--sub);}
 .today-info{flex:1;min-width:0;}
 .stat-row{display:flex;gap:6px;}
-.stat-row>div{flex:1;text-align:center;background:var(--bg);border-radius:10px;padding:6px 2px;}
+.stat-row>div{flex:1;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 2px;}
 .stat-row b{font-size:20px;color:var(--ink);} .stat-row i{font-style:normal;font-size:11px;color:var(--sub);}
 .stat-row small{display:block;font-size:10.5px;color:var(--sub);margin-top:1px;}
 .today-msg{font-size:12.5px;color:var(--ink);margin-top:8px;line-height:1.5;}
@@ -604,21 +620,43 @@ function normStore(o){
   Object.keys(o.log).forEach(k=>{ const v=o.log[k]; o.log[k]=Array.isArray(v) ? {en2ja:v, ja2en:[]} : {en2ja:(v && Array.isArray(v.en2ja))?v.en2ja:[], ja2en:(v && Array.isArray(v.ja2en))?v.ja2en:[]}; });
   o.shown = (o.shown && typeof o.shown==='object' && o.shown.k && typeof o.shown.k==='object') ? o.shown : {d:'',k:{}};   // 今日すでに画面に出した語（続きから再開・重複回避用）
   o.tw = {en2ja:(o.tw && o.tw.en2ja && typeof o.tw.en2ja==='object') ? o.tw.en2ja : {}, ja2en:(o.tw && o.tw.ja2en && typeof o.tw.ja2en==='object') ? o.tw.ja2en : {}};   // テスト結果 {語番号:[別日の連続正解数,最後に正解した日,直近の結果]}
-  /* 範囲指定の目標 */
-  o.goals = Array.isArray(o.goals) ? o.goals.filter(g=>g && g.id && g.book && Array.isArray(g.from) && Array.isArray(g.to) && /^\d{4}-\d{2}-\d{2}$/.test(g.deadline||'')).map(g=>{
-    g.cnt = (g.cnt && typeof g.cnt==='object') ? g.cnt : {};
-    g.today = (g.today && typeof g.today==='object') ? g.today : {d:'',n:0};
-    g.dir = g.dir==='ja2en' ? 'ja2en' : 'en2ja';     // 目標の方向（旧形式の目標は英→日）
-    g.passes = [1,2,3,4,5].includes(g.passes) ? g.passes : 3;
-    g.spw = [5,6,7].includes(g.spw) ? g.spw : 6;
-    g.created = /^\d{4}-\d{2}-\d{2}$/.test(g.created||'') ? g.created : g.deadline;
-    g.name = String(g.name||'目標');
-    g.targetPct = [0,70,80,90].includes(g.targetPct) ? g.targetPct : 0;
-    g.pv = g.pv===2 ? 2 : undefined;
-    g.base = (Number.isFinite(g.base) && g.base>=0) ? g.base : undefined;   // 目標を作った（計画を引き直した）時点で、すでに済んでいた延べ語数（旧バージョンの目標は未設定）
-    g.tests = Array.isArray(g.tests) ? g.tests.slice(-20) : [];
-    return g;
-  }) : [];
+  /* 目標：「短期目標」「長期目標」の2つに固定。方向は区別せず、1語×2方向＝2問と数える。
+     旧形式（最大6つ・方向別）の目標は、期限の近い順に変換し、同じ範囲の英→日・日→英は1つにまとめる */
+  o.goalTab = o.goalTab==='long' ? 'long' : 'short';
+  { const DATE=/^\d{4}-\d{2}-\d{2}$/, NAME={short:'短期目標',long:'長期目標'};
+    const raw = Array.isArray(o.goals) ? o.goals : [];
+    const valid = raw.filter(g=>g && g.book && Array.isArray(g.from) && Array.isArray(g.to) && DATE.test(g.deadline||''));
+    const isNew = g=>(g.kind==='short'||g.kind==='long') && g.cnt && typeof g.cnt==='object' && (g.cnt.en2ja||g.cnt.ja2en);
+    let list = valid.filter(isNew);
+    if(!list.length){
+      const sig=g=>[g.book,g.from.join('-'),g.to.join('-'),g.deadline,g.passes].join('|'), groups=[];
+      valid.slice().sort((a,b)=>a.deadline<b.deadline?-1:a.deadline>b.deadline?1:0).forEach(g=>{
+        let gr=groups.find(x=>x.k===sig(g));
+        if(!gr){ gr={k:sig(g), g:g, cnt:{en2ja:{},ja2en:{}}, tests:[]}; groups.push(gr); }
+        const d=g.dir==='ja2en'?'ja2en':'en2ja';
+        if(g.cnt && typeof g.cnt==='object') Object.assign(gr.cnt[d], g.cnt);
+        gr.tests=gr.tests.concat(Array.isArray(g.tests)?g.tests:[]);
+      });
+      list = groups.slice(0,2).map((gr,i)=>({kind:i?'long':'short', book:gr.g.book, from:gr.g.from, to:gr.g.to, passes:gr.g.passes, deadline:gr.g.deadline, spw:gr.g.spw, created:gr.g.created, cnt:gr.cnt, tests:gr.tests}));
+    }
+    const seen={};
+    o.goals = list.filter(g=>{ if(seen[g.kind]) return false; seen[g.kind]=1; return true; }).map(g=>{
+      g.id=g.kind; g.name=NAME[g.kind];
+      g.cnt={en2ja:(g.cnt && g.cnt.en2ja && typeof g.cnt.en2ja==='object')?g.cnt.en2ja:{}, ja2en:(g.cnt && g.cnt.ja2en && typeof g.cnt.ja2en==='object')?g.cnt.ja2en:{}};
+      g.today=(g.today && typeof g.today==='object') ? g.today : {d:'',n:0};
+      g.passes=[1,2,3,4,5].includes(g.passes) ? g.passes : 1;
+      g.spw=[5,6,7].includes(g.spw) ? g.spw : 6;
+      g.created=DATE.test(g.created||'') ? g.created : g.deadline;
+      g.base=(Number.isFinite(g.base) && g.base>=0) ? g.base : undefined;
+      g.pv = g.pv===3 ? 3 : undefined;
+      g.tests=Array.isArray(g.tests) ? g.tests.slice(-20) : [];
+      g.cur=(g.cur && typeof g.cur==='object') ? g.cur : {};
+      g.cur={en2ja:Number(g.cur.en2ja)||0, ja2en:Number(g.cur.ja2en)||0, last:g.cur.last==='ja2en'?'ja2en':'en2ja'};
+      g.doneAt=g.doneAt||null;
+      delete g.dir; delete g.targetPct; delete g.autoName;
+      return g;
+    });
+  }
   return o;
 }
 let store;
@@ -692,28 +730,33 @@ function goalNos(g){
   return nos;
 }
 function goalSet(g){ goalNos(g); return GOAL_CACHE[goalSig(g)].set; }
-/* 各語の到達周回（0〜周回数）。「覚えた」（この方向）に入れた語は出題しないが、「今の周は済ませた」ものとして数える
-   （最も進んでいない語の周回＋1。周回数を変えても進捗の語数が増減しないようにするため） */
+const GOAL_NAME={short:'短期目標',long:'長期目標'}, DIRS=['en2ja','ja2en'];
+function goalOf(kind){ return store.goals.find(g=>g.kind===kind)||null; }
+/* 各カード（語×方向）の到達周回（0〜周回数）。「覚えた」（その方向）のカードは出題しないが、「今の周は済ませた」ものとして数える */
 function goalLevels(g){
-  const P=g.passes, ms=new Set(store.mastered[g.dir]), nos=goalNos(g);
-  let L=P; nos.forEach(no=>{ if(!ms.has(no)){ const c=Math.min(P,g.cnt[no]||0); if(c<L) L=c; } });
-  return nos.map(no=> ms.has(no) ? Math.min(P, Math.max(g.cnt[no]||0, L+1)) : Math.min(P,g.cnt[no]||0));
+  const P=g.passes, nos=goalNos(g), ms={en2ja:new Set(store.mastered.en2ja), ja2en:new Set(store.mastered.ja2en)}, out={};
+  let L=P;
+  DIRS.forEach(d=>nos.forEach(no=>{ if(!ms[d].has(no)){ const c=Math.min(P,g.cnt[d][no]||0); if(c<L) L=c; } }));
+  DIRS.forEach(d=>{ out[d]=nos.map(no=> ms[d].has(no) ? Math.min(P, Math.max(g.cnt[d][no]||0, L+1)) : Math.min(P,g.cnt[d][no]||0)); });
+  return out;
 }
-function goalEligibleNos(g){   // 今の周でまだ進めていない語（最も周回の少ない語）
-  const lv=goalLevels(g), nos=goalNos(g), P=g.passes;
-  let minL=P; lv.forEach(l=>{ if(l<minL) minL=l; });
-  return minL>=P ? [] : nos.filter((no,i)=>lv[i]===minL);
+function goalMinLevel(lv,P){ let m=P; DIRS.forEach(d=>lv[d].forEach(l=>{ if(l<m) m=l; })); return m; }
+function goalEligible(g){   // 今の周でまだ進めていないカード（方向別の語番号）
+  const lv=goalLevels(g), nos=goalNos(g), P=g.passes, minL=goalMinLevel(lv,P), out={en2ja:[],ja2en:[]};
+  if(minL>=P) return out;
+  DIRS.forEach(d=>nos.forEach((no,i)=>{ if(lv[d][i]===minL) out[d].push(no); }));
+  return out;
 }
 function bestPct(g){ return (g.tests||[]).reduce((m,t)=>Math.max(m,t.pct),0); }
 function goalStats(g){
-  const nos=goalNos(g), W=nos.length, P=g.passes, total=W*P, lv=goalLevels(g);
-  let done=0, minL=P; lv.forEach(l=>{ done+=l; if(l<minL) minL=l; });
-  if(!W) minL=0;
-  const passLeft = minL<P ? lv.filter(l=>l===minL).length : 0;
-  const curPass = Math.min(P, minL+1);
+  const nos=goalNos(g), W=nos.length, P=g.passes, total=W*2*P, lv=goalLevels(g);
+  let done=0; DIRS.forEach(d=>lv[d].forEach(l=>{ done+=l; }));
+  const minL = W ? goalMinLevel(lv,P) : 0;
+  let passLeft=0; if(minL<P) DIRS.forEach(d=>lv[d].forEach(l=>{ if(l===minL) passLeft++; }));
+  const curPass=Math.min(P,minL+1);
   const tk=todayKey(), ti=keyToIdx(tk), di=keyToIdx(g.deadline);
   const todayN=(g.today && g.today.d===tk) ? g.today.n : 0;
-  if(g.pv!==2){ g.pv=2; g.base=Math.max(0,done-todayN); g.created=tk; }   // 計算方法が変わる前に作った目標：計画を今日から引き直す
+  if(g.pv!==3){ g.pv=3; g.base=Math.max(0,done-todayN); g.created=tk; }   // 計算方法が変わる前に作った目標：計画を今日から引き直す
   const si=keyToIdx(g.created);
   const remain=Math.max(0,total-done), remainStart=remain+todayN;
   const daysLeft=di-ti+1;      // 今日を含めた残り日数
@@ -722,8 +765,7 @@ function goalStats(g){
     if(daysLeft<=0){ overdue=true; quota=remainStart; }
     else{ const sd=Math.max(1,Math.ceil(daysLeft*g.spw/7)); quota=Math.ceil(remainStart/sd); }
   }
-  /* 計画ライン：作成時点で済んでいた分（base）から、残りの作業を「学習日」で均等に進める想定の位置（ノルマの計算と同じ考え方）。
-     expected＝今日のノルマを終えた時点でいるはずの位置。先行／遅れは、今日の学習を始める前の時点（done-todayN）で比べる */
+  /* 計画ライン：作成時点で済んでいた分（base）から、残りを「学習日」で均等に進める位置。expected＝今日のノルマを終えた時点でいるはずの位置 */
   const sdf=n=>Math.ceil(Math.max(0,n)*g.spw/7);
   const span=Math.max(1,di-si+1), spanSd=Math.max(1,sdf(span)), base=Math.min(total,g.base||0);
   const fe=Math.min(1,sdf(ti-si+1)/spanSd), fs=Math.min(1,sdf(ti-si)/spanSd);
@@ -732,50 +774,33 @@ function goalStats(g){
   const weekly=Math.min(remainStart, quota*g.spw), monthly=Math.min(remainStart, Math.round(quota*g.spw*30/7));
   return {W:W,P:P,total:total,done:done,remain:remain,todayN:todayN,quota:quota,daysLeft:daysLeft,overdue:overdue,expected:expected,ahead:ahead,weekly:weekly,monthly:monthly,curPass:curPass,passLeft:passLeft,minL:minL};
 }
-function activeGoals(){ return store.goals.filter(g=>!g.doneAt).sort((a,b)=>a.deadline<b.deadline?-1:a.deadline>b.deadline?1:0); }
-function primaryGoal(){ return activeGoals()[0]||null; }
-/* 目標の判定：周回が終わっていて、（合格ラインがあれば）到達度テストにも合格したら達成 */
-function goalRefreshDone(g){
-  g.doneAt=null; g.passesDone=null;
-  if(goalStats(g).remain<=0){ g.passesDone=todayKey(); if(!(g.targetPct>0) || bestPct(g)>=g.targetPct) g.doneAt=todayKey(); }
+function activeGoals(){ return store.goals.filter(g=>!g.doneAt).sort((a,b)=>a.kind==='short'?-1:1); }
+function primaryGoal(){ return activeGoals()[0]||null; }   // 本日の目標は、短期目標から（なければ長期目標）
+function goalRefreshDone(g){ g.doneAt=null; g.passesDone=null; if(goalStats(g).remain<=0){ g.passesDone=todayKey(); g.doneAt=todayKey(); } }
+function goalInitCnt(g){   // 目標を作る前に学習したカード（学習記録がある語×方向）は、1周目を済ませたものとして扱う
+  const nos=goalNos(g);
+  DIRS.forEach(d=>{ const sn=store.seen[d]; nos.forEach(no=>{ if(g.cnt[d][no]===undefined && sn[no]) g.cnt[d][no]=1; }); });
 }
-function goalInitCnt(g){   // 目標を作る前に学習した語（学習記録がある語）は、1周目を済ませたものとして扱う
-  const sn=store.seen[g.dir]||store.seen.en2ja;
-  goalNos(g).forEach(no=>{ if(g.cnt[no]===undefined && sn[no]) g.cnt[no]=1; });
-}
-/* 進めるのは「今の周でまだ進めていない語」だけ。同じ周で同じ語を何度やっても、最後までやりきるまで次の周にはならない */
+function goalSetCursor(kind,dir,no){ const g=goalOf(kind); if(!g) return; g.cur[dir]=no; g.cur.last=dir; saveStore(); }
+/* 進めるのは「今の周でまだ進めていないカード」だけ。同じ周で同じカードを何度学習しても、最後までやりきるまで次の周にはならない（1日の学習数には数える） */
 function goalTouch(no,dir){
   let msg=null; const tk=todayKey();
   store.goals.forEach(g=>{
-    if(g.doneAt || g.dir!==dir || !goalSet(g).has(no)) return;
-    if(store.mastered[g.dir].includes(no)) return;
-    const lvl=g.cnt[no]||0; let minL=g.passes;
-    goalLevels(g).forEach(l=>{ if(l<minL) minL=l; });
+    if(g.doneAt || !goalSet(g).has(no)) return;
+    if(store.mastered[dir].includes(no)) return;
+    const minL=goalMinLevel(goalLevels(g),g.passes), lvl=g.cnt[dir][no]||0;
     if(lvl>minL || lvl>=g.passes) return;
     const s0=goalStats(g);
-    g.cnt[no]=lvl+1;
+    g.cnt[dir][no]=lvl+1;
     if(!g.today || g.today.d!==tk) g.today={d:tk,n:0};
     g.today.n++;
     const s1=goalStats(g);
-    if(s1.remain<=0){
-      g.passesDone=tk;
-      if(!(g.targetPct>0) || bestPct(g)>=g.targetPct){ g.doneAt=tk; msg='🎉 目標「'+g.name+'」を達成しました！'; }
-      else msg='🎉 「'+g.name+'」'+g.passes+'周が完了！あとは到達度テストで'+g.targetPct+'％以上です';
-    }
-    else if(s1.curPass>s0.curPass){ msg='✨ 「'+g.name+'」'+s0.curPass+'周目を最後までやりきりました！'; }
-    else if(!msg && s0.todayN<s0.quota && s1.todayN>=s1.quota){ msg='🏆 「'+g.name+'」今日のノルマ達成！'; }
+    if(s1.remain<=0){ g.passesDone=tk; g.doneAt=tk; msg='🎉 '+g.name+'を達成しました！'; }
+    else if(s1.curPass>s0.curPass){ msg='✨ '+g.name+'：'+s0.curPass+'周目を最後までやりきりました！'; }
+    else if(!msg && g.kind==='short' && s0.todayN<s0.quota && s1.todayN>=s1.quota){ msg='🏆 今日の目標を達成しました！'; }
   });
   return msg;
 }
-function goalAutoName(g){
-  const f=g.from, t=g.to, whole=(f[1]===1 && t[1]===unitMaxN(g.book,t[0]));
-  let r;
-  if(f[0]===t[0]) r = whole ? 'Unit '+f[0] : 'Unit '+f[0]+' No.'+f[1]+'〜'+t[1];
-  else r = whole ? 'Unit '+f[0]+'〜'+t[0] : 'Unit '+f[0]+' No.'+f[1]+'〜Unit '+t[0]+' No.'+t[1];
-  const dl=DIR_LABEL[g.dir];
-  return r+'を'+g.passes+'周'+(dl?'（'+dl+'）':'');
-}
-function isAutoGoalName(g){ return g.autoName===true || (g.autoName===undefined && /^Unit .*を\d+周(（.+）)?$/.test(g.name)); }
 function dateJa(k){ const a=k.split('-'); return (+a[1])+'月'+(+a[2])+'日'; }
 function addToKey(k,kind){
   const a=k.split('-').map(Number), d=new Date(a[0],a[1]-1,a[2]);
@@ -1050,45 +1075,55 @@ function renderSearch(){
 
 /* ============ ホーム（単語帳の選択） ============ */
 function openBook(id){ selectBook(id); nav('bookMenu'); }
+function pctOf(a,b){ return b>0 ? Math.min(100,Math.floor(a/b*100)) : 0; }
+function setGoalTab(k){ store.goalTab=k; saveStore(); renderHome(); }
+function gpBlock(label,pct,numTxt,cls,planPct,sub){
+  return `<div class="gp-block"><div class="gp-top"><span class="gp-label">${label}</span><span class="gp-val"><b class="${cls}">${pct}%</b>${numTxt}</span></div>
+    <div class="gp-bar"><div class="gp-fill ${cls}" style="width:${pct}%"></div>${planPct==null?'':`<div class="gp-plan" style="left:calc(${planPct.toFixed(1)}% - 1px)"></div>`}</div>${sub?`<div class="gp-sub">${sub}</div>`:''}</div>`;
+}
 function todayCardHtml(){
-  const st=computeStreaks(), pg=primaryGoal();
-  let n,g,msg,btn;
-  if(pg){
-    const gs=goalStats(pg); n=gs.todayN; g=Math.max(1,gs.quota);
-    const dl = gs.overdue ? '期限を過ぎています' : '期限まであと'+(gs.daysLeft-1)+'日';
-    msg = n>=g ? '🏆 「'+esc(pg.name)+'」今日のノルマ達成！' : '🎯 '+esc(pg.name)+'　あと'+(g-n)+'語（'+dl+'）';
-    const ri=resumeInfo(pg.id);
-    btn = `<button class="today-btn" onclick="startGoalStudy('${pg.id}')">${ri?`▶ 続きから再開（${ri.idx+1}/${ri.len}）`:'▶ 目標の今日のノルマを始める'}</button><div class="today-link" onclick="startToday()">今日の10語（おまかせ）で始める</div>`;
+  const st=computeStreaks(), tab=store.goalTab, tg=goalOf(tab), pg=primaryGoal();
+  /* 本日の目標（短期目標から。目標がなければ、カレンダーで決めた1日の目標） */
+  let n,q;
+  if(pg){ const gs=goalStats(pg); n=gs.todayN; q=Math.max(1,gs.quota); } else { n=todayCount(); q=store.dailyGoal; }
+  const todayBar=gpBlock('本日の目標',pctOf(n,q),`${n}/${q}問`,n>=q?'ok':'blue',null,'');
+  /* 選んでいる目標（短期／長期）の進み具合 */
+  let goalBar;
+  if(!tg){
+    goalBar=`<div class="gp-block"><div class="gp-top"><span class="gp-label">${GOAL_NAME[tab]}</span><span class="gp-val">未設定</span></div>
+      <button class="goal-btns-inline" style="width:100%;padding:11px;border-radius:10px;border:1px dashed var(--ink);background:var(--bg);color:var(--ink);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="goalEditOpen('${tab}')">＋ ${GOAL_NAME[tab]}を設定する</button></div>`;
   } else {
-    n=todayCount(); g=store.dailyGoal;
-    msg = n>=g ? '🏆 今日の目標達成！すばらしい！'
-      : n>=MIN_DAY ? '✅ 今日の学習日にカウント済み。目標まであと'+(g-n)+'語'
-      : 'あと'+(MIN_DAY-n)+'語で今日の「学習した日」になります';
-    const ri=resumeInfo(null);
-    btn = `<button class="today-btn" onclick="startToday()">${ri?`▶ 続きから再開（${ri.idx+1}/${ri.len}）`:'▶ 今日の10語を始める'}</button>`;
+    const gs=goalStats(tg), pct=pctOf(gs.done,gs.total), diff=Math.round(gs.done-gs.expected);
+    const days = gs.overdue ? '期限を過ぎています' : '期限 '+dateJa(tg.deadline)+'（あと'+(gs.daysLeft-1)+'日）';
+    const stat = tg.doneAt ? '🎉 達成！' : (diff>0 ? '計画より '+diff+'問 先行' : diff===0 ? '計画どおり' : gs.ahead<0 ? '計画より '+(-diff)+'問 遅れ' : '今日の計画まで あと'+(-diff)+'問');
+    goalBar=gpBlock(GOAL_NAME[tab],pct,`${gs.done}/${gs.total}問`,(tg.doneAt||diff>=0)?'ok':'warn',tg.doneAt?null:(gs.total?gs.expected/gs.total*100:null),days+'　'+stat);
   }
-  const C=2*Math.PI*36, p=Math.min(1,n/g), done=n>=g;
-  return `<div class="today-card">
-    <div class="today-top">
-      <div class="ring-wrap" onclick="nav('${pg?'goals':'calendar'}')">
-        <svg width="88" height="88" viewBox="0 0 88 88"><circle cx="44" cy="44" r="36" fill="none" stroke="#e7dfcf" stroke-width="9"/>
-          <circle cx="44" cy="44" r="36" fill="none" stroke="${done?'#2f6b4f':'#a6321f'}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C*p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 44 44)"/></svg>
-        <div class="ring-tx"><b>${n}</b><span>/ ${g}語</span></div>
-      </div>
-      <div class="today-info">
-        <div class="stat-row">
-          <div><b>${st.cur}</b><i>日</i><small>🔥連続</small></div>
-          <div><b>${st.total}</b><i>日</i><small>累計</small></div>
-          <div><b>${st.best}</b><i>日</i><small>最長連続</small></div>
-        </div>
-        <div class="today-msg">${msg}</div>
-      </div>
+  /* 前回の続きから */
+  const sg=goalOf('short'), lg=goalOf('long'), main=(sg&&!sg.doneAt)?sg:((lg&&!lg.doneAt)?lg:null);
+  let btn;
+  if(main){
+    btn=`<button class="today-btn" onclick="startGoalStudy('${main.kind}')">▶ 前回の続きから始める</button>
+      <div class="gp-dir">出題の方向
+        <div class="chip ${main.cur.last==='en2ja'?'active':''}" onclick="setGoalDir('${main.kind}','en2ja')">英→日</div>
+        <div class="chip ${main.cur.last==='ja2en'?'active':''}" onclick="setGoalDir('${main.kind}','ja2en')">日→英</div></div>`;
+  } else if(!sg && !lg){
+    btn=`<button class="today-btn" onclick="goalEditOpen('short')">🎯 目標を設定する</button>`;
+  } else {
+    btn=`<button class="today-btn" onclick="nav('goals')">🎉 目標を達成しました。新しい目標を設定する</button>`;
+  }
+  return `<div class="gp-card">
+    <div class="gp-tabs"><button class="gp-tab ${tab==='short'?'on':''}" onclick="setGoalTab('short')">短期目標</button><button class="gp-tab ${tab==='long'?'on':''}" onclick="setGoalTab('long')">長期目標</button></div>
+    ${todayBar}${goalBar}
+    <div class="stat-row" style="margin:4px 0 12px;">
+      <div><b>${st.cur}</b><i>日</i><small>🔥連続</small></div>
+      <div><b>${st.total}</b><i>日</i><small>累計</small></div>
+      <div><b>${st.best}</b><i>日</i><small>最長連続</small></div>
     </div>
     ${btn}
     <div class="today-links" style="margin-top:10px;">
-      <div class="today-link" style="margin-top:0" onclick="nav('goals')">🎯 目標（${activeGoals().length}件）</div>
+      <div class="today-link" style="margin-top:0" onclick="nav('goals')">🎯 目標の設定・テスト</div>
       <div class="today-link" style="margin-top:0" onclick="nav('calendar')">📅 カレンダー</div>
-      ${todayCount()>0?`<div class="today-link" style="margin-top:0" onclick="openReview()">🌙 今日の振り返り（${todayCount()}語）</div>`:''}
+      ${todayCount()>0?`<div class="today-link" style="margin-top:0" onclick="openReview()">🌙 今日の振り返り（${todayCount()}問）</div>`:''}
     </div>
   </div>`;
 }
@@ -1311,7 +1346,7 @@ function startWrongReview(){
 /* 目標のテスト：ミニテスト（学習した語から10問など）／到達度テスト（範囲全体からランダム） */
 function openTestSetup(kind,goalId){
   const g=store.goals.find(x=>x.id===goalId); if(!g) return;
-  tcfg={kind:kind, goalId:goalId, dir:g.dir, n: kind==='mini'?10:20};
+  tcfg={kind:kind, goalId:goalId, dir:store.lastDir||'en2ja', n: kind==='mini'?10:20};
   nav('testSetup');
 }
 function renderTestSetup(){
@@ -1359,7 +1394,7 @@ function testsHtml(g){
 /* 単語マップ */
 let mcfg=null;
 function openMap(book,from,to,title,dir){ mcfg={book:book,from:from,to:to,title:title,dir:dir||store.lastDir||'en2ja',sel:null}; nav('wordMap'); }
-function openGoalMap(id){ const g=store.goals.find(x=>x.id===id); if(g) openMap(g.book,g.from,g.to,g.name,g.dir); }
+function openGoalMap(id){ const g=store.goals.find(x=>x.id===id); if(g) openMap(g.book,g.from,g.to,g.name,store.lastDir||'en2ja'); }
 function openBookMap(){ const us=bookUnitsAvail(CUR_BOOK), u2=us[us.length-1]; openMap(CUR_BOOK,[us[0],1],[u2,unitMaxN(CUR_BOOK,u2)],bookInfo(CUR_BOOK).name); }
 function mapPick(no){ mcfg.sel=no; renderWordMap(); }
 function renderWordMap(){
@@ -1435,49 +1470,47 @@ function startReviewTest(bookId){
   startTest({kind:'review', goalId:null, book:bookId, nos:nos, poolNos:null, dir:rv.dir, n:rv.n, title:dayLabelOf(rv.day)+'の振り返りテスト'});
 }
 
-/* ============ 目標 ============ */
+/* ============ 目標（短期目標・長期目標） ============ */
+function goalCardHtml(kind){
+  const g=goalOf(kind), nm=GOAL_NAME[kind];
+  if(!g) return `<div class="goal-card"><div class="goal-top"><b>${nm}</b><span class="goal-dl">未設定</span></div>
+    <div class="goal-range">範囲と期限を決めると、進み具合がトップにバーで表示されます。</div>
+    <div class="goal-btns"><button class="go" onclick="goalEditOpen('${kind}')">＋ ${nm}を設定する</button></div></div>`;
+  const s=goalStats(g), pct=s.total?Math.min(100,s.done/s.total*100):0, plan=s.total?Math.min(100,s.expected/s.total*100):0;
+  const state = g.doneAt ? '🎉 達成！（'+dateJa(g.doneAt)+'）' : s.overdue ? '⚠ 期限を過ぎています' : '🎯 '+dateJa(g.deadline)+'まで（あと'+(s.daysLeft-1)+'日）';
+  const diff=Math.round(s.done-s.expected);
+  const aheadTxt = g.doneAt ? '' : (diff>0 ? '<span class="ahead">計画より '+diff+'問 先行</span>' : diff===0 ? '<span>計画どおり</span>'
+    : s.ahead<0 ? '<span class="behind">計画より '+(-diff)+'問 遅れ</span>' : '<span>今日の計画まで あと'+(-diff)+'問</span>');
+  const behindNote = (!g.doneAt && s.total && -s.ahead > Math.max(10, s.total*0.1))
+    ? '<div class="goal-note">計画より遅れています。「✎ 編集」で期限を延ばす・範囲を減らす・週の学習日数を増やす、のいずれかで、毎日のノルマを調整できます。</div>' : '';
+  const pace = g.doneAt ? '' : `<div class="goal-pace">${kind==='short'?'今日の目標 <b>'+s.todayN+'/'+s.quota+'問</b><br>':''}ペース：1日 ${s.quota}問 ／ 1週 約${s.weekly}問 ／ 1ヶ月 約${s.monthly}問（週${g.spw}日学習で計算）</div>`;
+  return `<div class="goal-card ${g.doneAt?'done':''}">
+    <div class="goal-top"><b>${nm}</b><span class="goal-dl">${state}</span></div>
+    <div class="goal-range">${esc(goalRangeText(g))}<br>${s.W}語 × 2方向 × ${s.P}周 ＝ 延べ${s.total}問${g.doneAt?'':`<br>いま <b>${s.curPass}周目</b>（この周の残り ${s.passLeft}問）`}</div>
+    <div class="goal-bar"><div class="goal-fill" style="width:${pct.toFixed(1)}%"></div>${g.doneAt?'':`<div class="goal-plan" style="left:calc(${plan.toFixed(1)}% - 1px)"></div>`}</div>
+    <div class="goal-meta"><span>進捗 ${s.done} / ${s.total}問（${Math.floor(pct)}%）</span>${aheadTxt}</div>
+    ${pace}${behindNote}
+    ${assessDue(g)?'<div class="goal-note">📊 到達度テストの時期です。いまの実力を確かめましょう。</div>':''}
+    ${testsHtml(g)}
+    <div class="goal-btns">${g.doneAt?'':`<button class="go" onclick="startGoalStudy('${kind}')">▶ 前回の続きから</button>`}<button onclick="goalEditOpen('${kind}')">✎ 編集</button><button onclick="goalDelete('${kind}')">🗑 削除</button></div>
+    <div class="goal-btns"><button onclick="openTestSetup('mini','${kind}')">📝 ミニテスト</button><button onclick="openTestSetup('assess','${kind}')">📊 到達度テスト</button><button onclick="openGoalMap('${kind}')">🗺 マップ</button></div>
+  </div>`;
+}
 function renderGoals(){
   titleEl.textContent='目標';
-  const list=store.goals.slice().sort((a,b)=>(a.doneAt?1:0)-(b.doneAt?1:0) || (a.deadline<b.deadline?-1:1));
-  const cards=list.map(g=>{
-    const s=goalStats(g), pct=s.total?Math.min(100,s.done/s.total*100):0, plan=s.total?Math.min(100,s.expected/s.total*100):0;
-    let state='';
-    if(g.doneAt) state='🎉 達成！（'+dateJa(g.doneAt)+'）';
-    else if(g.passesDone && g.targetPct>0) state='🎯 到達度テスト待ち';
-    else if(s.overdue) state='⚠ 期限を過ぎています';
-    else state='🎯 '+dateJa(g.deadline)+'まで（あと'+(s.daysLeft-1)+'日）';
-    const diff=Math.round(s.done-s.expected);   // 進捗バーの黒線（今日のノルマを終えた時点の計画位置）との差
-    const aheadTxt = g.doneAt ? '' : (diff>0 ? '<span class="ahead">計画より '+diff+'語 先行</span>'
-      : diff===0 ? '<span>計画どおり</span>'
-      : s.ahead<0 ? '<span class="behind">計画より '+(-diff)+'語 遅れ</span>'
-      : '<span>今日の計画まで あと'+(-diff)+'語</span>');
-    const behindNote = (!g.doneAt && s.total && -s.ahead > Math.max(10, s.total*0.1))
-      ? '<div class="goal-note">計画より遅れています。「✎編集」で期限を延ばす・範囲を減らす・週の学習日を増やす、のいずれかで、毎日のノルマを調整できます。</div>' : '';
-    const pace = g.doneAt ? '' : `<div class="goal-pace">今日のノルマ <b>${s.todayN}/${s.quota}語</b><br>ペース：1日 ${s.quota}語 ／ 1週 約${s.weekly}語 ／ 1ヶ月 約${s.monthly}語（週${g.spw}日学習で計算）</div>`;
-    return `<div class="goal-card ${g.doneAt?'done':''}">
-      <div class="goal-top"><b>${esc(g.name)}</b><span class="goal-dl">${state}</span></div>
-      <div class="goal-range"><span class="goal-dir-tag">${DIR_LABEL[g.dir]}</span>${esc(goalRangeText(g))}<br>全${s.W}語 × ${s.P}周 ＝ 延べ${s.total}語${g.doneAt?'':`<br>いま <b>${s.curPass}周目</b>（この周の残り ${s.passLeft}語）`}</div>
-      <div class="goal-bar"><div class="goal-fill" style="width:${pct.toFixed(1)}%"></div>${g.doneAt?'':`<div class="goal-plan" style="left:calc(${plan.toFixed(1)}% - 1px)"></div>`}</div>
-      <div class="goal-meta"><span>進捗 ${s.done} / ${s.total}語（${Math.floor(pct)}%）</span>${aheadTxt}</div>
-      ${pace}${behindNote}
-      ${assessDue(g)?'<div class="goal-note">📊 到達度テストの時期です。いまの実力を確かめましょう。</div>':''}
-      ${(g.passesDone && !g.doneAt && g.targetPct>0)?'<div class="goal-note">🎯 周回は完了しました。到達度テストで'+g.targetPct+'％以上を取ると目標達成です。</div>':''}
-      ${testsHtml(g)}
-      <div class="goal-btns">${g.doneAt?'':`<button class="go" onclick="startGoalStudy('${g.id}')">${resumeInfo(g.id)?'▶ 続きから':'▶ 学習する'}</button>`}<button onclick="goalEditOpen('${g.id}')">✎ 編集</button><button onclick="goalDelete('${g.id}')">🗑 削除</button></div>
-      <div class="goal-btns"><button onclick="openTestSetup('mini','${g.id}')">📝 ミニテスト</button><button onclick="openTestSetup('assess','${g.id}')">📊 到達度テスト</button><button onclick="openGoalMap('${g.id}')">🗺 マップ</button></div>
-    </div>`;
-  }).join('');
-  main.innerHTML=`
-    ${cards || '<div class="footer-note" style="margin:18px 0;">まだ目標がありません。<br>「テストまでにUnit 1〜3を3周」のような目標を作ると、期限から毎日のノルマを自動で計算します。</div>'}
-    ${store.goals.length<GOAL_MAX ? '<button class="startbtn" onclick="goalNew()">＋ 新しい目標を作る</button>' : '<div class="footer-note">目標は'+GOAL_MAX+'つまで作れます。</div>'}
-    <div class="footer-note">進捗バーの黒い線は「今日のノルマを終えたとき、計画ならここまで進んでいる」位置です。「計画より◯語 先行／遅れ」は、この黒い線との差です。今日の分に届いていないだけのときは「今日の計画まで あと◯語」と表示します。<br>「語」は延べ語数です（3周なら、同じ単語を3回数えます）。<br>ノルマは毎日、残りの回数と残りの日数から計算し直します。<br>「1周」は、範囲の全単語をひと通り学習することです。最後までやりきるまで次の周にはならず、同じ周で同じ語を何度学習しても進捗は進みません（1日の学習数には数えます）。<br>「覚えた」（その方向）に入れた語は周回済みとして扱い、出題しません。</div>`;
+  main.innerHTML=`${goalCardHtml('short')}${goalCardHtml('long')}
+    <div class="footer-note">目標は「短期目標」と「長期目標」の2つです。範囲の各単語を、英→日と日→英の2問として数えます（Unit 1の100語なら200問）。<br>
+    トップのバーの黒い線は「今日のノルマを終えたとき、計画ならここまで進んでいる」位置です。<br>
+    カードをめくるか、「覚えた」を押すと、1問として数えます。最後までやりきるまで次の周にはならず、同じ周で同じカードを何度学習しても進捗は進みません（1日の学習数には数えます）。<br>
+    「覚えた」（その方向）のカードは出題しません。短期と長期の範囲が重なるときは、両方に数えます。</div>`;
 }
-function goalDelete(id){
-  const g=store.goals.find(x=>x.id===id); if(!g) return;
-  if(!confirm('目標「'+g.name+'」を削除しますか？（学習ログは残ります）')) return;
-  store.goals=store.goals.filter(x=>x.id!==id); saveStore(); renderGoals();
+function goalDelete(kind){
+  const g=goalOf(kind); if(!g) return;
+  if(!confirm(GOAL_NAME[kind]+'を削除しますか？（学習ログは残ります）')) return;
+  store.goals=store.goals.filter(x=>x.kind!==kind); saveStore(); renderGoals();
 }
 let gf=null, gfCalY=0, gfCalM=0;   // 編集中の目標（下書き）と、期限カレンダーの表示月
+function unitMaxN(b,u){ return (bookData(b)[u]||[]).reduce((m,r)=>Math.max(m,r.n),1); }
 function gfCalSync(){ const a=gf.deadline.split('-'); gfCalY=+a[0]; gfCalM=+a[1]; }
 function gfCalMove(d){ gfCalM+=d; if(gfCalM<1){ gfCalM=12; gfCalY--; } if(gfCalM>12){ gfCalM=1; gfCalY++; } renderGoalEdit(); }
 function gfPick(k){ gf.deadline=k; gfCalSync(); renderGoalEdit(); }
@@ -1487,31 +1520,28 @@ function gfCalHtml(){
   let cells=''; for(let i=0;i<first;i++) cells+='<div class="cal-cell blank"></div>';
   for(let d=1; d<=dim; d++){
     const k=gfCalY+'-'+p2(gfCalM)+'-'+p2(d), past=k<tk, sel=k===gf.deadline;
-    const other=store.goals.some(x=>x.id!==gf.id && !x.doneAt && x.deadline===k);
+    const other=store.goals.some(x=>x.kind!==gf.kind && !x.doneAt && x.deadline===k);
     cells+=`<div class="cal-cell ${past?'fut':''} ${sel?'l3':''} ${k===tk?'today':''}" ${past?'':`onclick="gfPick('${k}')"`}>${d}${other?'<small>🎯</small>':''}</div>`;
   }
   const dn=['日','月','火','水','木','金','土'], a=gf.deadline.split('-'), wd=dn[new Date(+a[0],+a[1]-1,+a[2]).getDay()];
   const left=keyToIdx(gf.deadline)-keyToIdx(tk);
   return `<div class="cal-head"><button onclick="gfCalMove(-1)">‹</button><b>${gfCalY}年${gfCalM}月</b><button onclick="gfCalMove(1)">›</button></div>
     <div class="cal-grid">${dn.map(x=>`<div class="cal-dow">${x}</div>`).join('')}${cells}</div>
-    <div class="cal-detail">選択中：<b>${+a[0]}年${+a[1]}月${+a[2]}日（${wd}）</b>　${left>=0?'あと'+left+'日':'過去の日付です'}<br><span style="font-size:12px;color:var(--sub)">TOEICなどの試験日は、カレンダーの日付をタップして選べます。🎯は他の目標の期限です。</span></div>`;
+    <div class="cal-detail">選択中：<b>${+a[0]}年${+a[1]}月${+a[2]}日（${wd}）</b>　${left>=0?'あと'+left+'日':'過去の日付です'}<br><span style="font-size:12px;color:var(--sub)">TOEICなどの試験日は、カレンダーの日付をタップして選べます。🎯はもう一方の目標の期限です。</span></div>`;
 }
-function unitMaxN(b,u){ return (bookData(b)[u]||[]).reduce((m,r)=>Math.max(m,r.n),1); }
-function goalNew(){
-  if(store.goals.length>=GOAL_MAX) return;
-  const b=pickTodayBook(); if(!b){ alert('収録済みの単語帳がありません。'); return; }
-  const us=bookUnitsAvail(b), u2=us[us.length-1];
-  gf={id:null,name:'',book:b,from:[us[0],1],to:[u2,unitMaxN(b,u2)],passes:3,deadline:addToKey(todayKey(),'m1'),spw:6,targetPct:0,dir:store.lastDir||'en2ja'};
-  gfCalSync(); nav('goalEdit');
-}
-function goalEditOpen(id){
-  const g=store.goals.find(x=>x.id===id); if(!g) return;
-  gf={id:g.id,name:isAutoGoalName(g)?'':g.name,book:g.book,from:g.from.slice(),to:g.to.slice(),passes:g.passes,deadline:g.deadline,spw:g.spw,targetPct:g.targetPct||0,dir:g.dir};
+function goalEditOpen(kind){
+  const g=goalOf(kind);
+  if(g) gf={kind:kind,book:g.book,from:g.from.slice(),to:g.to.slice(),passes:g.passes,deadline:g.deadline,spw:g.spw};
+  else {
+    const b=pickTodayBook(); if(!b){ alert('収録済みの単語帳がありません。'); return; }
+    const us=bookUnitsAvail(b), u2=us[us.length-1];
+    gf={kind:kind,book:b,from:[us[0],1],to:[u2,unitMaxN(b,u2)],passes:1,deadline:addToKey(todayKey(),kind==='short'?'m1':'m6'),spw:6};
+  }
   gfCalSync(); nav('goalEdit');
 }
 function gfTemp(){
-  const old=gf.id ? store.goals.find(x=>x.id===gf.id) : null;
-  const t=Object.assign({}, gf, {dir: gf.dir==='both'?'en2ja':gf.dir, cnt: old?Object.assign({},old.cnt):{}, today: old?old.today:{d:'',n:0}, created: old?old.created:todayKey()});
+  const old=goalOf(gf.kind);
+  const t=Object.assign({}, gf, {id:gf.kind, pv:3, base:0, cnt:{en2ja:Object.assign({},old?old.cnt.en2ja:{}), ja2en:Object.assign({},old?old.cnt.ja2en:{})}, today: old?old.today:{d:'',n:0}, created: old?old.created:todayKey()});
   goalInitCnt(t);
   return t;
 }
@@ -1524,64 +1554,51 @@ function gfToUnit(u){ gf.to=[+u,unitMaxN(gf.book,+u)]; gfKeyFix(); renderGoalEdi
 function gfFromN(v){ gf.from[1]=Math.max(1,Math.min(unitMaxN(gf.book,gf.from[0]),parseInt(v)||1)); gfKeyFix(); renderGoalEdit(); }
 function gfToN(v){ gf.to[1]=Math.max(1,Math.min(unitMaxN(gf.book,gf.to[0]),parseInt(v)||1)); gfKeyFix(); renderGoalEdit(); }
 function gfSet(k,v){ gf[k]=v; renderGoalEdit(); }
+function gfPasses(v){ gfSet('passes',v); }
+function gfSpw(v){ gfSet('spw',v); }
 function gfPreset(kind){ gf.deadline=addToKey(todayKey(),kind); gfCalSync(); renderGoalEdit(); }
 function goalSave(){
-  const nm=document.getElementById('gfName'); if(nm) gf.name=nm.value.trim();
   const t=gfTemp(), ns=goalNos(t);
   if(!ns.length){ alert('この範囲に単語がありません。範囲を確認してください。'); return; }
   if(gf.deadline < todayKey()){ alert('期限は今日以降の日付にしてください。'); return; }
-  const auto = !gf.name.trim();     // 空欄なら、範囲・周回数・方向から名前を自動で付ける（編集して範囲などを変えると名前も変わる）
-  const name = auto ? goalAutoName(gf) : gf.name.trim();
-  const dirs = gf.id ? [gf.dir] : (gf.dir==='both' ? ['en2ja','ja2en'] : [gf.dir]);
-  if(!gf.id && store.goals.length+dirs.length>GOAL_MAX){ alert('目標は'+GOAL_MAX+'つまで作れます。不要な目標を削除してください。'); return; }
-  if(gf.id){
-    const g=store.goals.find(x=>x.id===gf.id);
+  const kind=gf.kind; let g=goalOf(kind);
+  if(g){
     const replan = g.book!==gf.book || goalSig(g)!==goalSig(gf) || g.passes!==gf.passes || g.deadline!==gf.deadline || g.spw!==gf.spw;
-    Object.assign(g,{name:name,autoName:auto,book:gf.book,from:gf.from,to:gf.to,passes:gf.passes,deadline:gf.deadline,spw:gf.spw,targetPct:gf.targetPct||0});
+    Object.assign(g,{book:gf.book,from:gf.from.slice(),to:gf.to.slice(),passes:gf.passes,deadline:gf.deadline,spw:gf.spw});
     goalInitCnt(g);
-    if(replan){ g.pv=2; g.created=todayKey(); g.base=0; const s0=goalStats(g); g.base=Math.max(0,s0.done-s0.todayN); }   // 計画を今日から引き直す
+    if(replan){ g.pv=3; g.created=todayKey(); g.base=0; const s0=goalStats(g); g.base=Math.max(0,s0.done-s0.todayN); }   // 計画を今日から引き直す
     goalRefreshDone(g);
   } else {
-    dirs.forEach((d,i)=>{
-      const nm = auto ? goalAutoName(Object.assign({},gf,{dir:d})) : (dirs.length>1 ? name+'（'+DIR_LABEL[d]+'）' : name);
-      const ng={id:'g'+Date.now().toString(36)+i,name:nm,autoName:auto,base:0,pv:2,dir:d,book:gf.book,from:gf.from.slice(),to:gf.to.slice(),passes:gf.passes,deadline:gf.deadline,spw:gf.spw,targetPct:gf.targetPct||0,tests:[],created:todayKey(),cnt:{},today:{d:'',n:0},doneAt:null,passesDone:null};
-      goalInitCnt(ng); ng.base=goalStats(ng).done; goalRefreshDone(ng); store.goals.push(ng);
-    });
+    g={id:kind,kind:kind,name:GOAL_NAME[kind],book:gf.book,from:gf.from.slice(),to:gf.to.slice(),passes:gf.passes,deadline:gf.deadline,spw:gf.spw,created:todayKey(),base:0,pv:3,cnt:{en2ja:{},ja2en:{}},today:{d:'',n:0},tests:[],cur:{en2ja:0,ja2en:0,last:store.lastDir==='ja2en'?'ja2en':'en2ja'},doneAt:null,passesDone:null};
+    goalInitCnt(g); g.base=goalStats(g).done; goalRefreshDone(g); store.goals.push(g);
   }
   saveStore(); gf=null; goBack();
 }
 function renderGoalEdit(){
   if(!gf){ screen='goals'; renderGoals(); return; }      // 下書きがないとき（再読み込み直後など）は目標一覧へ
-  titleEl.textContent = gf.id ? '目標を編集' : '目標を作る';
-  const nm=document.getElementById('gfName'); if(nm) gf.name=nm.value;
+  titleEl.textContent = GOAL_NAME[gf.kind]+(goalOf(gf.kind)?'を編集':'を設定');
   const readyBooks=BOOKS.filter(b=>bookUnitsAvail(b.id).length>0);
   const us=bookUnitsAvail(gf.book);
   const uopt=sel=>us.map(u=>`<option value="${u}" ${u===sel?'selected':''}>Unit ${u}</option>`).join('');
   const chips=(arr,cur,fn,unit)=>arr.map(v=>`<div class="chip ${cur===v?'active':''}" onclick="${fn}(${v})">${v}${unit}</div>`).join('');
   const t=gfTemp(), s=goalStats(t);
   const prev = !s.W ? 'この範囲に単語がありません。'
-    : `対象 <b>${s.W}語</b> × ${s.P}周 ＝ 延べ <b>${s.total}語</b><br>`+(gf.deadline<todayKey() ? '期限は今日以降にしてください。'
-      : `期限まであと${s.daysLeft-1}日（週${gf.spw}日学習）→ <b>1日 ${s.quota}語</b>／1週 約${s.weekly}語／1ヶ月 約${s.monthly}語`);
+    : `対象 <b>${s.W}語</b> × 2方向 × ${s.P}周 ＝ 延べ <b>${s.total}問</b><br>`+(gf.deadline<todayKey() ? '期限は今日以降にしてください。'
+      : `期限まであと${s.daysLeft-1}日（週${gf.spw}日学習）→ <b>1日 ${s.quota}問</b>／1週 約${s.weekly}問／1ヶ月 約${s.monthly}問`);
   main.innerHTML=`<div class="gf">
-    <div class="setup-block"><h3>目標の名前（空欄なら自動）</h3><input id="gfName" type="text" maxlength="30"  placeholder="空欄なら自動：${esc(goalAutoName(gf))}" value="${esc(gf.name)}" oninput="gf.name=this.value"></div>
-    ${gf.id ? `<div class="setup-block"><h3>方向</h3><div class="goal-pace">${DIR_LABEL[gf.dir]}（目標を作ったあとは変更できません）</div></div>`
-      : `<div class="setup-block"><h3>方向</h3><div class="tabs">${[['en2ja','英語 → 日本語'],['ja2en','日本語 → 英語'],['both','両方向を同時に作る']].map(x=>`<div class="chip ${gf.dir===x[0]?'active':''}" onclick="gfSet('dir','${x[0]}')">${x[1]}</div>`).join('')}</div></div>`}
     <div class="setup-block"><h3>単語帳</h3><div class="row"><select onchange="gfBook(this.value)">${readyBooks.map(b=>`<option value="${b.id}" ${b.id===gf.book?'selected':''}>${esc(b.name)}</option>`).join('')}</select></div></div>
     <div class="setup-block"><h3>範囲（ここから）</h3><div class="row"><select onchange="gfFromUnit(this.value)">${uopt(gf.from[0])}</select><span class="lbl">No.</span><input type="number" min="1" max="${unitMaxN(gf.book,gf.from[0])}" value="${gf.from[1]}" onchange="gfFromN(this.value)"></div></div>
     <div class="setup-block"><h3>範囲（ここまで）</h3><div class="row"><select onchange="gfToUnit(this.value)">${uopt(gf.to[0])}</select><span class="lbl">No.</span><input type="number" min="1" max="${unitMaxN(gf.book,gf.to[0])}" value="${gf.to[1]}" onchange="gfToN(this.value)"></div></div>
-    <div class="setup-block"><h3>何周するか</h3><div class="tabs">${chips([1,2,3,5],gf.passes,"gfPasses","周")}</div></div>
+    <div class="setup-block"><h3>何周するか（1周＝範囲の全カードをひと通り）</h3><div class="tabs">${chips([1,2,3,5],gf.passes,"gfPasses","周")}</div></div>
     <div class="setup-block"><h3>期限（テスト・受験の日など）</h3>
       <div class="tabs" style="margin-bottom:10px;">${[['w','1週間後'],['m1','1ヶ月後'],['m3','3ヶ月後'],['m6','半年後'],['y','1年後']].map(x=>`<div class="chip ${gf.deadline===addToKey(todayKey(),x[0])?'active':''}" onclick="gfPreset('${x[0]}')">${x[1]}</div>`).join('')}</div>
       ${gfCalHtml()}</div>
-    <div class="setup-block"><h3>到達度テストの合格ライン（周回が終わったあと、このテストに合格すると達成）</h3><div class="tabs">${[[0,'なし'],[70,'70%'],[80,'80%'],[90,'90%']].map(x=>`<div class="chip ${gf.targetPct===x[0]?'active':''}" onclick="gfSet('targetPct',${x[0]})">${x[1]}</div>`).join('')}</div></div>
-    <div class="setup-block"><h3>1週間に学習する日数（ノルマの計算に使います）</h3><div class="tabs">${chips([5,6,7],gf.spw,"gfSpw","日")}</div></div>
+    <details class="setup-block"><summary style="cursor:pointer;font-weight:700;color:var(--sub);font-size:13px;">詳細設定（週に学習する日数）</summary><div class="tabs" style="margin-top:8px;">${chips([5,6,7],gf.spw,"gfSpw","日")}</div></details>
     <div class="gf-preview">${prev}</div>
-    <button class="startbtn" onclick="goalSave()">${gf.id?'変更を保存':'この目標で始める'}</button>
+    <button class="startbtn" onclick="goalSave()">${goalOf(gf.kind)?'変更を保存':'この目標で始める'}</button>
     <div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="gf=null;goBack()">キャンセル</span></div>
   </div>`;
 }
-function gfPasses(v){ gfSet('passes',v); }
-function gfSpw(v){ gfSet('spw',v); }
 
 /* ============ 学習カレンダー ============ */
 let calY=0, calM=0, calSel=null;
@@ -1936,25 +1953,27 @@ function startToday(){
   nav('fcView');
 }
 /* 目標の今日のノルマ：範囲内で、見た回数が少ない語から順に（番号順） */
-function startGoalStudy(id){
-  const g=store.goals.find(x=>x.id===id); if(!g || g.doneAt) return;
-  if(tryResume(id)) return;
+/* 前回の続きから：前回に使った方向で、前回最後に表示したカードから範囲の最後まで普通に続ける（「覚えた」は飛ばす）。
+   その方向を終えたら、次に押したときはもう一方の方向を範囲の最初から出す */
+function startGoalStudy(kind){
+  const g=goalOf(kind) || primaryGoal();
+  if(!g || g.doneAt){ nav('goals'); return; }
   if(CUR_BOOK!==g.book || WORDS.length===0) selectBook(g.book);
-  const st=goalStats(g), dir=g.dir;
-  const elig=new Set(goalEligibleNos(g)), tn=new Set(store.today.d===todayKey()?store.today[dir]:[]);
-  if(!elig.size){ alert('この目標の範囲は、すべて学習済みです。'); return; }
-  let pool=WORDS.filter(w=>elig.has(w.no) && !tn.has(w.no)).sort((a,b)=>a.no-b.no);   // 今日すでに触れた語は、同じ日には進捗にならないので出さない
-  if(!pool.length){ alert('今日は、この周の分をすべて学習しました。明日また続きができます。\n今日の語は「🌙 今日の振り返り」で復習できます。'); return; }
-  const sh=new Set(shownList(id)), fresh=pool.filter(w=>!sh.has(w.no));
-  if(fresh.length) pool=fresh;
-  const n=Math.min(pool.length, Math.max(10, Math.min(100, st.quota-st.todayN)));
-  fcCfg.dir=dir; fcCfg.src='all'; fcCfg.order='seq';
-  fcTodayMode=true; fcGoalId=id; fcTitle=g.name; fcShownKey=id;
-  fcDeck=pool.slice(0,n);
+  const el=goalEligible(g);
+  if(!el.en2ja.length && !el.ja2en.length){ alert('この目標の範囲は、すべて学習済みです。'); return; }
+  const cur=g.cur, order = cur.last==='ja2en' ? ['ja2en','en2ja'] : ['en2ja','ja2en'];
+  let dir=null, list=null;
+  for(const d of order){ const l=el[d].filter(no=>no>=cur[d]); if(l.length){ dir=d; list=l; break; } }
+  if(!dir){ DIRS.forEach(d=>{ cur[d]=0; }); for(const d of order){ if(el[d].length){ dir=d; list=el[d]; break; } } }
+  const wm=new Map(WORDS.map(w=>[w.no,w]));
+  fcCfg.dir=dir; fcCfg.src='all'; fcCfg.order='seq'; store.lastDir=dir; cur.last=dir;
+  fcTodayMode=true; fcGoalId=g.id; fcTitle=g.name+'（'+DIR_LABEL[dir]+'）'; fcShownKey=null;
+  fcDeck=list.map(no=>wm.get(no)).filter(Boolean);
   fcIdx=0; fcFlipped=false; fcAutoPending=true;
   saveSession();
   nav('fcView');
 }
+function setGoalDir(kind,dir){ const g=goalOf(kind); if(!g) return; g.cur.last=dir; saveStore(); renderHome(); }
 function startFc(){
   fcTodayMode=false; fcGoalId=null; fcTitle=''; fcShownKey=null;
   store.lastDir = fcCfg.dir;
@@ -1993,7 +2012,7 @@ function renderFcView(){
     stopSpeech();
     main.innerHTML = `<div class="deckdone"><div class="big">✅</div>このセットは最後まで確認しました。<br>
     ${fcTodayMode?`<div style="margin:10px 0 4px;font-size:14px;">今日 <b>${todayCount()}</b>語　🔥${computeStreaks().cur}日連続</div>`:''}
-    <div style="margin-top:16px;">${fcTodayMode&&fcShownKey!==null?`<button class="startbtn" onclick="${fcGoalId?`startGoalStudy('${fcGoalId}')`:'startToday()'}">${fcGoalId?'続けて学習する':'続けてもう10語'}</button><div style="height:10px"></div>`:''}<button class="startbtn" style="${fcTodayMode?'background:var(--ink)':''}" onclick="fcIdx=0;fcAutoPending=true;renderFcView()">もう一度見る</button>${fcTodayMode?`<div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="goHome()">トップへ戻る</span></div>`:''}</div></div>`;
+    <div style="margin-top:16px;">${fcGoalId?`<button class="startbtn" onclick="startGoalStudy('${fcGoalId}')">続けて学習する</button><div style="height:10px"></div>`:''}<button class="startbtn" style="${fcTodayMode?'background:var(--ink)':''}" onclick="fcIdx=0;fcAutoPending=true;renderFcView()">もう一度見る</button>${fcTodayMode?`<div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="goHome()">トップへ戻る</span></div>`:''}</div></div>`;
     return;
   }
   const w = fcDeck[fcIdx];
@@ -2050,6 +2069,7 @@ function renderFcView(){
     fcAutoPending=false;
     stopSpeech();
     if(fcTodayMode && fcShownKey) markShown(fcShownKey, w.no);
+    if(fcGoalId) goalSetCursor(fcGoalId, fcCfg.dir, w.no);
     if(store.autoSpeak && isE2J) speakSeq([w.e]);
   }
 }
@@ -2090,6 +2110,7 @@ function fcMark(type){
   const w=fcDeck[fcIdx], d=fcCfg.dir;
   fcAutoPending=true;
   if(type==='mastered'){
+    touchWord(w.no,d);      // めくらずに「覚えた」を押した場合も、学習した問として数える
     if(!isMastered(w.no,d)) store.mastered[d].push(w.no);
     store.review[d] = store.review[d].filter(n=>n!==w.no);
     saveStore();
