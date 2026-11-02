@@ -63,6 +63,7 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .hero .eyebrow{font-size:11px;letter-spacing:.18em;color:var(--sub);text-transform:uppercase;margin-bottom:6px;}
 .hero h2{font-family:var(--serif);font-size:28px;margin:0 0 6px;color:var(--ink);}
 .hero p{font-size:13px;color:var(--sub);margin:0;}
+.hero.home-hero{padding-bottom:10px;}
 .menu-grid{display:flex;flex-direction:column;gap:12px;}
 .menu-card{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);
   border-radius:14px;padding:16px;box-shadow:var(--shadow);cursor:pointer;text-align:left;}
@@ -110,7 +111,7 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .goal-top b{font-size:16px;color:var(--ink);} .goal-dl{font-size:12.5px;color:var(--accent);font-weight:700;}
 .goal-range{font-size:12px;color:var(--sub);margin:4px 0 10px;line-height:1.5;}
 .goal-bar{position:relative;height:16px;border-radius:8px;background:#e7dfcf;overflow:visible;}
-.goal-fill{height:100%;border-radius:8px;background:var(--ok);}
+.goal-fill{height:100%;border-radius:8px 0 0 8px;background:var(--ok);} .goal-fill.full{border-radius:8px;}
 .goal-plan{position:absolute;top:-4px;width:3px;height:24px;background:var(--ink);border-radius:2px;}
 .goal-meta{display:flex;justify-content:space-between;font-size:12.5px;color:var(--sub);margin-top:8px;gap:8px;flex-wrap:wrap;}
 .goal-meta .ahead{color:var(--ok);font-weight:700;} .goal-meta .behind{color:var(--accent);font-weight:700;}
@@ -135,7 +136,7 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .gp-val{font-size:13px;color:var(--ink);} .gp-val b{font-size:20px;margin-right:6px;}
 .gp-val b.blue{color:#2860b8;} .gp-val b.ok{color:var(--ok);} .gp-val b.warn{color:#d2691e;}
 .gp-bar{position:relative;height:18px;border-radius:9px;background:#e7dfcf;border:1px solid #bdb29b;overflow:visible;}
-.gp-fill{height:100%;border-radius:9px;min-width:0;}
+.gp-fill{height:100%;border-radius:9px 0 0 9px;min-width:0;} .gp-fill.full{border-radius:9px;}
 .gp-fill.blue{background:#4a90e2;} .gp-fill.ok{background:var(--ok);} .gp-fill.warn{background:#e8923a;}
 .gp-plan{position:absolute;top:-4px;width:3px;height:24px;background:var(--ink);border-radius:2px;}
 .gp-sub{font-size:12px;color:var(--sub);margin-top:5px;line-height:1.5;}
@@ -1086,7 +1087,7 @@ function pctOf(a,b){ return b>0 ? Math.min(100,Math.floor(a/b*100)) : 0; }
 function setGoalTab(k){ store.goalTab=k; saveStore(); renderHome(); }
 function gpBlock(label,pct,numTxt,cls,planPct,sub){
   return `<div class="gp-block"><div class="gp-top"><span class="gp-label">${label}</span><span class="gp-val"><b class="${cls}">${pct}%</b>${numTxt}</span></div>
-    <div class="gp-bar"><div class="gp-fill ${cls}" style="width:${pct}%"></div>${planPct==null?'':`<div class="gp-plan" style="left:calc(${planPct.toFixed(1)}% - 1px)"></div>`}</div>${sub?`<div class="gp-sub">${sub}</div>`:''}</div>`;
+    <div class="gp-bar"><div class="gp-fill ${cls}${pct>=100?' full':''}" style="width:${pct}%"></div>${planPct==null?'':`<div class="gp-plan" style="left:calc(${planPct.toFixed(1)}% - 1px)"></div>`}</div>${sub?`<div class="gp-sub">${sub}</div>`:''}</div>`;
 }
 function homeStatsHtml(){
   const st=computeStreaks();
@@ -1145,7 +1146,6 @@ function todayCardHtml(){
 }
 function renderHome(){
   titleEl.textContent='一生使える英単熟語帳';
-  const total = BOOKS.reduce((s,b)=>s+bookWordCount(b.id),0);
   const cards = BOOKS.map((b,i)=>{
     const av = bookUnitsAvail(b.id), cnt = bookWordCount(b.id), ready = av.length>0;
     return `<div class="menu-card ${ready?'':'soon'}" ${ready?`onclick="openBook('${b.id}')"`:''}>
@@ -1155,11 +1155,10 @@ function renderHome(){
       </div>`;
   }).join('');
   main.innerHTML = `
-    <div class="hero">
+    <div class="hero home-hero">
       <div class="eyebrow">English Vocabulary Complete</div>
       <h2>一生使える英単熟語帳</h2>
       ${homeStatsHtml()}
-      <p>単語帳を選んでください（収録 ${total}語）</p>
     </div>
     ${todayCardHtml()}
     ${backupBannerHtml()}
@@ -1504,7 +1503,7 @@ function goalCardHtml(kind){
   return `<div class="goal-card ${g.doneAt?'done':''}">
     <div class="goal-top"><b>${nm}</b><span class="goal-dl">${state}</span></div>
     <div class="goal-range">${esc(goalRangeText(g))}<br>${s.W}語 × 2方向 × ${s.P}周 ＝ 延べ${s.total}問${g.doneAt?'':`<br>いま <b>${s.curPass}周目</b>（この周の残り ${s.passLeft}問）`}</div>
-    <div class="goal-bar"><div class="goal-fill" style="width:${pct.toFixed(1)}%"></div>${g.doneAt?'':`<div class="goal-plan" style="left:calc(${plan.toFixed(1)}% - 1px)"></div>`}</div>
+    <div class="goal-bar"><div class="goal-fill${pct>=99.95?' full':''}" style="width:${pct.toFixed(1)}%"></div>${g.doneAt?'':`<div class="goal-plan" style="left:calc(${plan.toFixed(1)}% - 1px)"></div>`}</div>
     <div class="goal-meta"><span>進捗 ${s.done} / ${s.total}問（${Math.floor(pct)}%）</span>${aheadTxt}</div>
     ${pace}${behindNote}
     ${assessDue(g)?'<div class="goal-note">📊 到達度テストの時期です。いまの実力を確かめましょう。</div>':''}
