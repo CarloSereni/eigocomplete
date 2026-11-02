@@ -1092,8 +1092,8 @@ function gpBlock(label,pct,numTxt,cls,planPct,sub){
 function homeStatsHtml(){
   const st=computeStreaks();
   return `<div class="home-stats">
-      <div><b>${st.cur}</b><i>日</i><small>🔥連続</small></div>
       <div><b>${st.total}</b><i>日</i><small>累計</small></div>
+      <div><b>${st.cur}</b><i>日</i><small>🔥連続</small></div>
       <div><b>${st.best}</b><i>日</i><small>最長連続</small></div>
     </div>`;
 }
