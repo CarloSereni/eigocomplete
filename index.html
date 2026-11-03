@@ -161,6 +161,7 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .gp-summary .gp-sum-meta{color:var(--sub);margin-top:1px;} .gp-summary .gp-sum-meta b{color:var(--ink);} .gp-summary .gp-sum-meta .over{color:#d2691e;font-weight:700;}
 .today-msg{font-size:12.5px;color:var(--ink);margin-top:8px;line-height:1.5;}
 .today-btn{width:100%;margin-top:12px;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 8px rgba(166,50,31,.25);}
+.rv-btn{border:1px solid var(--ink);background:#fff;color:var(--ink);border-radius:999px;padding:5px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 .today-link{text-align:center;margin-top:10px;font-size:13px;color:var(--ink);text-decoration:underline;cursor:pointer;}
 .app-toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:24px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:999;max-width:88%;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.25);}
 .app-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -1124,7 +1125,8 @@ function todayCardHtml(){
   const main=(tg&&!tg.doneAt)?tg:null;
   let btn;
   if(main){
-    btn=`<button class="today-btn" onclick="startGoalStudy('${main.kind}')">▶ 前回の続きから始める</button>
+    const startedToday = !!(main.today && main.today.d===todayKey() && main.today.n>0);
+    btn=`<button class="today-btn" onclick="startGoalStudy('${main.kind}')">${startedToday?'▶ 前回の続きから始める':'▶ 今日の学習を始める'}</button>
       <div class="gp-dir">出題の方向
         <div class="chip ${main.cur.last==='en2ja'?'active':''}" onclick="setGoalDir('${main.kind}','en2ja')">英→日</div>
         <div class="chip ${main.cur.last==='ja2en'?'active':''}" onclick="setGoalDir('${main.kind}','ja2en')">日→英</div></div>`;
@@ -1140,7 +1142,7 @@ function todayCardHtml(){
     <div class="today-links" style="margin-top:10px;">
       <div class="today-link" style="margin-top:0" onclick="nav('goals')">🎯 目標の設定・テスト</div>
       <div class="today-link" style="margin-top:0" onclick="nav('calendar')">📅 カレンダー</div>
-      ${todayCount()>0?`<div class="today-link" style="margin-top:0" onclick="openReview()">🌙 今日の振り返り（${todayCount()}問）</div>`:''}
+      ${todayCount()>0?`<button class="rv-btn" onclick="openReview()">🌙 今日の学習を振り返る（${todayCount()}問）</button>`:''}
     </div>
   </div>`;
 }
@@ -1978,22 +1980,28 @@ function startGoalStudy(kind){
   const el=goalEligible(g);
   if(!el.en2ja.length && !el.ja2en.length){ alert('この目標の範囲は、すべて学習済みです。'); return; }
   const cur=g.cur, order = cur.last==='ja2en' ? ['ja2en','en2ja'] : ['en2ja','ja2en'], gnos=goalNos(g);
+  const startedToday = !!(g.today && g.today.d===todayKey() && g.today.n>0);
   let dir=null, list=null;
-  /* まず、この目標の範囲で単語マップが「未学習」の語のうち、範囲の先頭に一番近い語から最後まで */
-  for(const d of order){
-    const first=gnos.find(no=>wordState(no,d)==='new');
-    if(first===undefined) continue;
-    const l=el[d].filter(no=>no>=first);
-    if(l.length){ dir=d; list=l; break; }
+  /* 今日まだ始めていないとき：この目標の範囲で単語マップが「未学習」の語のうち、番号が一番小さい語から */
+  if(!startedToday){
+    for(const d of order){
+      const first=gnos.find(no=>wordState(no,d)==='new');
+      if(first===undefined) continue;
+      const l=el[d].filter(no=>no>=first);
+      if(l.length){ dir=d; list=l; break; }
+    }
   }
-  /* 未学習がなければ、従来どおり前回の位置から周回を続ける */
+  /* 今日すでに始めている／未学習がないとき：前回最後に見たカードの次から、周回を続ける */
   if(!dir){ for(const d of order){ const l=el[d].filter(no=>no>=cur[d]); if(l.length){ dir=d; list=l; break; } } }
   if(!dir){ DIRS.forEach(d=>{ cur[d]=0; }); for(const d of order){ if(el[d].length){ dir=d; list=el[d]; break; } } }
   const wm=new Map(WORDS.map(w=>[w.no,w]));
+  /* スタート地点より前のカード（範囲の先頭まで。「覚えた」は除く）も、デッキの前側に入れて、左へ戻れるようにする */
+  const startNo=list[0];
+  const pre=gnos.filter(no=>no<startNo && !isMastered(no,dir));
   fcCfg.dir=dir; fcCfg.src='all'; fcCfg.order='seq'; store.lastDir=dir; cur.last=dir;
   fcTodayMode=true; fcGoalId=g.id; fcTitle=g.name+'（'+DIR_LABEL[dir]+'）'; fcShownKey=null;
-  fcDeck=list.map(no=>wm.get(no)).filter(Boolean);
-  fcIdx=0; fcFlipped=false; fcAutoPending=true;
+  fcDeck=pre.concat(list).map(no=>wm.get(no)).filter(Boolean);
+  fcIdx=Math.min(pre.length, Math.max(0,fcDeck.length-1)); fcFlipped=false; fcAutoPending=true;
   saveSession();
   nav('fcView');
 }
