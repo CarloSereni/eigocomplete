@@ -627,6 +627,7 @@ function normStore(o){
   o.dailyGoal = (Number.isInteger(o.dailyGoal) && o.dailyGoal>=1 && o.dailyGoal<=500) ? o.dailyGoal : 20;
   o.log = (o.log && typeof o.log==='object' && !Array.isArray(o.log)) ? o.log : {};   // {日付: {en2ja:[語番号…], ja2en:[…]}}（直近31日分）
   Object.keys(o.log).forEach(k=>{ const v=o.log[k]; o.log[k]=Array.isArray(v) ? {en2ja:v, ja2en:[]} : {en2ja:(v && Array.isArray(v.en2ja))?v.en2ja:[], ja2en:(v && Array.isArray(v.ja2en))?v.ja2en:[]}; });
+  o.rescued = (o.rescued && typeof o.rescued==='object' && !Array.isArray(o.rescued)) ? o.rescued : {};   // 2日分のノルマで救済した日 {日付:true}
   o.shown = (o.shown && typeof o.shown==='object' && o.shown.k && typeof o.shown.k==='object') ? o.shown : {d:'',k:{}};   // 今日すでに画面に出した語（続きから再開・重複回避用）
   o.tw = {en2ja:(o.tw && o.tw.en2ja && typeof o.tw.en2ja==='object') ? o.tw.en2ja : {}, ja2en:(o.tw && o.tw.ja2en && typeof o.tw.ja2en==='object') ? o.tw.ja2en : {}};   // テスト結果 {語番号:[別日の連続正解数,最後に正解した日,直近の結果]}
   /* 目標：「短期目標」「長期目標」の2つに固定。方向は区別せず、1語×2方向＝2問と数える。
@@ -697,7 +698,8 @@ function touchWord(no,dir){
   { const ks=Object.keys(store.log).sort(); while(ks.length>31){ delete store.log[ks.shift()]; } }
   store.days[k]=after;
   store.seen[dir][no]=keyToIdx(k);
-  const gmsg=goalTouch(no,dir);
+  let gmsg=goalTouch(no,dir);
+  if(checkRescue()) gmsg='🛟 2日分のノルマを達成！昨日の分も達成したことにして、連続日数を守りました';
   saveStore();
   const g=store.dailyGoal;
   if(gmsg){ showToast(gmsg); }
@@ -709,20 +711,35 @@ function touchWord(no,dir){
   }
 }
 function touchBoth(no){ touchWord(no,'en2ja'); touchWord(no,'ja2en'); }   // 英語と日本語の両方を見るゲーム用
-/* 累計日数（減らない）・連続日数・最長連続。未学習の日は、前回のお休みから7日以上あいていれば1日だけ「お休み」として連続を保つ */
+/* 累計日数（減らない）・連続日数・最長連続。未学習の日は、前回のお休みから7日以上あいていれば1日だけ「お休み」として連続を保つ。
+   さらに、目標を設定していて、翌日に2日分のノルマをやれば、休んだ1日を救済（checkRescue） */
 function computeStreaks(){
   const keys=Object.keys(store.days).filter(studied);
   if(!keys.length) return {cur:0,best:0,total:0};
   const set=new Set(keys.map(keyToIdx));
+  const resc=new Set(Object.keys(store.rescued||{}).map(keyToIdx));   // 救済した日：ノルマを達成した日として連続に数える（累計には数えない）
   const first=Math.min.apply(null,[...set]), todayI=keyToIdx(todayKey());
   let run=0,best=0,lastPass=-999;
   for(let i=first;i<=todayI;i++){
-    if(set.has(i)){ run++; if(run>best) best=run; }
+    if(set.has(i) || resc.has(i)){ run++; if(run>best) best=run; }
     else if(i===todayI){ /* 今日はまだ終わっていない */ }
     else if(run>0 && i-lastPass>=7){ lastPass=i; }
     else { run=0; }
   }
   return {cur:run,best:best,total:set.size};
+}
+/* 救済：昨日が未学習で、その前日は学習した日。今日、いずれかの目標で「今日のノルマの2倍以上」を進めたら、昨日のノルマも達成したことにする（連続して休んだ場合は救済しない＝最大1日） */
+function checkRescue(){
+  const tk=todayKey(), ti=keyToIdx(tk), y=idxToKey(ti-1), y2=idxToKey(ti-2);
+  if(studied(y) || (store.rescued||{})[y]) return false;
+  if(!(studied(y2) || (store.rescued||{})[y2])) return false;
+  const ok=store.goals.some(g=>{
+    if(g.doneAt || keyToIdx(g.created||tk)>ti-1) return false;      // 昨日の時点で設定していた目標だけ
+    const gs=goalStats(g); return gs.quota>0 && gs.todayN>=gs.quota*2;
+  });
+  if(!ok) return false;
+  store.rescued[y]=true;
+  return true;
 }
 function setDailyGoal(n){ store.dailyGoal=n; saveStore(); }
 
@@ -778,10 +795,13 @@ function goalStats(g){
   const sdf=n=>Math.ceil(Math.max(0,n)*g.spw/7);
   const span=Math.max(1,di-si+1), spanSd=Math.max(1,sdf(span)), base=Math.min(total,g.base||0);
   const fe=Math.min(1,sdf(ti-si+1)/spanSd), fs=Math.min(1,sdf(ti-si)/spanSd);
-  const expected=base+(total-base)*fe, expectedStart=base+(total-base)*fs;
-  const ahead=Math.round((done-todayN)-expectedStart);
+  const planEnd=base+(total-base)*fe, expectedStart=base+(total-base)*fs;
+  const ahead=Math.round((done-todayN)-expectedStart);   // 当初の計画ラインに対する、今日の開始時点の差
+  /* 毎日のノルマは「残り÷残り学習日数」で引き直すので、遅れていても、そのノルマをやれば期限に間に合うペース。
+     そのため、バーの目安位置（expected）は「今日の開始時点の進み＋今日のノルマ」にする */
+  const expected=Math.min(total,(done-todayN)+quota);
   const weekly=Math.min(remainStart, quota*g.spw), monthly=Math.min(remainStart, Math.round(quota*g.spw*30/7));
-  return {W:W,P:P,total:total,done:done,remain:remain,todayN:todayN,quota:quota,daysLeft:daysLeft,overdue:overdue,expected:expected,ahead:ahead,weekly:weekly,monthly:monthly,curPass:curPass,passLeft:passLeft,minL:minL};
+  return {W:W,P:P,total:total,done:done,remain:remain,todayN:todayN,quota:quota,daysLeft:daysLeft,overdue:overdue,expected:expected,planEnd:planEnd,ahead:ahead,weekly:weekly,monthly:monthly,curPass:curPass,passLeft:passLeft,minL:minL};
 }
 function activeGoals(){ return store.goals.filter(g=>!g.doneAt).sort((a,b)=>a.kind==='short'?-1:1); }
 function primaryGoal(){ return activeGoals()[0]||null; }   // 本日の目標は、短期目標から（なければ長期目標）
@@ -1111,7 +1131,7 @@ function todayCardHtml(){
       <button class="goal-btns-inline" style="width:100%;padding:11px;border-radius:10px;border:1px dashed var(--ink);background:var(--bg);color:var(--ink);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="goalEditOpen('${tab}')">＋ ${GOAL_NAME[tab]}を設定する</button></div>`;
   } else {
     const gs=goalStats(tg), pct=pctOf(gs.done,gs.total), diff=Math.round(gs.done-gs.expected);
-    const stat = tg.doneAt ? '🎉 達成！' : (diff>0 ? '計画より '+diff+'問 先行' : diff===0 ? '計画どおり' : gs.ahead<0 ? '計画より '+(-diff)+'問 遅れ' : '今日の計画まで あと'+(-diff)+'問');
+    const stat = tg.doneAt ? '🎉 達成！' : (diff>0 ? '今日のノルマより '+diff+'問 先行' : diff===0 ? '今日のノルマ達成' : '今日のノルマまで あと'+(-diff)+'問');
     goalBar=gpBlock(GOAL_NAME[tab],pct,`${gs.done}/${gs.total}問`,(tg.doneAt||diff>=0)?'ok':'warn',tg.doneAt?null:(gs.total?gs.expected/gs.total*100:null),stat);
   }
   /* 設定した目標の範囲・周回数・期限（短期／長期ボタンのすぐ下に常に表示） */
@@ -1497,10 +1517,10 @@ function goalCardHtml(kind){
   const s=goalStats(g), pct=s.total?Math.min(100,s.done/s.total*100):0, plan=s.total?Math.min(100,s.expected/s.total*100):0;
   const state = g.doneAt ? '🎉 達成！（'+dateJa(g.doneAt)+'）' : s.overdue ? '⚠ 期限を過ぎています' : '🎯 '+dateJa(g.deadline)+'まで（あと'+(s.daysLeft-1)+'日）';
   const diff=Math.round(s.done-s.expected);
-  const aheadTxt = g.doneAt ? '' : (diff>0 ? '<span class="ahead">計画より '+diff+'問 先行</span>' : diff===0 ? '<span>計画どおり</span>'
-    : s.ahead<0 ? '<span class="behind">計画より '+(-diff)+'問 遅れ</span>' : '<span>今日の計画まで あと'+(-diff)+'問</span>');
+  const aheadTxt = g.doneAt ? '' : (diff>0 ? '<span class="ahead">今日のノルマより '+diff+'問 先行</span>' : diff===0 ? '<span>今日のノルマ達成</span>'
+    : '<span>今日のノルマまで あと'+(-diff)+'問</span>');
   const behindNote = (!g.doneAt && s.total && -s.ahead > Math.max(10, s.total*0.1))
-    ? '<div class="goal-note">計画より遅れています。「✎ 編集」で期限を延ばす・範囲を減らす・週の学習日数を増やす、のいずれかで、毎日のノルマを調整できます。</div>' : '';
+    ? '<div class="goal-note">当初の計画より遅れているため、毎日のノルマが増えています。「✎ 編集」で期限を延ばす・範囲を減らす・週の学習日数を増やす、のいずれかで、毎日のノルマを調整できます。</div>' : '';
   const pace = g.doneAt ? '' : `<div class="goal-pace">${kind==='short'?'今日の目標 <b>'+s.todayN+'/'+s.quota+'問</b><br>':''}ペース：1日 ${s.quota}問 ／ 1週 約${s.weekly}問 ／ 1ヶ月 約${s.monthly}問（週${g.spw}日学習で計算）</div>`;
   return `<div class="goal-card ${g.doneAt?'done':''}">
     <div class="goal-top"><b>${nm}</b><span class="goal-dl">${state}</span></div>
@@ -1633,12 +1653,12 @@ function renderCalendar(){
   for(let d=1; d<=dim; d++){
     const k=calY+'-'+p2(calM)+'-'+p2(d), n=store.days[k]||0;
     const lv = n>=g?'l3':n>=MIN_DAY?'l2':n>0?'l1':'';
-    cells+=`<div class="cal-cell ${lv} ${k>tk?'fut':''} ${k===tk?'today':''} ${k===calSel?'sel':''}" onclick="calPick('${k}')">${d}${n?`<small>${n}</small>`:''}${store.goals.some(x=>x.deadline===k)?'<small>🎯</small>':''}</div>`;
+    cells+=`<div class="cal-cell ${lv} ${k>tk?'fut':''} ${k===tk?'today':''} ${k===calSel?'sel':''}" onclick="calPick('${k}')">${d}${n?`<small>${n}</small>`:''}${store.goals.some(x=>x.deadline===k)?'<small>🎯</small>':''}${store.rescued[k]?'<small>🛟</small>':''}</div>`;
   }
   let detail='日付をタップすると、その日の学習数が見られます。';
   if(calSel){
     const n=store.days[calSel]||0, a=calSel.split('-');
-    detail=`<b>${+a[1]}月${+a[2]}日</b>　${n}語 ${n>=g?'🏆目標達成':n>=MIN_DAY?'✅学習した日':n>0?'（学習日には あと'+(MIN_DAY-n)+'語）':'（学習なし）'}`;
+    detail=`<b>${+a[1]}月${+a[2]}日</b>　${n}語 ${n>=g?'🏆目標達成':n>=MIN_DAY?'✅学習した日':n>0?'（学習日には あと'+(MIN_DAY-n)+'語）':'（学習なし）'}${store.rescued[calSel]?'<br>🛟 翌日に2日分のノルマを達成して救済した日（連続日数に数えます）':''}`;
     const dues=store.goals.filter(x=>x.deadline===calSel).map(x=>esc(x.name));
     if(dues.length) detail+='<br>🎯 目標の期限: '+dues.join('、');
     { const lg=store.log[calSel]||{en2ja:[],ja2en:[]};
@@ -1657,7 +1677,7 @@ function renderCalendar(){
     <div class="cal-detail">${detail}</div>
     <div class="cal-legend"><span><i style="background:#f6e2a0"></i>1〜${MIN_DAY-1}語</span><span><i style="background:#9fcdb3"></i>学習した日（${MIN_DAY}語〜）</span><span><i style="background:var(--ok)"></i>目標達成</span></div>
     <div class="today-link" onclick="nav('goals')">🎯 目標を見る・作る</div>
-    <div class="footer-note">カードを裏返した語（ゲームで正解した語も）を、1日に1語1回まで数えます。<br>日付は朝4時に切り替わります。<br>1週間に1日までのお休みなら、連続日数は途切れません。<br>累計日数は減りません。</div>`;
+    <div class="footer-note">カードを裏返した語（ゲームで正解した語も）を、1日に1語1回まで数えます。<br>日付は朝4時に切り替わります。<br>1週間に1日までのお休みなら、連続日数は途切れません。<br>目標を設定していて、お休みの翌日に今日のノルマの2倍以上を進めると、休んだ1日を救済します（連続して休んだ場合は救済できません）。<br>累計日数は減りません。</div>`;
 }
 
 /* ============ データ管理（書き出し／読み込み） ============ */
