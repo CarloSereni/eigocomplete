@@ -7,11 +7,21 @@
   data/b2_unit1.js 〜 b2_unit10.js（大学合格必須レベル）
   data/b3_unit1.js 〜 b7_unit17.js（b3〜b7の全Unit。下の一覧を参照）
 
-【11冊の単語帳とファイル名】
+【12冊の単語帳とファイル名】
   b1 = 中学修了～高校基礎レベル（全8Unit）   data/b1_unit1.js 〜 b1_unit8.js（中学修了～高校基礎レベル）
   data/b2_unit1.js 〜 b2_unit10.js（大学合格必須レベル）
   b2 = 大学合格必須レベル（全10Unit）        data/b2_unit1.js 〜 b2_unit10.js
   b3 = 難関大学突破レベル（全12Unit・1202語。Unit 12 のみ102語）  data/b3_unit1.js 〜 b3_unit12.js
+  b12 = 難関大学突破レベル２（全4Unit・391語。Unit 1〜3は100語、Unit 4のみ91語）  data/b12_unit1.js 〜 b12_unit4.js
+       ※ 画面ではb3（難関大学突破レベル）の直下に表示。プログラム上の番号は12（語番号 = 12×100000 + Unit×1000 + No）。
+       ※ 元のxlsx（見出し語158・派生語374・その他352）から、既存語（b1〜b11）と綴りが同じ語を除いて収録。元の並び順のまま100語ごとにUnitを区切っています。
+         ・既存語との重複は112語（見出し語42・派生語57・その他13）。見出し語の重複の多くはb11（affirm・unify・refugee など）。
+         ・見出し語116語（xlsxの品詞・意味・例文・和訳をそのまま使用。語源 et・関連語 rl・派生語 dv・類義語 sn・反意語 an・用法 tp を追加）
+         ・派生語・その他のうち、独立して覚える価値のある275語を見出し語として新規作成（foresight、rivalry、eloquence、informed consent など）。
+           普通名詞の複合語（gene therapy、living will、integrated circuit など）は単語扱いで収録。hydro- は接頭辞（pre）で収録。
+         ・基本語から意味が分かる派生形（-ly・-ness など）、固有名詞・略語（Capitol、the Capitol Hill、SOHO、Alzheimer's disease）、Oriental、Puritan、既存語の活用形・形違い（wandering・scattered など）は収録していません。
+       ※ 名詞の C/U は xlsx の表記を引き継ぎ、新規カードは新たに判定して data/countable.js の末尾に追加（キーは 1200000 + Unit×1000 + No）。常に複数形の語（outskirts・specifics・toxic wastes など）は補足に記載。
+       ※ sw.js の CACHE は v46。
   b4 = ハイレベル（全12Unit・1201語。Unit 2・7は99語、Unit 12のみ103語）  data/b4_unit1.js 〜 b4_unit12.js
        ※ 元リスト1203語から、b1と重複する stab・gymnasium の2語を除いてあります。
        ※ 全12Unit（1201語）の収録が完了しています。
