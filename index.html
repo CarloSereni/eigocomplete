@@ -399,7 +399,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <div id="modalRoot"></div>
 
 <!-- ▼ 単語データ。Unitを追加したら、ここに <script src="data/bX_unitN.js"></script> を足す（sw.js の DATA にも追加）
-     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=熟語 b6=スーパーハイレベル（英検１級） b7=スーパーハイレベル（TOEIC990レベル） b8=スーパーハイレベル熟語 b9=中学修了～高校基礎レベル２（画面ではb1の下） b10=中学修了～高校基礎レベル熟語（準備中・画面ではb9の下） -->
+     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=熟語 b6=スーパーハイレベル（英検１級） b7=スーパーハイレベル（TOEIC990レベル） b8=スーパーハイレベル熟語 b9=中学修了～高校基礎レベル２（画面ではb1の下） b10=中学修了～高校基礎レベル熟語（準備中・画面ではb9の下） b11=大学合格必須レベル２（画面ではb2の下） -->
 <script src="data/countable.js"></script>
 <script src="data/b1_unit1.js"></script>
 <script src="data/b1_unit2.js"></script>
@@ -504,9 +504,14 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b9_unit4.js"></script>
 <script src="data/b9_unit5.js"></script>
 <script src="data/b9_unit6.js"></script>
+<script src="data/b11_unit1.js"></script>
+<script src="data/b11_unit2.js"></script>
+<script src="data/b11_unit3.js"></script>
+<script src="data/b11_unit4.js"></script>
+<script src="data/b11_unit5.js"></script>
 <script>
 /* ============ 単語データ（data/unitN.js から読み込み） ============ */
-/* ============ 単語帳の定義（10冊） ============ */
+/* ============ 単語帳の定義（11冊） ============ */
 // units = その単語帳の全Unit数。変更したいときはここだけ直す。
 const BOOKS = [
   /* 配列の順番＝画面の表示順。プログラム上の番号（語番号の百万の位など）は id の数字（b9 → 9）で決まるので、表示順を入れ替えても学習記録はずれない */
@@ -514,6 +519,7 @@ const BOOKS = [
   {id:'b9', name:'中学修了～高校基礎レベル２', units:6},
   {id:'b10', name:'中学修了～高校基礎レベル熟語', units:1},
   {id:'b2', name:'大学合格必須レベル', units:10},
+  {id:'b11', name:'大学合格必須レベル２', units:5},
   {id:'b3', name:'難関大学突破レベル', units:12},
   {id:'b4', name:'ハイレベル', units:12},
   {id:'b5', name:'熟語', units:14},
@@ -521,9 +527,9 @@ const BOOKS = [
   {id:'b7', name:'スーパーハイレベル（TOEIC990レベル）', units:17},
   {id:'b8', name:'スーパーハイレベル熟語', units:5}
 ];
-const POS_LABEL = {n:'名詞', vt:'他動詞', vi:'自動詞', v:'動詞', a:'形容詞', adv:'副詞', idm:'熟語', conj:'接続詞', prep:'前置詞'};
-const POS_S = {n:'名', vt:'他', vi:'自', v:'動', a:'形', adv:'副', idm:'熟', conj:'接', prep:'前'};
-const POS_ORDER = ['n','vt','vi','v','a','adv','idm','conj','prep'];
+const POS_LABEL = {n:'名詞', vt:'他動詞', vi:'自動詞', v:'動詞', a:'形容詞', adv:'副詞', idm:'熟語', conj:'接続詞', prep:'前置詞', pre:'接頭辞', suf:'接尾辞', int:'間投詞'};
+const POS_S = {n:'名', vt:'他', vi:'自', v:'動', a:'形', adv:'副', idm:'熟', conj:'接', prep:'前', pre:'接頭', suf:'接尾', int:'感'};
+const POS_ORDER = ['n','vt','vi','v','a','adv','idm','conj','prep','pre','suf','int'];
 let CUR_BOOK = 'b1';
 let UNITS_TOTAL = 8;       // 選んだ単語帳の全Unit数
 let WORDS = [];            // 選んだ単語帳の単語（selectBookで作る）
@@ -1845,7 +1851,7 @@ function partInfo(u){
 }
 /* 品詞の絞り込み用：他動詞(vt)・自動詞(vi)・動詞(v)は「動詞」にまとめる（カード表記は変えない） */
 function isVerbPos(p){ return p==='v' || p==='vt' || p==='vi'; }
-const POS_FILTER_ORDER = ['n','v','a','adv','idm','conj','prep'];
+const POS_FILTER_ORDER = ['n','v','a','adv','idm','conj','prep','pre','suf','int'];
 function fcPool(){
   let ws=unitWords(fcCfg.unit);
   if(fcCfg.part!=='all'){
