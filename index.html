@@ -399,7 +399,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <div id="modalRoot"></div>
 
 <!-- ▼ 単語データ。Unitを追加したら、ここに <script src="data/bX_unitN.js"></script> を足す（sw.js の DATA にも追加）
-     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=熟語 b6=スーパーハイレベル（英検１級） b7=スーパーハイレベル（TOEIC990レベル） b8=スーパーハイレベル熟語 -->
+     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=熟語 b6=スーパーハイレベル（英検１級） b7=スーパーハイレベル（TOEIC990レベル） b8=スーパーハイレベル熟語 b9=中学修了～高校基礎レベル２（画面ではb1の下） b10=中学修了～高校基礎レベル熟語（準備中・画面ではb9の下） -->
 <script src="data/countable.js"></script>
 <script src="data/b1_unit1.js"></script>
 <script src="data/b1_unit2.js"></script>
@@ -498,12 +498,21 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b8_unit3.js"></script>
 <script src="data/b8_unit4.js"></script>
 <script src="data/b8_unit5.js"></script>
+<script src="data/b9_unit1.js"></script>
+<script src="data/b9_unit2.js"></script>
+<script src="data/b9_unit3.js"></script>
+<script src="data/b9_unit4.js"></script>
+<script src="data/b9_unit5.js"></script>
+<script src="data/b9_unit6.js"></script>
 <script>
 /* ============ 単語データ（data/unitN.js から読み込み） ============ */
-/* ============ 単語帳の定義（8冊） ============ */
+/* ============ 単語帳の定義（10冊） ============ */
 // units = その単語帳の全Unit数。変更したいときはここだけ直す。
 const BOOKS = [
+  /* 配列の順番＝画面の表示順。プログラム上の番号（語番号の百万の位など）は id の数字（b9 → 9）で決まるので、表示順を入れ替えても学習記録はずれない */
   {id:'b1', name:'中学修了～高校基礎レベル', units:8},
+  {id:'b9', name:'中学修了～高校基礎レベル２', units:6},
+  {id:'b10', name:'中学修了～高校基礎レベル熟語', units:1},
   {id:'b2', name:'大学合格必須レベル', units:10},
   {id:'b3', name:'難関大学突破レベル', units:12},
   {id:'b4', name:'ハイレベル', units:12},
@@ -520,7 +529,8 @@ let UNITS_TOTAL = 8;       // 選んだ単語帳の全Unit数
 let WORDS = [];            // 選んだ単語帳の単語（selectBookで作る）
 let UNIT_AVAIL = [];       // 選んだ単語帳の収録済みUnit
 function bookInfo(id){ return BOOKS.find(b=>b.id===id); }
-function bookIdx(id){ return BOOKS.findIndex(b=>b.id===id)+1; }
+function bookIdx(id){ return parseInt(String(id).slice(1),10); }   // b9 → 9（表示順ではなく id の数字）
+function bookPos(id){ return BOOKS.findIndex(b=>b.id===id)+1; }   // 画面上の並び順（第◯冊の表示用）
 function bookData(id){ return (window.BOOK_DATA||{})[id]||{}; }
 function bookUnitsAvail(id){ return Object.keys(bookData(id)).map(Number).sort((a,b)=>a-b); }
 function bookWordCount(id){ const D=bookData(id); return Object.keys(D).reduce((s,u)=>s+D[u].length,0); }
@@ -1097,7 +1107,7 @@ function renderSearch(){
     const more = searchState.total>searchState.res.length;
     const rows = searchState.res.map(it=>{
       const w = makeWord(it.bk,it.u,it.r), b = bookInfo(it.bk);
-      return `<tr class="sr-head" onclick="openHit('${it.bk}',${it.u},${it.n})"><td colspan="3"><b>第${it.bi}冊</b> ${esc(b.name)} ／ Unit ${it.u} ／ No.${it.n}<span class="sr-go">単語一覧で見る ›</span></td></tr>`
+      return `<tr class="sr-head" onclick="openHit('${it.bk}',${it.u},${it.n})"><td colspan="3"><b>第${bookPos(it.bk)}冊</b> ${esc(b.name)} ／ Unit ${it.u} ／ No.${it.n}<span class="sr-go">単語一覧で見る ›</span></td></tr>`
         + wlRowHtml(w,false);
     }).join('');
     body=`<div class="subnote" style="margin:6px 0 8px">「${esc(searchState.q)}」： ${searchState.total}件${more?`（上位${searchState.res.length}件を表示。語を足して絞り込んでください）`:''}　／　上の帯をタップすると、その単語帳の単語一覧が開きます</div>
