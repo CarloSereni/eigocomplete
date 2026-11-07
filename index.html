@@ -399,7 +399,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <div id="modalRoot"></div>
 
 <!-- ▼ 単語データ。Unitを追加したら、ここに <script src="data/bX_unitN.js"></script> を足す（sw.js の DATA にも追加）
-     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=熟語 b6=スーパーハイレベル（英検１級） b7=スーパーハイレベル（TOEIC990レベル） b8=スーパーハイレベル熟語 b9=中学修了～高校基礎レベル２（画面ではb1の下） b10=中学修了～高校基礎レベル熟語（準備中・画面ではb9の下） b11=大学合格必須レベル２（画面ではb2の下） b12=難関大学突破レベル２（画面ではb3の下） -->
+     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=大学受験レベル熟語（画面ではb12の下・b4の上） b6=スーパーハイレベル（英検１級） b7=スーパーハイレベル（TOEIC990レベル） b8=スーパーハイレベル熟語 b9=中学修了～高校基礎レベル２（画面ではb1の下） b10=中学修了～高校基礎レベル熟語（全3Unit・画面ではb9の下） b11=大学合格必須レベル２（画面ではb2の下） b13=大学受験レベル熟語２（画面ではb5の下） b12=難関大学突破レベル２（画面ではb3の下） -->
 <script src="data/countable.js"></script>
 <script src="data/b1_unit1.js"></script>
 <script src="data/b1_unit2.js"></script>
@@ -513,21 +513,28 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b12_unit2.js"></script>
 <script src="data/b12_unit3.js"></script>
 <script src="data/b12_unit4.js"></script>
+<script src="data/b10_unit1.js"></script>
+<script src="data/b10_unit2.js"></script>
+<script src="data/b10_unit3.js"></script>
+<script src="data/b13_unit1.js"></script>
+<script src="data/b13_unit2.js"></script>
+<script src="data/b13_unit3.js"></script>
 <script>
 /* ============ 単語データ（data/unitN.js から読み込み） ============ */
-/* ============ 単語帳の定義（12冊） ============ */
+/* ============ 単語帳の定義（13冊） ============ */
 // units = その単語帳の全Unit数。変更したいときはここだけ直す。
 const BOOKS = [
   /* 配列の順番＝画面の表示順。プログラム上の番号（語番号の百万の位など）は id の数字（b9 → 9）で決まるので、表示順を入れ替えても学習記録はずれない */
   {id:'b1', name:'中学修了～高校基礎レベル', units:8},
   {id:'b9', name:'中学修了～高校基礎レベル２', units:6},
-  {id:'b10', name:'中学修了～高校基礎レベル熟語', units:1},
+  {id:'b10', name:'中学修了～高校基礎レベル熟語', units:3},
   {id:'b2', name:'大学合格必須レベル', units:10},
   {id:'b11', name:'大学合格必須レベル２', units:5},
   {id:'b3', name:'難関大学突破レベル', units:12},
   {id:'b12', name:'難関大学突破レベル２', units:4},
+  {id:'b5', name:'大学受験レベル熟語', units:14},
+  {id:'b13', name:'大学受験レベル熟語２', units:3},
   {id:'b4', name:'ハイレベル', units:12},
-  {id:'b5', name:'熟語', units:14},
   {id:'b6', name:'スーパーハイレベル（英検１級）', units:19},
   {id:'b7', name:'スーパーハイレベル（TOEIC990レベル）', units:17},
   {id:'b8', name:'スーパーハイレベル熟語', units:5}
