@@ -531,6 +531,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b10_unit1.js"></script>
 <script src="data/b10_unit2.js"></script>
 <script src="data/b10_unit3.js"></script>
+<script src="dojo.js"></script>
 <script>
 /* ============ 単語データ（data/unitN.js から読み込み） ============ */
 /* ============ 単語帳の定義（11冊） ============ */
@@ -709,6 +710,7 @@ function normStore(o){
       return g;
     });
   }
+  o.dojo = normDojo(o.dojo);   // 道場（検定）の記録
   /* ---- 単語帳の統合（旧 b12→b3 の Unit+12、旧 b13→b5 の Unit+14、旧 b14→b8 の Unit+5）に伴う記録の移し替え。bookVer が2未満のデータだけ1回変換する ---- */
   if(o.bookVer!==2){ migrateBooks(o); o.bookVer=2; }
   return o;
@@ -1044,6 +1046,7 @@ document.getElementById('backBtn').onclick=goBack;
    ※ 以前は止め忘れたタイマーが裏で動き続け、複数のタイマーが同じ表示を書き換えて数字がでたらめになっていた */
 function stopGameTimers(){
   stopSpeech();
+  try{ dojoStopTimer(); }catch(e){}
   try{ if(matchState && matchState.timerHandle){ clearInterval(matchState.timerHandle); matchState.timerHandle=null; } }catch(e){}
   try{ if(memoState && memoState.timerHandle){ clearInterval(memoState.timerHandle); memoState.timerHandle=null; } }catch(e){}
 }
@@ -1096,6 +1099,7 @@ function render(){
   else if(screen==='invSetup') renderInvSetup();
   else if(screen==='invView') renderInvView();
   else if(screen==='invRank') renderInvRank();
+  else if(screen.indexOf('dojo')===0) renderDojoScreen();
 }
 
 
@@ -1272,6 +1276,11 @@ function renderHome(){
     ${backupBannerHtml()}
     ${searchBoxHtml('homeQ')}
     <div class="menu-grid">${cards}
+      <div class="menu-card" onclick="nav('dojo')">
+        <div class="ico">🥋</div>
+        <div class="tx"><b>道場（検定・入門テスト）</b><span>${dojoSummary()}</span></div>
+        <div class="tag">›</div>
+      </div>
       <div class="menu-card" onclick="nav('dataManage')">
         <div class="ico">💾</div>
         <div class="tx"><b>データ管理</b><span>学習記録の書き出し・読み込み</span></div>
@@ -1849,6 +1858,7 @@ function applyImportedStore(obj){
     lastSession: obj.lastSession || undefined,
     invRank: obj.invRank || {},
     invSet: obj.invSet || undefined,
+    dojo: obj.dojo,
     bookVer: obj.bookVer
   });
   invSet = store.invSet || {bgm:true,se:true};
