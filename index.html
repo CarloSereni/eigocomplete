@@ -239,6 +239,7 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .act-btn{flex:1;padding:13px 6px;border-radius:12px;border:1px solid var(--line2);background:#fff;
   font-size:13.5px;font-weight:700;cursor:pointer;color:var(--ink);}
 .act-btn.memo{color:var(--ok);border-color:var(--ok);background:var(--ok-bg);}
+.act-btn.undo{color:var(--ink);border-color:var(--line2);background:#fff;font-size:14px;} .act-btn.undo small{display:block;font-size:11px;font-weight:400;color:var(--sub);margin-top:2px;} .act-btn.undo:disabled{opacity:.4;cursor:default;} .undo-row{margin-top:8px;}
 .act-btn.later{color:var(--keep);border-color:var(--keep);background:var(--keep-bg);}
 .deckdone{text-align:center;padding:60px 10px;color:var(--sub);}
 .deckdone .big{font-size:40px;margin-bottom:10px;}
@@ -399,7 +400,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <div id="modalRoot"></div>
 
 <!-- ▼ 単語データ。Unitを追加したら、ここに <script src="data/bX_unitN.js"></script> を足す（sw.js の DATA にも追加）
-     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=大学受験レベル熟語（画面ではb12の下・b4の上） b6=スーパーハイレベル（英検１級） b7=スーパーハイレベル（TOEIC990レベル） b8=スーパーハイレベル熟語 b9=中学修了～高校基礎レベル２（画面ではb1の下） b10=中学修了～高校基礎レベル熟語（全3Unit・画面ではb9の下） b11=大学合格必須レベル２（画面ではb2の下） b13=大学受験レベル熟語２（画面ではb5の下） b12=難関大学突破レベル２（画面ではb3の下） b14=スーパーハイレベル熟語２（TOEIC990）（画面では一番下） -->
+     b1=中学修了～高校基礎 b2=大学合格必須 b3=難関大学突破 b4=ハイレベル b5=大学受験レベル熟語（画面ではb12の下・b4の上） b6=スーパーハイレベル（英検１級） b7=スーパーハイレベル（TOEIC990レベル） b8=スーパーハイレベル熟語 b9=中学修了～高校基礎レベル２（画面ではb1の下） b10=中学修了～高校基礎レベル熟語（全3Unit・画面ではb9の下） b11=大学合格必須レベル２（画面ではb2の下） （旧 b12→b3 の Unit13〜16、旧 b13→b5 の Unit15〜17、旧 b14→b8 の Unit6〜15 に統合済み） -->
 <script src="data/countable.js"></script>
 <script src="data/b1_unit1.js"></script>
 <script src="data/b1_unit2.js"></script>
@@ -431,6 +432,10 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b3_unit10.js"></script>
 <script src="data/b3_unit11.js"></script>
 <script src="data/b3_unit12.js"></script>
+<script src="data/b3_unit13.js"></script>
+<script src="data/b3_unit14.js"></script>
+<script src="data/b3_unit15.js"></script>
+<script src="data/b3_unit16.js"></script>
 <script src="data/b4_unit1.js"></script>
 <script src="data/b4_unit2.js"></script>
 <script src="data/b4_unit3.js"></script>
@@ -457,6 +462,9 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b5_unit12.js"></script>
 <script src="data/b5_unit13.js"></script>
 <script src="data/b5_unit14.js"></script>
+<script src="data/b5_unit15.js"></script>
+<script src="data/b5_unit16.js"></script>
+<script src="data/b5_unit17.js"></script>
 <script src="data/b6_unit1.js"></script>
 <script src="data/b6_unit2.js"></script>
 <script src="data/b6_unit3.js"></script>
@@ -498,6 +506,16 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b8_unit3.js"></script>
 <script src="data/b8_unit4.js"></script>
 <script src="data/b8_unit5.js"></script>
+<script src="data/b8_unit6.js"></script>
+<script src="data/b8_unit7.js"></script>
+<script src="data/b8_unit8.js"></script>
+<script src="data/b8_unit9.js"></script>
+<script src="data/b8_unit10.js"></script>
+<script src="data/b8_unit11.js"></script>
+<script src="data/b8_unit12.js"></script>
+<script src="data/b8_unit13.js"></script>
+<script src="data/b8_unit14.js"></script>
+<script src="data/b8_unit15.js"></script>
 <script src="data/b9_unit1.js"></script>
 <script src="data/b9_unit2.js"></script>
 <script src="data/b9_unit3.js"></script>
@@ -509,46 +527,26 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b11_unit3.js"></script>
 <script src="data/b11_unit4.js"></script>
 <script src="data/b11_unit5.js"></script>
-<script src="data/b12_unit1.js"></script>
-<script src="data/b12_unit2.js"></script>
-<script src="data/b12_unit3.js"></script>
-<script src="data/b12_unit4.js"></script>
 <script src="data/b10_unit1.js"></script>
 <script src="data/b10_unit2.js"></script>
 <script src="data/b10_unit3.js"></script>
-<script src="data/b13_unit1.js"></script>
-<script src="data/b13_unit2.js"></script>
-<script src="data/b13_unit3.js"></script>
-<script src="data/b14_unit1.js"></script>
-<script src="data/b14_unit2.js"></script>
-<script src="data/b14_unit3.js"></script>
-<script src="data/b14_unit4.js"></script>
-<script src="data/b14_unit5.js"></script>
-<script src="data/b14_unit6.js"></script>
-<script src="data/b14_unit7.js"></script>
-<script src="data/b14_unit8.js"></script>
-<script src="data/b14_unit9.js"></script>
-<script src="data/b14_unit10.js"></script>
 <script>
 /* ============ 単語データ（data/unitN.js から読み込み） ============ */
-/* ============ 単語帳の定義（14冊） ============ */
+/* ============ 単語帳の定義（11冊） ============ */
 // units = その単語帳の全Unit数。変更したいときはここだけ直す。
 const BOOKS = [
   /* 配列の順番＝画面の表示順。プログラム上の番号（語番号の百万の位など）は id の数字（b9 → 9）で決まるので、表示順を入れ替えても学習記録はずれない */
-  {id:'b1', name:'中学修了～高校基礎レベル', units:8},
+  {id:'b1', name:'中学修了～高校基礎レベル（ユメタン0）', units:8},
   {id:'b9', name:'中学修了～高校基礎レベル２', units:6},
   {id:'b10', name:'中学修了～高校基礎レベル熟語', units:3},
-  {id:'b2', name:'大学合格必須レベル', units:10},
+  {id:'b2', name:'大学合格必須レベル（ユメタン1）', units:10},
   {id:'b11', name:'大学合格必須レベル２', units:5},
-  {id:'b3', name:'難関大学突破レベル', units:12},
-  {id:'b12', name:'難関大学突破レベル２', units:4},
-  {id:'b5', name:'大学受験レベル熟語', units:14},
-  {id:'b13', name:'大学受験レベル熟語２', units:3},
-  {id:'b4', name:'ハイレベル', units:12},
+  {id:'b3', name:'難関大学突破レベル', units:16},   // Unit 13〜16 は旧「難関大学突破レベル２」（b12）
+  {id:'b5', name:'大学受験レベル熟語', units:17},   // Unit 15〜17 は旧「大学受験レベル熟語２」（b13）
+  {id:'b4', name:'ハイレベル（英検準１級レベル）', units:12},
   {id:'b6', name:'スーパーハイレベル（英検１級）', units:19},
   {id:'b7', name:'スーパーハイレベル（TOEIC990レベル）', units:17},
-  {id:'b8', name:'スーパーハイレベル熟語', units:5},
-  {id:'b14', name:'スーパーハイレベル熟語２（TOEIC990）', units:10}
+  {id:'b8', name:'スーパーハイレベル熟語', units:15}   // Unit 6〜15 は旧「スーパーハイレベル熟語２（TOEIC990）」（b14）
 ];
 const POS_LABEL = {n:'名詞', vt:'他動詞', vi:'自動詞', v:'動詞', a:'形容詞', adv:'副詞', idm:'熟語', conj:'接続詞', prep:'前置詞', pre:'接頭辞', suf:'接尾辞', int:'間投詞'};
 const POS_S = {n:'名', vt:'他', vi:'自', v:'動', a:'形', adv:'副', idm:'熟', conj:'接', prep:'前', pre:'接頭', suf:'接尾', int:'感'};
@@ -710,8 +708,49 @@ function normStore(o){
       return g;
     });
   }
+  /* ---- 単語帳の統合（旧 b12→b3 の Unit+12、旧 b13→b5 の Unit+14、旧 b14→b8 の Unit+5）に伴う記録の移し替え。bookVer が2未満のデータだけ1回変換する ---- */
+  if(o.bookVer!==2){ migrateBooks(o); o.bookVer=2; }
   return o;
 }
+const BOOK_MERGE = {12:{to:3,off:12}, 13:{to:5,off:14}, 14:{to:8,off:5}};
+function mvNo(no){
+  no=Number(no); const m=BOOK_MERGE[Math.floor(no/100000)]; if(!m) return no;
+  return m.to*100000 + (Math.floor((no%100000)/1000)+m.off)*1000 + no%1000;
+}
+function mvBook(id){ const m=BOOK_MERGE[parseInt(String(id).slice(1),10)]; return m ? 'b'+m.to : id; }
+function mvUnit(id,u){ const m=BOOK_MERGE[parseInt(String(id).slice(1),10)]; return m ? Number(u)+m.off : Number(u); }
+function mvArr(a){ return Array.isArray(a) ? a.map(mvNo) : a; }
+function mvKeys(obj){ const r={}; Object.keys(obj||{}).forEach(k=>{ r[String(mvNo(k))]=obj[k]; }); return r; }
+function mvRangeKey(k){   // 'speed:b12:1-4' / 'memo:b12:1-4' / 'inv:b12:en2ja:1-4' の本・Unit範囲を変換
+  const m=String(k).match(/^((?:speed|memo):)(b\d+)(:)(\d+)-(\d+)$/) || String(k).match(/^(inv:)(b\d+)(:(?:en2ja|ja2en):)(\d+)-(\d+)$/);
+  if(!m || !BOOK_MERGE[parseInt(m[2].slice(1),10)]) return k;
+  return m[1]+mvBook(m[2])+m[3]+mvUnit(m[2],m[4])+'-'+mvUnit(m[2],m[5]);
+}
+function mvRecord(obj){ const r={}; Object.keys(obj||{}).forEach(k=>{ const nk=mvRangeKey(k); if(r[nk]===undefined || nk===k) r[nk]=obj[k]; else if(Array.isArray(r[nk]) && Array.isArray(obj[k])) r[nk]=r[nk].concat(obj[k]); }); return r; }
+function migrateBooks(o){
+  DIRS_ALL.forEach(d=>{
+    o.mastered[d]=mvArr(o.mastered[d]); o.review[d]=mvArr(o.review[d]);
+    o.seen[d]=mvKeys(o.seen[d]); o.tw[d]=mvKeys(o.tw[d]);
+    if(o.today && Array.isArray(o.today[d])) o.today[d]=mvArr(o.today[d]);
+  });
+  Object.keys(o.log).forEach(k=>{ DIRS_ALL.forEach(d=>{ o.log[k][d]=mvArr(o.log[k][d]); }); });
+  if(o.shown && o.shown.k) Object.keys(o.shown.k).forEach(k=>{ o.shown.k[k]=mvArr(o.shown.k[k]); });
+  o.matchBest=mvRecord(o.matchBest);
+  if(o.invRank) o.invRank=mvRecord(o.invRank);
+  if(o.lastBook) o.lastBook=mvBook(o.lastBook);
+  if(o.lastSession && typeof o.lastSession==='object'){
+    const s=o.lastSession, ob=s.book;
+    if(ob){ if(s.unit!==undefined && s.unit!==null && !isNaN(Number(s.unit))) s.unit=mvUnit(ob,s.unit); s.book=mvBook(ob); }
+    s.deckNos=mvArr(s.deckNos);
+  }
+  (o.goals||[]).forEach(g=>{
+    const ob=g.book;
+    g.from=[mvUnit(ob,g.from[0]), g.from[1]]; g.to=[mvUnit(ob,g.to[0]), g.to[1]];
+    g.book=mvBook(ob);
+    DIRS_ALL.forEach(d=>{ g.cnt[d]=mvKeys(g.cnt[d]); if(g.cur && g.cur[d]) g.cur[d]=mvNo(g.cur[d]); });
+  });
+}
+const DIRS_ALL=['en2ja','ja2en'];
 let store;
 try{ store = normStore(JSON.parse(localStorage.getItem(STORE_KEY)||'null')); }catch(e){ store = normStore(null); }
 /* ---- 学習ログ：めくった（裏面を見た）語を、1日1語1回まで数える。日付の切り替えは朝4時 ---- */
@@ -1149,9 +1188,11 @@ function renderSearch(){
 function openBook(id){ selectBook(id); nav('bookMenu'); }
 function pctOf(a,b){ return b>0 ? Math.min(100,Math.floor(a/b*100)) : 0; }
 function setGoalTab(k){ store.goalTab=k; saveStore(); renderHome(); }
-function gpBlock(label,pct,numTxt,cls,planPct,sub){
+function gpBlock(label,pct,numTxt,cls,planPct,sub,exact){
+  /* pct＝表示用（切り捨て）。塗りの幅は exact（切り捨てなしの割合）で描く：黒い線（planPct）と同じ基準にそろえるため */
+  const fillW = (exact==null) ? pct : Math.max(0,Math.min(100,exact));
   return `<div class="gp-block"><div class="gp-top"><span class="gp-label">${label}</span><span class="gp-val"><b class="${cls}">${pct}%</b>${numTxt}</span></div>
-    <div class="gp-bar"><div class="gp-fill ${cls}${pct>=100?' full':''}" style="width:${pct}%"></div>${planPct==null?'':`<div class="gp-plan" style="left:calc(${planPct.toFixed(1)}% - 1px)"></div>`}</div>${sub?`<div class="gp-sub">${sub}</div>`:''}</div>`;
+    <div class="gp-bar"><div class="gp-fill ${cls}${pct>=100?' full':''}" style="width:${fillW.toFixed(2)}%"></div>${planPct==null?'':`<div class="gp-plan" style="left:calc(${planPct.toFixed(1)}% - 1px)"></div>`}</div>${sub?`<div class="gp-sub">${sub}</div>`:''}</div>`;
 }
 function homeStatsHtml(){
   const st=computeStreaks();
@@ -1166,7 +1207,7 @@ function todayCardHtml(){
   /* 本日の目標（選んでいるタブ＝短期／長期の目標だけで表示。目標が未設定なら出さない） */
   let todayBar='';
   if(tg){ const gs=goalStats(tg), n=gs.todayN, q=Math.max(1,gs.quota);
-    if(!tg.doneAt || n>0) todayBar=gpBlock('本日の目標',pctOf(n,q),`${n}/${q}問`,n>=q?'ok':'blue',null,''); }
+    if(!tg.doneAt || n>0) todayBar=gpBlock('本日の目標',pctOf(n,q),`${n}/${q}問`,n>=q?'ok':'blue',null,'',n/q*100); }
   /* 選んでいる目標（短期／長期）の進み具合 */
   let goalBar;
   if(!tg){
@@ -1175,7 +1216,7 @@ function todayCardHtml(){
   } else {
     const gs=goalStats(tg), pct=pctOf(gs.done,gs.total), diff=Math.round(gs.done-gs.expected);
     const stat = tg.doneAt ? '🎉 達成！' : (diff>0 ? '今日のノルマより '+diff+'問 先行' : diff===0 ? '今日のノルマ達成' : '今日のノルマまで あと'+(-diff)+'問');
-    goalBar=gpBlock(GOAL_NAME[tab],pct,`${gs.done}/${gs.total}問`,(tg.doneAt||diff>=0)?'ok':'warn',tg.doneAt?null:(gs.total?gs.expected/gs.total*100:null),stat);
+    goalBar=gpBlock(GOAL_NAME[tab],pct,`${gs.done}/${gs.total}問`,(tg.doneAt||diff>=0)?'ok':'warn',tg.doneAt?null:(gs.total?gs.expected/gs.total*100:null),stat,gs.total?gs.done/gs.total*100:0);
   }
   /* 設定した目標の範囲・周回数・期限（短期／長期ボタンのすぐ下に常に表示） */
   let summary='';
@@ -1805,7 +1846,8 @@ function applyImportedStore(obj){
     lastBook: obj.lastBook, lastDir: obj.lastDir,
     lastSession: obj.lastSession || undefined,
     invRank: obj.invRank || {},
-    invSet: obj.invSet || undefined
+    invSet: obj.invSet || undefined,
+    bookVer: obj.bookVer
   });
   invSet = store.invSet || {bgm:true,se:true};
   saveStore();
@@ -2100,14 +2142,14 @@ function renderFcView(){
   if(fcDeck.length===0){
     stopSpeech();
     main.innerHTML = `<div class="deckdone"><div class="big">🎉</div>この条件のカードはありません。<br>（すべて覚えたセットに入っているか、条件に合う単語がありません）
-    <div style="margin-top:16px;"><button class="startbtn" onclick="nav('fcSetup')">設定に戻る</button></div></div>`;
+    <div style="margin-top:16px;"><button class="startbtn" onclick="nav('fcSetup')">設定に戻る</button></div>${fcUndo&&fcUndo.deck===fcDeck?'<div class="card-actions undo-row">'+fcUndoBtnHtml()+'</div>':''}</div>`;
     return;
   }
   if(fcIdx>=fcDeck.length){
     stopSpeech();
     main.innerHTML = `<div class="deckdone"><div class="big">✅</div>このセットは最後まで確認しました。<br>
     ${fcTodayMode?`<div style="margin:10px 0 4px;font-size:14px;">今日 <b>${todayCount()}</b>語　🔥${computeStreaks().cur}日連続</div>`:''}
-    <div style="margin-top:16px;">${fcGoalId?`<button class="startbtn" onclick="startGoalStudy('${fcGoalId}')">続けて学習する</button><div style="height:10px"></div>`:''}<button class="startbtn" style="${fcTodayMode?'background:var(--ink)':''}" onclick="fcIdx=0;fcAutoPending=true;renderFcView()">もう一度見る</button>${fcTodayMode?`<div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="goHome()">トップへ戻る</span></div>`:''}</div></div>`;
+    ${fcUndo&&fcUndo.deck===fcDeck?'<div class="card-actions undo-row">'+fcUndoBtnHtml()+'</div>':''}<div style="margin-top:16px;">${fcGoalId?`<button class="startbtn" onclick="startGoalStudy('${fcGoalId}')">続けて学習する</button><div style="height:10px"></div>`:''}<button class="startbtn" style="${fcTodayMode?'background:var(--ink)':''}" onclick="fcIdx=0;fcAutoPending=true;renderFcView()">もう一度見る</button>${fcTodayMode?`<div class="footer-note"><span style="text-decoration:underline;cursor:pointer" onclick="goHome()">トップへ戻る</span></div>`:''}</div></div>`;
     return;
   }
   const w = fcDeck[fcIdx];
@@ -2155,6 +2197,7 @@ function renderFcView(){
       <button class="act-btn memo" onclick="fcMark('mastered')">✅ 覚えた</button>
       <button class="act-btn later" onclick="fcMark('review')">🔖 また後で</button>
     </div>
+    <div class="card-actions undo-row">${fcUndoBtnHtml()}</div>
   `;
   const outer=document.getElementById('cardOuter');
   if(fcFlipped) outer.classList.add('flipped');
@@ -2202,11 +2245,13 @@ function fcNav(dir){
   },140);
 }
 /* デッキ作成時の並び順（「もとに戻す」で、元の位置へ戻すために使う）。デッキが入れ替わったら作り直す */
+let fcUndo=null;   // 直前の「覚えた」「また後で」（1回分）。デッキが作り直されたら無効
 let fcRank=null, fcRankFor=null;
 function fcEnsureRank(){ if(fcRankFor!==fcDeck){ fcRank=new Map(fcDeck.map((w,i)=>[w.no,i])); fcRankFor=fcDeck; } }
 function fcMark(type){
   const w=fcDeck[fcIdx], d=fcCfg.dir;
   fcAutoPending=true;
+  fcUndo={type:type, w:w, dir:d, idx:fcIdx, wasM:isMastered(w.no,d), wasR:isReview(w.no,d), deck:fcDeck};
   if(type==='mastered'){
     fcEnsureRank();
     touchWord(w.no,d);      // めくらずに「覚えた」を押した場合も、学習した問として数える
@@ -2225,6 +2270,34 @@ function fcMark(type){
     saveSession();
     renderFcView();
   }
+}
+/* 直前の「覚えた」「また後で」を取り消す：覚えた／復習のリストを元の状態に戻し、単語をデッキの元の位置に戻して、その単語のおもて面を表示する。
+   学習数・目標の「やった数」は戻さない（同じ周で同じ語は数え直さないので、見直しても二重にならない） */
+function fcUndoLast(){
+  const u=fcUndo;
+  if(!u || u.deck!==fcDeck){ fcUndo=null; renderFcView(); return; }
+  const no=u.w.no, d=u.dir;
+  if(!u.wasM) store.mastered[d]=store.mastered[d].filter(n=>n!==no);
+  if(!u.wasR) store.review[d]=store.review[d].filter(n=>n!==no);
+  if(u.wasR && !isReview(no,d)) store.review[d].push(no);
+  if(u.wasM && !isMastered(no,d)) store.mastered[d].push(no);
+  saveStore();
+  let idx=u.idx;
+  if(u.type==='mastered'){
+    const at=fcDeck.findIndex(x=>x.no===no);
+    if(at>=0) idx=at; else { idx=Math.min(idx,fcDeck.length); fcDeck.splice(idx,0,u.w); }
+  } else {
+    const at=fcDeck.findIndex(x=>x.no===no);
+    if(at>=0) idx=at;
+  }
+  fcIdx=idx; fcFlipped=false; fcAutoPending=true; fcUndo=null;
+  saveSession();
+  renderFcView();
+  showToast('↩ 元に戻しました：'+u.w.e);
+}
+function fcUndoBtnHtml(){
+  const u=(fcUndo && fcUndo.deck===fcDeck) ? fcUndo : null;
+  return `<button class="act-btn undo" ${u?'':'disabled'} onclick="fcUndoLast()">↩ 直前の操作を元に戻す${u?'<small>（'+(u.type==='mastered'?'覚えた':'また後で')+'：'+esc(u.w.e)+'）</small>':''}</button>`;
 }
 function attachSwipe(el){
   let x0=null,y0=null;
