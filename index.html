@@ -69,6 +69,7 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
   border-radius:14px;padding:16px;box-shadow:var(--shadow);cursor:pointer;text-align:left;}
 .menu-card .ico{width:44px;height:44px;border-radius:10px;background:var(--ink);color:#fff;
   display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.menu-card.idm .ico{background:var(--ok);}   /* 熟語の単語帳（b10・b5・b8）の番号バッジは深緑 */
 .menu-card .tx b{display:block;font-size:15.5px;margin-bottom:2px;}
 .menu-card .tx span{font-size:12px;color:var(--sub);}
 .menu-card .tag{margin-left:auto;font-family:var(--serif);font-size:20px;color:var(--line2);flex-shrink:0;}
@@ -1250,11 +1251,12 @@ function todayCardHtml(){
     </div>
   </div>`;
 }
+const IDIOM_BOOKS=['b10','b5','b8'];   // 熟語の単語帳（トップの番号バッジの色分けに使う）
 function renderHome(){
   titleEl.textContent='一生使える英単熟語帳';
   const cards = BOOKS.map((b,i)=>{
     const av = bookUnitsAvail(b.id), cnt = bookWordCount(b.id), ready = av.length>0;
-    return `<div class="menu-card ${ready?'':'soon'}" ${ready?`onclick="openBook('${b.id}')"`:''}>
+    return `<div class="menu-card ${IDIOM_BOOKS.includes(b.id)?'idm ':''}${ready?'':'soon'}" ${ready?`onclick="openBook('${b.id}')"`:''}>
         <div class="ico">${i+1}</div>
         <div class="tx"><b>${b.name}</b><span>${ready?`Unit 1〜${b.units}（収録 ${av.length} Unit・${cnt}語）`:'準備中'}</span></div>
         <div class="tag">${ready?'›':''}</div>
