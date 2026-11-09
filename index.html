@@ -385,6 +385,12 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 .card-face.front .spk{width:46px;height:46px;font-size:22px;}
 .hero h2{font-size:24px;line-height:1.35;}
 .menu-card.soon{opacity:.5;cursor:default;box-shadow:none;}
+/* 道場カード：他の単語帳と区別するため、墨色の背景＋金色の文字（トップページのみ） */
+.menu-card.dojo-card{background:#1c1f2b;border-color:#1c1f2b;}
+.menu-card.dojo-card .ico{background:var(--accent);color:#fff;}
+.menu-card.dojo-card .tx b{color:#f0cf7a;}
+.menu-card.dojo-card .tx span{color:#d9c48a;}
+.menu-card.dojo-card .tag{color:#f0cf7a;}
 .mtop .timer{font-variant-numeric:tabular-nums;min-width:6em;text-align:right;}
 
 </style>
@@ -1276,7 +1282,7 @@ function renderHome(){
     ${backupBannerHtml()}
     ${searchBoxHtml('homeQ')}
     <div class="menu-grid">${cards}
-      <div class="menu-card" onclick="nav('dojo')">
+      <div class="menu-card dojo-card" onclick="nav('dojo')">
         <div class="ico">🥋</div>
         <div class="tx"><b>道場（検定・入門テスト）</b><span>${dojoSummary()}</span></div>
         <div class="tag">›</div>
@@ -1802,8 +1808,14 @@ function renderDataManage(){
     </div>
 
     <div class="setup-block">
+      <h3>読み込み方法（ファイル・テキスト共通）</h3>
+      <label class="qopt"><input type="radio" name="impMode" value="merge" checked><span><b>追加（おすすめ）</b><br>今の記録を残したまま、読み込む記録の学習済みデータを足し合わせます。目標設定は変わりません。</span></label>
+      <label class="qopt"><input type="radio" name="impMode" value="overwrite"><span><b>上書き</b><br>今の記録をすべて消して、読み込む記録に置き換えます（目標設定も置き換わります）。</span></label>
+    </div>
+
+    <div class="setup-block">
       <h3>読み込み（復元・移行）</h3>
-      <div class="subnote" style="margin-bottom:10px;">書き出したファイルを選ぶと、この端末に記録を反映します。<br><b>現在この端末にある記録は上書きされます。</b></div>
+      <div class="subnote" style="margin-bottom:10px;">書き出したファイルを選ぶと、上で選んだ方法でこの端末に記録を反映します。</div>
       <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;" onchange="importStoreFromFile(event)">
       <button class="startbtn" style="background:var(--ink2);" onclick="document.getElementById('importFileInput').click()">📥 ファイルから読み込む</button>
     </div>
@@ -1842,12 +1854,60 @@ function exportStore(){
   markBackedUp();
 }
 
+function getImportMode(){ const r=document.querySelector('input[name="impMode"]:checked'); return r ? r.value : 'merge'; }
+function uniqArr(a,b){ return Array.from(new Set((Array.isArray(a)?a:[]).concat(Array.isArray(b)?b:[]))); }
+/* 「追加」：今の記録に、読み込む記録の学習済みデータを足し合わせる。
+   覚えた／また後で＝合算（同じ語は「覚えた」優先）、テスト結果・ゲーム記録＝良い方、日ごとの学習数＝大きい方、道場の認定＝高い方。
+   目標（goals・dailyGoal・goalTab）・自動音声・最後に開いた単語帳などは、今の端末のまま変えない */
+function mergeStoreFrom(inc){
+  DIRS_ALL.forEach(d=>{
+    const m=new Set(store.mastered[d].concat(inc.mastered[d])), r=new Set(store.review[d].concat(inc.review[d]));
+    m.forEach(n=>r.delete(n));
+    store.mastered[d]=Array.from(m); store.review[d]=Array.from(r);
+    const tw=store.tw[d], it=inc.tw[d];
+    Object.keys(it).forEach(k=>{ const a=tw[k], b=it[k];
+      if(!Array.isArray(b)) return;
+      if(!Array.isArray(a) || b[0]>a[0] || (b[0]===a[0] && b[1]>a[1])) tw[k]=b; });
+    Object.keys(inc.seen[d]).forEach(k=>{ const v=inc.seen[d][k]; if(!(store.seen[d][k]>=v)) store.seen[d][k]=v; });
+  });
+  Object.keys(inc.days).forEach(k=>{ store.days[k]=Math.max(store.days[k]||0, inc.days[k]||0); });
+  Object.keys(inc.log).forEach(k=>{
+    const dst=store.log[k]||(store.log[k]={en2ja:[],ja2en:[]});
+    DIRS_ALL.forEach(d=>{ dst[d]=uniqArr(dst[d], inc.log[k][d]); });
+  });
+  { const ks=Object.keys(store.log).sort(); while(ks.length>31){ delete store.log[ks.shift()]; } }
+  Object.keys(inc.rescued).forEach(k=>{ store.rescued[k]=true; });
+  if(inc.today.d===store.today.d){ DIRS_ALL.forEach(d=>{ store.today[d]=uniqArr(store.today[d], inc.today[d]); }); }
+  else if(inc.today.d>store.today.d){ store.today=inc.today; }
+  if(inc.shown.d===store.shown.d){ Object.keys(inc.shown.k).forEach(k=>{ store.shown.k[k]=uniqArr(store.shown.k[k], inc.shown.k[k]); }); }
+  else if(inc.shown.d>store.shown.d){ store.shown=inc.shown; }
+  Object.keys(inc.matchBest||{}).forEach(k=>{ const v=inc.matchBest[k];
+    if(typeof v==='number' && (!store.matchBest[k] || v<store.matchBest[k])) store.matchBest[k]=v; });
+  store.invRank=store.invRank||{};
+  Object.keys(inc.invRank||{}).forEach(k=>{
+    const seen=new Set(), list=(store.invRank[k]||[]).concat(inc.invRank[k]||[]).filter(x=>{
+      if(!x || typeof x.n!=='number') return false;
+      const id=x.n+'|'+x.ts; if(seen.has(id)) return false; seen.add(id); return true; });
+    store.invRank[k]=list.sort((a,b)=>b.n-a.n||b.ts-a.ts).slice(0,10);
+  });
+  ['w','i'].forEach(t=>{
+    const a=store.dojo[t], b=inc.dojo[t];
+    a.rank=Math.max(a.rank,b.rank); a.prov=Math.max(a.prov,b.prov);
+    Object.keys(b.passed).forEach(k=>{ if(!a.passed[k] || String(b.passed[k])<String(a.passed[k])) a.passed[k]=b.passed[k]; });
+    if(b.place && (!a.place || String(b.place.d||'')>String(a.place.d||''))) a.place=b.place;
+  });
+  { const seen=new Set();
+    store.dojo.hist=store.dojo.hist.concat(inc.dojo.hist).filter(h=>{ const id=JSON.stringify(h); if(seen.has(id)) return false; seen.add(id); return true; })
+      .sort((x,y)=>String(x.d||'')<String(y.d||'')?-1:String(x.d||'')>String(y.d||'')?1:0).slice(-60); }
+}
 function applyImportedStore(obj){
   if(!obj || typeof obj !== 'object' || !obj.mastered || !obj.review || Array.isArray(obj.mastered) || Array.isArray(obj.review)){
     alert('読み込みに失敗しました。ファイル／テキストの形式が正しくないようです。');
     return false;
   }
-  store = normStore({
+  const mode=getImportMode();
+  if(mode==='overwrite' && !confirm('この端末の現在の記録（目標設定を含む）をすべて消して、読み込む記録に置き換えます。よろしいですか？')) return false;
+  const src={
     mastered: obj.mastered,
     review: obj.review,
     matchBest: obj.matchBest,
@@ -1860,10 +1920,18 @@ function applyImportedStore(obj){
     invSet: obj.invSet || undefined,
     dojo: obj.dojo,
     bookVer: obj.bookVer
-  });
-  invSet = store.invSet || {bgm:true,se:true};
-  saveStore();
-  alert('読み込みが完了しました。');
+  };
+  if(mode==='merge'){
+    const b0={en2ja:store.mastered.en2ja.length, ja2en:store.mastered.ja2en.length};
+    mergeStoreFrom(normStore(src));
+    saveStore();
+    alert('追加で読み込みました。\n覚えた：英→日 +'+(store.mastered.en2ja.length-b0.en2ja)+'語、日→英 +'+(store.mastered.ja2en.length-b0.ja2en)+'語\n（目標設定は変更していません）');
+  } else {
+    store = normStore(src);
+    invSet = store.invSet || {bgm:true,se:true};
+    saveStore();
+    alert('上書きで読み込みました。');
+  }
   nav('dataManage', false);
   return true;
 }
