@@ -69,7 +69,7 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
   border-radius:14px;padding:16px;box-shadow:var(--shadow);cursor:pointer;text-align:left;}
 .menu-card .ico{width:44px;height:44px;border-radius:10px;background:var(--ink);color:#fff;
   display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-.menu-card.idm .ico{background:var(--ok);}   /* 熟語の単語帳（b10・b5・b8）の番号バッジは深緑 */
+.menu-card.idm .ico{background:var(--ok);}   /* 熟語の単語帳（b10・b5・b15・b8）の番号バッジは深緑 */
 .menu-card .tx b{display:block;font-size:15.5px;margin-bottom:2px;}
 .menu-card .tx span{font-size:12px;color:var(--sub);}
 .menu-card .tag{margin-left:auto;font-family:var(--serif);font-size:20px;color:var(--line2);flex-shrink:0;}
@@ -470,12 +470,12 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b5_unit9.js"></script>
 <script src="data/b5_unit10.js"></script>
 <script src="data/b5_unit11.js"></script>
-<script src="data/b5_unit12.js"></script>
-<script src="data/b5_unit13.js"></script>
-<script src="data/b5_unit14.js"></script>
-<script src="data/b5_unit15.js"></script>
-<script src="data/b5_unit16.js"></script>
-<script src="data/b5_unit17.js"></script>
+<script src="data/b15_unit1.js"></script>
+<script src="data/b15_unit2.js"></script>
+<script src="data/b15_unit3.js"></script>
+<script src="data/b15_unit4.js"></script>
+<script src="data/b15_unit5.js"></script>
+<script src="data/b15_unit6.js"></script>
 <script src="data/b6_unit1.js"></script>
 <script src="data/b6_unit2.js"></script>
 <script src="data/b6_unit3.js"></script>
@@ -553,8 +553,9 @@ const BOOKS = [
   {id:'b10', name:'中学修了～高校基礎レベル熟語', units:3},
   {id:'b2', name:'大学合格必須レベル（ユメタン1）', units:10},
   {id:'b11', name:'大学合格必須レベル２', units:5},
+  {id:'b5', name:'大学合格必須レベル熟語', units:11},   // 旧「大学受験レベル熟語」(1702個) を共通テストレベルまでで分けた前半（Unit番号・語番号は振り直し済み）
   {id:'b3', name:'難関大学突破レベル', units:16},   // Unit 13〜16 は旧「難関大学突破レベル２」（b12）
-  {id:'b5', name:'大学受験レベル熟語', units:17},   // Unit 15〜17 は旧「大学受験レベル熟語２」（b13）
+  {id:'b15', name:'難関大学突破レベル熟語', units:6},   // 旧「大学受験レベル熟語」の後半（共通テストより上のレベル）
   {id:'b4', name:'ハイレベル（英検準１級レベル）', units:12},
   {id:'b6', name:'スーパーハイレベル（英検１級）', units:19},
   {id:'b7', name:'スーパーハイレベル（TOEIC990レベル）', units:17},
@@ -742,7 +743,8 @@ function normStore(o){
   }
   o.dojo = normDojo(o.dojo);   // 道場（検定）の記録
   /* ---- 単語帳の統合（旧 b12→b3 の Unit+12、旧 b13→b5 の Unit+14、旧 b14→b8 の Unit+5）に伴う記録の移し替え。bookVer が2未満のデータだけ1回変換する ---- */
-  if(o.bookVer!==2){ migrateBooks(o); o.bookVer=2; }
+  if(o.bookVer!==2 && o.bookVer!==3){ migrateBooks(o); o.bookVer=2; }
+  if(o.bookVer===2){ migrateSplit(o); o.bookVer=3; }   // 旧b5（大学受験レベル熟語）の分割に伴う記録の移し替え
   return o;
 }
 const BOOK_MERGE = {12:{to:3,off:12}, 13:{to:5,off:14}, 14:{to:8,off:5}};
@@ -781,6 +783,62 @@ function migrateBooks(o){
     g.from=[mvUnit(ob,g.from[0]), g.from[1]]; g.to=[mvUnit(ob,g.to[0]), g.to[1]];
     g.book=mvBook(ob);
     DIRS_ALL.forEach(d=>{ g.cnt[d]=mvKeys(g.cnt[d]); if(g.cur && g.cur[d]) g.cur[d]=mvNo(g.cur[d]); });
+  });
+}
+
+/* ---- 旧「大学受験レベル熟語」(b5・1702個) を、b5＝大学合格必須レベル熟語（1116個）と b15＝難関大学突破レベル熟語（586個）に分けたときの記録の移し替え。
+   flags：旧b5の並び順どおり、'1'＝難関（b15へ）／'0'＝必須（b5に残る）。old：旧Unitごとの [語数, 先頭の番号n]。nb：新しい各冊のUnitごとの語数。
+   新しい番号は、各冊の中で並び順のまま n＝1,2,3…（Unitは nb に従う）。bookVer が3未満のデータだけ1回変換する ---- */
+const B5_SPLIT={
+  flags:'0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000100000000100000100000010000010000000000010000001000100000110010000000000010000100000100000000100100000100001100000000001100000000000000000000000000000000000000000000100000010000010000000101100000000010000000001100011100001000000010010001000001000010110010001111100000010000000000000000001000101010001000000001001110110000000111011100011001000111111010100110000000111111111110111111011001110100110111111000001001111100011111010000100011010101101011010000101111000001000001001101111110011111111110011111001101101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011000000000001000000000000000000000000000000000000001101000000000000000000000000000000000011000000011100101011100111010010000111111111111111001111011101101111110011111000101000011011101010011101110111011111110011110001110011000101011111000100101111011101110101000000000110010010001111011011100011101100011111010100100100101111000001111110110110110111111111000000001101001101101011110101100001111111001111111100001001111110101111111111110101001000111001010101000111100101000010111011000011111001111110000000111101011101101110001101101110100001100001011001110000000011001000001011110010111110100111000111100101111111101001001001111110011000110111100110000000100111001001111010010100011111101111111111101011110000001110011111001011000000000001001000010100000001011100111110000000000100101101110111111111111111111111111111',
+  old:[[101, 1], [101, 102], [101, 203], [101, 304], [101, 405], [101, 506], [100, 607], [100, 707], [100, 807], [100, 907], [100, 1007], [100, 1107], [100, 1207], [100, 1307], [100, 1], [100, 1], [96, 1]],
+  nb:[[102, 102, 102, 102, 102, 101, 101, 101, 101, 101, 101],[98, 98, 98, 98, 97, 97]]
+};
+let _b5map=null;
+function b5SplitMap(){
+  if(_b5map) return _b5map;
+  const m={}, cnt=[0,0], fl=B5_SPLIT.flags; let k=0;
+  B5_SPLIT.old.forEach((o,ui)=>{
+    for(let i=0;i<o[0];i++){
+      const oldNo=500000+(ui+1)*1000+o[1]+i, h=fl.charCodeAt(k++)===49?1:0, seq=++cnt[h], sz=B5_SPLIT.nb[h];
+      let u=1, acc=0; while(u<sz.length && seq>acc+sz[u-1]){ acc+=sz[u-1]; u++; }
+      m[oldNo]={no:(h?15:5)*100000+u*1000+seq, u:u, n:seq, bi:h?15:5};
+    }
+  });
+  return (_b5map=m);
+}
+function b5SplitNo(no){ no=Number(no); if(Math.floor(no/100000)!==5) return no; const v=b5SplitMap()[no]; return v===undefined ? no : v.no; }
+function b5SplitArr(a){ return Array.isArray(a) ? a.map(b5SplitNo) : a; }
+function b5SplitKeys(obj){ const r={}; Object.keys(obj||{}).forEach(k=>{ r[String(b5SplitNo(k))]=obj[k]; }); return r; }
+function migrateSplit(o){
+  DIRS_ALL.forEach(d=>{
+    o.mastered[d]=b5SplitArr(o.mastered[d]); o.review[d]=b5SplitArr(o.review[d]);
+    o.seen[d]=b5SplitKeys(o.seen[d]); o.tw[d]=b5SplitKeys(o.tw[d]);
+    if(o.today && Array.isArray(o.today[d])) o.today[d]=b5SplitArr(o.today[d]);
+  });
+  Object.keys(o.log).forEach(k=>{ DIRS_ALL.forEach(d=>{ o.log[k][d]=b5SplitArr(o.log[k][d]); }); });
+  if(o.shown && o.shown.k) Object.keys(o.shown.k).forEach(k=>{ o.shown.k[k]=b5SplitArr(o.shown.k[k]); });
+  /* ゲームの自己ベストは Unit の範囲ごとの記録なので、b5 の分は引き継げない（新しい範囲で記録し直し） */
+  [o.matchBest, o.invRank].forEach(r=>{ if(r) Object.keys(r).forEach(k=>{ if(/^(?:speed|memo|inv):b5:/.test(k)) delete r[k]; }); });
+  /* 前回の続き（フラッシュカードのデッキ）は、b5 のものだけ破棄 */
+  if(o.lastSession && o.lastSession.book==='b5') o.lastSession=undefined;
+  /* 範囲指定の目標：旧b5の範囲に含まれていた語の多い方の冊に付け替える（範囲は新しい番号で引き直し） */
+  const M=b5SplitMap();
+  (o.goals||[]).forEach(g=>{
+    if(g.book!=='b5') return;
+    const fk=g.from[0]*1000+g.from[1], tk=g.to[0]*1000+g.to[1], hit={5:[],15:[]};
+    Object.keys(M).forEach(on=>{ const key=Number(on)-500000; if(key>=fk && key<=tk) hit[M[on].bi].push(M[on]); });
+    const bi = hit[15].length>hit[5].length ? 15 : 5, ws=hit[bi];
+    g.book='b'+bi;
+    if(ws.length){
+      ws.sort((a,b)=>a.no-b.no);
+      g.from=[ws[0].u, ws[0].n]; g.to=[ws[ws.length-1].u, ws[ws.length-1].n];
+    }
+    DIRS_ALL.forEach(d=>{
+      const nc={}; Object.keys(g.cnt[d]||{}).forEach(k=>{ const nn=b5SplitNo(k); if(Math.floor(nn/100000)===bi) nc[nn]=g.cnt[d][k]; });
+      g.cnt[d]=nc;
+      if(g.cur && g.cur[d]){ const nn=b5SplitNo(g.cur[d]); g.cur[d]=(Math.floor(nn/100000)===bi) ? nn : 0; }
+    });
   });
 }
 const DIRS_ALL=['en2ja','ja2en'];
@@ -1285,7 +1343,7 @@ function todayCardHtml(){
     </div>
   </div>`;
 }
-const IDIOM_BOOKS=['b10','b5','b8'];   // 熟語の単語帳（トップの番号バッジの色分けに使う）
+const IDIOM_BOOKS=['b10','b5','b15','b8'];   // 熟語の単語帳（トップの番号バッジの色分けに使う）
 function renderHome(){
   titleEl.textContent='一生使える英単熟語帳';
   const cards = BOOKS.map((b,i)=>{
