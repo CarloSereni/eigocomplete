@@ -1,6 +1,5 @@
-/* 英単熟語中学～高校卒業レベル「熟語」 Unit 2 （101語） */
+/* 英単熟語 「大学合格必須レベル熟語」 Unit 2 （102個） */
 window.BOOK_DATA=window.BOOK_DATA||{};(window.BOOK_DATA.b5=window.BOOK_DATA.b5||{})[2]=[
-{n:102,p:"idm",e:"get together",i:"",s:[["idm","集まる"]],x:[["Let's [[get together]] this weekend.","今週末【集まり】ましょう。"],["The whole family [[got together]] for the holidays.","家族全員が休日に【集まり】ました。"]]},
 {n:103,p:"idm",e:"do the cooking",i:"",s:[["idm","料理する"]],x:[["My father [[does the cooking]] on Sundays.","父は日曜日に【料理をし】ます。"],["Who [[does the cooking]] in your house?","あなたの家では誰が【料理をし】ますか。"]]},
 {n:104,p:"idm",e:"allow A to do",i:"",s:[["idm","Aに～することを許可する"]],x:[["The teacher [[allowed us to]] use dictionaries.","先生は私たちが辞書を使う【ことを許可し】ました。"],["My parents [[allow me to]] stay out late.","両親は私が夜遅くまで外にいる【ことを許可し】ます。"]]},
 {n:105,p:"idm",e:"get along with A",i:"",s:[["idm","Aと仲良くやっていく"]],x:[["I [[get along with]] my classmates.","私はクラスメート【と仲良くやっ】ています。"],["She [[gets along with]] her new boss.","彼女は新しい上司【と仲良くやっ】ています。"]]},
@@ -100,5 +99,7 @@ window.BOOK_DATA=window.BOOK_DATA||{};(window.BOOK_DATA.b5=window.BOOK_DATA.b5||
 {n:199,p:"idm",e:"be about to do",i:"",s:[["idm","～しようとしている"]],x:[["The train [[is about to]] leave.","電車は出発【しようとして】います。"],["I [[was about to]] go out.","私は出かけ【ようとして】いました。"]]},
 {n:200,p:"idm",e:"be based on A",i:"",s:[["idm","Aに基づいている"]],x:[["This story [[is based on]] a true event.","この物語は実話【に基づいて】います。"],["The movie [[is based on]] a novel.","その映画は小説【に基づいて】います。"]]},
 {n:201,p:"idm",e:"be lacking in A",i:"",s:[["idm","Aが欠けている"]],x:[["The room [[is lacking in]] light.","その部屋は光【が欠けて】います。"],["His speech [[was lacking in]] humor.","彼のスピーチはユーモア【が欠けて】いました。"]]},
-{n:202,p:"idm",e:"be accustomed to A",i:"",s:[["idm","Aに慣れている"]],x:[["I [[am accustomed to]] cold weather.","私は寒い気候【に慣れて】います。"],["He [[is accustomed to]] working at night.","彼は夜に働くの【に慣れて】います。"]]}
+{n:202,p:"idm",e:"be accustomed to A",i:"",s:[["idm","Aに慣れている"]],x:[["I [[am accustomed to]] cold weather.","私は寒い気候【に慣れて】います。"],["He [[is accustomed to]] working at night.","彼は夜に働くの【に慣れて】います。"]]},
+{n:203,p:"idm",e:"be acquainted with A",i:"",s:[["idm","Aと知り合いである"]],x:[["I [[am acquainted with]] the mayor.","私は市長【と知り合いです】。"],["She [[is acquainted with]] his family.","彼女は彼の家族【と知り合いです】。"]]},
+{n:204,p:"idm",e:"be aware of A",i:"",s:[["idm","Aに気付いている"]],x:[["I [[was not aware of]] the danger.","私はその危険【に気付いて】いませんでした。"],["Are you [[aware of]] the problem?","あなたはその問題【に気付いて】いますか。"]]}
 ];

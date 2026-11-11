@@ -1,4 +1,4 @@
-/* 英単熟語中学～高校卒業レベル「熟語」 Unit 1 （101語） */
+/* 英単熟語 「大学合格必須レベル熟語」 Unit 1 （102個） */
 window.BOOK_DATA=window.BOOK_DATA||{};(window.BOOK_DATA.b5=window.BOOK_DATA.b5||{})[1]=[
 {n:1,p:"idm",e:"carry out A",i:"",s:[["idm","Aを実行する"]],x:[["The company will [[carry out]] the plan next month.","その会社は来月、計画【を実行する】予定です。"],["They [[carried out]] an experiment in the lab.","彼らは研究室で実験【を行い】ました。"]]},
 {n:2,p:"idm",e:"make up A",i:"",s:[["idm","Aを作り上げる"]],x:[["She [[made up]] a story for the children.","彼女は子どもたちのために物語【を作り上げ】ました。"],["He [[made up]] an excuse for being late.","彼は遅刻の言い訳【を作り上げ】ました。"]]},
@@ -100,5 +100,6 @@ window.BOOK_DATA=window.BOOK_DATA||{};(window.BOOK_DATA.b5=window.BOOK_DATA.b5||
 {n:98,p:"idm",e:"rest on A",i:"",s:[["idm","Aに基づく"]],x:[["The story [[rests on]] a true event.","その物語は実話【に基づい】ています。"],["His success [[rests on]] hard work.","彼の成功は努力【に基づい】ています。"]]},
 {n:99,p:"idm",e:"look up to A",i:"",s:[["idm","Aを尊敬する"]],x:[["I [[look up to]] my teacher.","私は先生【を尊敬して】います。"],["Children [[look up to]] their parents.","子どもは親【を尊敬して】います。"]]},
 {n:100,p:"idm",e:"look down on A",i:"",s:[["idm","Aを見下す"]],x:[["Don't [[look down on]] others.","他人【を見下し】てはいけません。"],["He [[looks down on]] people who are poor.","彼は貧しい人々【を見下して】います。"]]},
-{n:101,p:"idm",e:"hand in A",i:"",s:[["idm","Aを提出する"]],x:[["Please [[hand in]] your report by Friday.","金曜日までにレポート【を提出し】てください。"],["He [[handed in]] his homework.","彼は宿題【を提出し】ました。"]]}
+{n:101,p:"idm",e:"hand in A",i:"",s:[["idm","Aを提出する"]],x:[["Please [[hand in]] your report by Friday.","金曜日までにレポート【を提出し】てください。"],["He [[handed in]] his homework.","彼は宿題【を提出し】ました。"]]},
+{n:102,p:"idm",e:"get together",i:"",s:[["idm","集まる"]],x:[["Let's [[get together]] this weekend.","今週末【集まり】ましょう。"],["The whole family [[got together]] for the holidays.","家族全員が休日に【集まり】ました。"]]}
 ];
