@@ -356,7 +356,7 @@ function renderDojoBattle(){
     fb='<div class="dj-fb '+(A.ok?'ok':'ng')+'"><div class="dj-fb-h">'+(A.ok?'○ 正解！':(A.j<0?'× 時間切れ':'× 不正解'))
       +(win?'　師範を倒した！':lose?'　力尽きた…':'')+'</div>'
       + '<div><b>'+esc(w.e)+'</b> '+spkBtn(w.e)+(w.ipa?' <span class="ipa">['+esc(w.ipa)+']</span>':'')+'</div>'
-      + '<div class="dj-fb-ja">'+esc(w.ja)+'</div>'
+      + '<div class="dj-fb-ja">'+jaTag(w.ja)+'</div>'
       + '<button class="dj-next" onclick="dojoNext()">'+lab+'</button></div>';
   }
   main.innerHTML = head + bar

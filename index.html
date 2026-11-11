@@ -352,6 +352,10 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 .en-word{font-family:var(--serif);}
 .card-face.front .spk{margin-top:6px;}
 .ja-word{line-height:1.5;text-align:center;}
+/* 日本語・品詞の折り返し：【　】や「、」「。」の区切りの塊を途中で折らず、入らないときだけ塊の境目で改行する */
+.nb{display:inline-block;max-width:100%;vertical-align:top;}
+.jw{word-spacing:1em;}
+.jg{display:inline-block;max-width:100%;vertical-align:top;word-spacing:0;}
 .back .bhead .en{font-family:var(--serif);}
 .back .bhead .ipa{margin-right:2px;}
 .ex-box{margin-bottom:8px;}
@@ -647,8 +651,28 @@ function exBlank(x, hint){
 function exFilled(x, ok){
   return esc(x[0]).replace(/\[\[(.+?)\]\]/,'<span class="blank '+(ok?'ok':'ng')+'">【$1】</span>');
 }
-function jaHtml(s){ return esc(s).replace(/【(.+?)】/g,'<b class="ans">【$1】</b>'); }
-function posBadge(w){ return w.ps.map(p=> p==='n' ? POS_LABEL.n+(w.ct?`<span class="ct">${w.ct}</span>`:'') : POS_LABEL[p]).join('・'); }
+/* 【 】の外にある区切り文字（delims）の直後で文を塊に分ける */
+function splitAfter(t,delims){
+  const out=[]; let cur='', d=0;
+  for(const ch of String(t)){
+    cur+=ch;
+    if(ch==='【') d++; else if(ch==='】') d=Math.max(0,d-1);
+    else if(d===0 && delims.indexOf(ch)>=0){ out.push(cur); cur=''; }
+  }
+  if(cur) out.push(cur);
+  return out;
+}
+/* 例文の和訳など：「、」「。」の後ろでだけ折り返す */
+function jaHtml(s){
+  return splitAfter(s,'、。').map(p=>'<span class="nb">'+esc(p).replace(/【(.+?)】/g,'<b class="ans">【$1】</b>')+'</span>').join('<wbr>');
+}
+/* 品詞つきの意味（w.ja）：【品詞】ごとの塊 → さらに「、」ごとの塊。入りきらないときは【品詞】の前で改行し、
+   1つの【品詞】の塊でも長ければ「、」の後ろで改行する */
+function jaTag(s){
+  const groups=String(s).split(/[\s\u3000]*(?=【)/).filter(g=>g.trim());
+  return '<span class="jw">'+groups.map(g=>'<span class="jg">'+splitAfter(g.trim(),'、').map(p=>'<span class="nb">'+esc(p)+'</span>').join('<wbr>')+'</span>').join(' ')+'</span>';
+}
+function posBadge(w){ return w.ps.map(p=>'<span class="nb">'+(p==='n' ? POS_LABEL.n+(w.ct?`<span class="ct">${w.ct}</span>`:'') : POS_LABEL[p])+'</span>').join('・<wbr>'); }
 
 /* ============ ストレージ ============ */
 /* v2：「覚えた」「また後で」を方向別（en2ja＝英→日／ja2en＝日→英）に管理する。v1の記録は引き継がない（公開前のためリセット） */
@@ -1028,7 +1052,7 @@ function infoHtml(w){
   return rows?`<div class="info-box">${rows}</div>`:'';
 }
 function detailHtml(w){
-  return `<div class="ja-line">${esc(w.ja)}</div>${exBox(w.x[0])}${exBox(w.x[1])}${infoHtml(w)}`;
+  return `<div class="ja-line">${jaTag(w.ja)}</div>${exBox(w.x[0])}${exBox(w.x[1])}${infoHtml(w)}`;
 }
 
 
@@ -1419,13 +1443,13 @@ function renderTestView(){
   titleEl.textContent=tst.cfg.title||'テスト';
   if(tst.i>=tst.items.length){ renderTestResult(); return; }
   const it=tst.items[tst.i], w=it.w, dir=tst.cfg.dir, answered=it.pick!==null, n=tst.items.length;
-  const stem = dir==='en2ja' ? `${esc(w.e)} ${spkBtn(w.e)}<span class="stem-read">${w.ipa?'['+esc(w.ipa)+']':''}</span>` : esc(w.ja);
+  const stem = dir==='en2ja' ? `${esc(w.e)} ${spkBtn(w.e)}<span class="stem-read">${w.ipa?'['+esc(w.ipa)+']':''}</span>` : jaTag(w.ja);
   const opts=it.opts.map((o,i)=>{
     let cls=''; if(answered){ if(o.no===w.no) cls='correct'; else if(i===it.pick) cls='wrong'; }
     return `<div class="qopt ${cls}" ${answered?'':`onclick="testPick(${i})"`}>${esc(o.text)}</div>`;
   }).join('');
   const ok = answered && it.opts[it.pick].no===w.no;
-  const fb = answered ? `<div class="tq-fb ${ok?'ok':'ng'}">${ok?'⭕ 正解！':'❌ 不正解'}　<b>${esc(w.e)}</b> ＝ ${esc(w.ja)}</div>
+  const fb = answered ? `<div class="tq-fb ${ok?'ok':'ng'}">${ok?'⭕ 正解！':'❌ 不正解'}　<b>${esc(w.e)}</b> ＝ ${jaTag(w.ja)}</div>
     <button class="startbtn" style="margin-top:12px;" onclick="testNext()">${tst.i+1>=n?'結果を見る':'次の問題へ'}</button>` : '';
   main.innerHTML=`<div class="quiz-item">
     <div class="qnum">第${tst.i+1}問 / ${n}問　（正解 ${tst.ok}）</div>
@@ -1459,7 +1483,7 @@ function renderTestResult(){
     saveStore();
   }
   const wrong=tst.items.filter(it=>it.opts[it.pick].no!==it.w.no);
-  const wl=wrong.map(it=>`<div class="qopt" style="cursor:default;"><span><b>${esc(it.w.e)}</b> ${spkBtn(it.w.e)} ＝ ${esc(it.w.ja)}</span></div>`).join('');
+  const wl=wrong.map(it=>`<div class="qopt" style="cursor:default;"><span><b>${esc(it.w.e)}</b> ${spkBtn(it.w.e)} ＝ ${jaTag(it.w.ja)}</span></div>`).join('');
   main.innerHTML=`<div class="deckdone"><div class="big">${pct>=80?'🏆':pct>=50?'👍':'💪'}</div>
     <div style="font-size:30px;font-weight:700;color:var(--ink)">${pct}%</div>
     <div style="margin:4px 0 10px;">${n}問中 <b>${ok}</b>問正解（${DIR_LABEL[cfg.dir]}）</div>
@@ -1549,7 +1573,7 @@ function renderWordMap(){
     (byUnit[w.unit]||(byUnit[w.unit]=[])).push('<i class="wm '+st+' '+(mcfg.sel===w.no?'sel':'')+'" onclick="mapPick('+w.no+')"></i>');
   });
   const sw=words.find(w=>w.no===mcfg.sel);
-  const detail = sw ? `<div class="cal-detail"><b>${esc(sw.e)}</b> ${spkBtn(sw.e)} ＝ ${esc(sw.ja)}<br>状態：${STATE_LABEL[wordState(sw.no,dir,ms,rs)]}</div>` : '<div class="cal-detail">マスをタップすると、その単語と状態が見られます。</div>';
+  const detail = sw ? `<div class="cal-detail"><b>${esc(sw.e)}</b> ${spkBtn(sw.e)} ＝ ${jaTag(sw.ja)}<br>状態：${STATE_LABEL[wordState(sw.no,dir,ms,rs)]}</div>` : '<div class="cal-detail">マスをタップすると、その単語と状態が見られます。</div>';
   const lg=(c,l)=>`<span><i class="wm ${c}" style="cursor:default;width:13px;height:13px;margin:0 3px 0 0;"></i>${l} ${cnt[c]}</span>`;
   main.innerHTML=`<div class="goal-range" style="margin-top:0">${esc(mcfg.title)}　全${words.length}語</div>
     <div class="tabs" style="margin-bottom:10px;">
@@ -2041,7 +2065,17 @@ function renderFcSetup(){
       </div>
     </div>` : '';
 
+  const unseenAllN = unseenAllWords(fcCfg.dir).length;
+  const unseenBlock = `
+    <div class="setup-block">
+      <div class="menu-card" style="padding:14px;${unseenAllN?'':'opacity:.5;'}" ${unseenAllN?'onclick="startUnseenAll()"':''}>
+        <div class="ico">🆕</div>
+        <div class="tx"><b>未学習から始める</b><span>この単語帳の未学習 ${unseenAllN}語（${DIR_LABEL[fcCfg.dir]}・番号順）</span></div>
+      </div>
+    </div>`;
+
   main.innerHTML = `
+    ${unseenBlock}
     ${resumeBlock}
     <div class="setup-block">
       <h3>Unit</h3>
@@ -2089,6 +2123,21 @@ function renderFcSetup(){
   `;
 }
 
+/* 未学習から始める：開いている単語帳全体から、単語マップが「未学習」（学習した・覚えた・また後で・要復習のどれでもない）の語を番号順に */
+function unseenAllWords(dir){
+  const ms=new Set(store.mastered[dir]), rs=new Set(store.review[dir]);
+  return WORDS.filter(w=>wordState(w.no,dir,ms,rs)==='new');
+}
+function startUnseenAll(){
+  const dir=fcCfg.dir, ws=unseenAllWords(dir);
+  if(!ws.length){ alert('この単語帳に、未学習の語はありません。'); return; }
+  fcCfg.src='all'; fcCfg.order='seq'; fcCfg.part='all'; fcCfg.pos='all'; fcCfg.unit=ws[0].unit;
+  store.lastDir=dir;
+  fcTodayMode=true; fcGoalId=null; fcTitle='未学習から（'+DIR_LABEL[dir]+'）'; fcShownKey=null;
+  fcDeck=ws; fcIdx=0; fcFlipped=false; fcAutoPending=true;
+  saveSession();
+  nav('fcView');
+}
 function buildFcDeck(){
   let pool = fcPool();
   if(fcCfg.pos!=='all') pool = pool.filter(w=> fcCfg.pos==='v' ? w.ps.some(isVerbPos) : w.ps.includes(fcCfg.pos));
@@ -2237,7 +2286,7 @@ function renderFcView(){
 
   const frontHtml = isE2J
     ? `<div class="en-word">${esc(w.e)}</div><div class="en-ipa">${w.ipa?'['+esc(w.ipa)+']':''}</div>${spkBtn(w.e)}`
-    : `<div class="ja-word">${esc(w.ja)}</div>`;
+    : `<div class="ja-word">${jaTag(w.ja)}</div>`;
 
   const backHtml = `
     <div class="bhead">
@@ -2612,7 +2661,7 @@ function setListUnit(u){ listUnit=u; renderWordList(); window.scrollTo(0,0); }
 function wlRowHtml(w, withId){
   return `<tr${withId?` id="wl-${w.bn}"`:''}>
     <td class="wl-a"><span class="wl-no">${w.bn}　${posBadge(w)}</span><b>${esc(w.e)}</b> ${spkBtn(w.e)}<br><span class="wl-sub">${w.ipa?'['+esc(w.ipa)+']':''}</span></td>
-    <td class="wl-b">${esc(w.ja)}${infoHtml(w)}</td>
+    <td class="wl-b">${jaTag(w.ja)}${infoHtml(w)}</td>
     <td class="wl-c">${exHtml(w.x[0])}<br><span class="wl-sub">${jaHtml(w.x[0][1])}</span><div class="wl-ex2">${exHtml(w.x[1])}<br><span class="wl-sub">${jaHtml(w.x[1][1])}</span></div></td></tr>`;
 }
 let listFocus=0;   // 検索結果から開いたとき、強調して表示する単語の番号
