@@ -17,3 +17,13 @@ data/b14_unit6.js
 data/b14_unit7.js
 data/b14_unit8.js
 data/b14_unit9.js
+
+（2026-11 追加：熟語帳の分割（スーパーハイレベル熟語→ハイレベル熟語／スーパーハイレベル熟語）に伴い、不要になりました）
+data/b8_unit9.js
+data/b8_unit10.js
+data/b8_unit11.js
+data/b8_unit12.js
+data/b8_unit13.js
+data/b8_unit14.js
+data/b8_unit15.js
+
