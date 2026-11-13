@@ -1,4 +1,4 @@
-/* 英単熟語 「難関大学突破レベル熟語」 Unit 6 （97個） */
+/* 英単熟語 「難関大学突破レベル熟語」 Unit 6 （100個）※旧スーパーハイレベル熟語から移動 */
 window.BOOK_DATA=window.BOOK_DATA||{};(window.BOOK_DATA.b15=window.BOOK_DATA.b15||{})[6]=[
 {n:490,p:"idm",e:"a good few A",i:"ə gʊd fju",s:[["idm","かなり多くのA"]],x:[["[[A good few]] students were absent today.","今日は【かなり多くの】生徒が欠席しました。"],["I've read [[a good few]] books on the subject.","私はその主題について【かなり多くの】本を読みました。"]],sn:"not a few A 熟 少なからぬA、かなり多くのA"},
 {n:491,p:"idm",e:"pay A a compliment",i:"peɪ ə ˈkɑmpləment",s:[["idm","Aをほめる"]],x:[["He [[paid]] her [[a compliment]] on her dress.","彼は彼女のドレス【をほめました】。"],["Don't forget to [[pay]] the cook [[a compliment]].","料理人【をほめる】のを忘れないでください。"]]},
@@ -96,5 +96,8 @@ window.BOOK_DATA=window.BOOK_DATA||{};(window.BOOK_DATA.b15=window.BOOK_DATA.b15
 {n:583,p:"idm",e:"be second to none",i:"biː ˈsekənd tuː nən",s:[["idm","誰にも負けない"]],x:[["She [[is second to none]] in math.","彼女は数学では【誰にも負けません】。"],["This chef [[is second to none]].","この料理人は【誰にも引けを取りません】。"]]},
 {n:584,p:"idm",e:"intrude on A",i:"ˌɪnˈtrud ɑn",s:[["idm","Aに立ち入る、Aの邪魔をする"]],x:[["Don't [[intrude on]] other people's privacy.","他人のプライバシーに【立ち入って】はいけません。"],["I don't want to [[intrude on]] your time.","あなたの時間を【邪魔し】たくありません。"]]},
 {n:585,p:"idm",e:"in quest of A",i:"ɪn kwest əv",s:[["idm","Aを求めて"]],x:[["They traveled [[in quest of]] gold.","彼らは金を【求めて】旅をしました。"],["He went abroad [[in quest of]] a better job.","彼はよりよい仕事を【求めて】海外へ行きました。"]]},
-{n:586,p:"idm",e:"linger on",i:"ˈlɪŋər ɑn",s:[["idm","残る、長引く"]],x:[["The smell [[lingered on]] for hours.","そのにおいは何時間も【残りました】。"],["Old customs [[linger on]] in the village.","古い習慣がその村に【残っています】。"]]}
+{n:586,p:"idm",e:"linger on",i:"ˈlɪŋər ɑn",s:[["idm","残る、長引く"]],x:[["The smell [[lingered on]] for hours.","そのにおいは何時間も【残りました】。"],["Old customs [[linger on]] in the village.","古い習慣がその村に【残っています】。"]]},
+{n:587,p:"idm",e:"be derived from A",i:"bi dɪˈraɪvd frʌm",s:[["idm","Aから出ている、Aに由来する"]],x:[["Many English words [[be derived from]] Latin.","多くの英単語はラテン語に【由来し】ます。"],["The name is said to [[be derived from]] an old legend.","その名前は古い伝説に【由来する】と言われています。"]],et:"de（離れて）＋ riv（川）→ 川から水を引く→ 源から引き出す",rl:"river 名 川, arrive 動 到着する, rival 名 競争相手",dv:"derive 動 〜を引き出す; derivation 名 由来",sn:"originate from 熟 〜に由来する, stem from 熟 〜から起こる, come from 熟 〜に由来する",tp:"derive from 〜（〜に由来する）の受け身形。"},
+{n:588,p:"idm",e:"A can't be helped",i:"kænt bi ˈhelpt",s:[["idm","Aは仕方がない"]],x:[["The delay [[can't be helped]] because of the storm.","嵐のせいで遅れは【仕方がありません】。"],["Mistakes [[can't be helped]] when you are learning.","学んでいる間の間違いは【仕方がありません】。"]],sn:"be unavoidable 熟 避けられない, be inevitable 熟 避けられない",tp:"It can't be helped.（それは仕方がない）の形でよく使う。"},
+{n:589,p:"idm",e:"on a A basis",i:"ɑːn ə ˈbeɪsɪs",s:[["idm","Aを基準として、A方式で"]],x:[["Staff are paid [[on a monthly basis]].","社員は【月単位で】給料が支払われます。"],["The club meets [[on a regular basis]].","そのクラブは【定期的に】集まります。"]],sn:"per 前 〜につき, by the 〜 熟 〜単位で",tp:"on a daily [weekly, regular] basis のように、〜に語を入れて使う。"}
 ];

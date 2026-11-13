@@ -1,4 +1,4 @@
-/* 英単熟語中学～高校卒業レベル「中学修了～高校基礎レベル熟語」 Unit 3 （69語） */
+/* 英単熟語中学～高校卒業レベル「中学修了～高校基礎レベル熟語」 Unit 3 （73語）※旧スーパーハイレベル熟語から移動 */
 window.BOOK_DATA=window.BOOK_DATA||{};(window.BOOK_DATA.b10=window.BOOK_DATA.b10||{})[3]=[
 {n:1,p:"idm",e:"as far as I know",i:"æz fɑr æz aɪ noʊ",s:[["idm","私の知る限りでは"]],x:[["[[As far as I know]], he is still in Tokyo.","【私の知る限りでは】、彼はまだ東京にいます。"],["[[As far as I know]], the shop opens at ten.","【私の知る限りでは】、その店は10時に開きます。"]]},
 {n:2,p:"idm",e:"turn into A",i:"tərn ˈɪntuː",s:[["idm","AがBに変わる"]],x:[["The caterpillar [[turned into]] a butterfly.","そのいも虫はちょうちょ【に変わりました】。"],["Water [[turns into]] ice at zero degrees.","水は0度で氷【に変わります】。"]],sn:"A change into B 熟 AがBに変わる"},
@@ -69,4 +69,8 @@ window.BOOK_DATA=window.BOOK_DATA||{};(window.BOOK_DATA.b10=window.BOOK_DATA.b10
 {n:67,p:"idm",e:"do one's best to do",i:"duː wʌnz best tuː duː",s:[["idm","〜しようと最善を尽くす"]],x:[["I will [[do my best to]] finish on time.","私は時間どおりに終える【ために最善を尽くします】。"],["She [[did her best to]] help us.","彼女は私たちを助け【ようと最善を尽くしました】。"]]},
 {n:68,p:"idm",e:"this is why ～",i:"ðɪs ɪz waɪ",s:[["idm","こういうわけでSはVする"]],x:[["[[This is why]] I left early.","【こういうわけで】私は早く帰りました。"],["He was ill. [[This is why]] he was absent.","彼は病気でした。【こういうわけで】欠席したのです。"]]},
 {n:69,p:"idm",e:"no way ～",i:"noʊ weɪ",s:[["idm","SがVするはずがない"]],x:[["[[No way]] he can finish it by noon.","彼が正午までに終える【はずがありません】。"],["[[No way]] I'm going out in this rain!","この雨の中出かける【なんてありえない】!"]]},
+{n:70,p:"idm",e:"in order to",i:"ɪn ˈɔrdər tuː",s:[["idm","〜するために"]],x:[["I study hard [[in order to]] pass the test.","私は試験に合格する【ために】一生懸命勉強します。"],["He left early [[in order to]] catch the train.","彼は電車に間に合う【ために】早く出ました。"]]},
+{n:71,p:"idm",e:"on one's way home",i:"ɔn wənz weɪ hoʊm",s:[["idm","帰宅途中で"]],x:[["I bought bread [[on my way home]].","私は【帰宅途中】にパンを買いました。"],["Call me [[on your way home]].","【帰る途中で】電話してください。"]]},
+{n:72,p:"idm",e:"hear about",i:"hir əˈbaʊt",s:[["idm","〜について聞く"]],x:[["I [[heard about]] your trip.","あなたの旅行について【聞きました】。"],["Did you [[hear about]] the accident?","その事故のこと【聞きました】か。"]]},
+{n:73,p:"idm",e:"go away",i:"goʊ əˈweɪ",s:[["idm","立ち去る"]],x:[["[[Go away]]!","【あっちへ行って】!"],["The pain will [[go away]].","痛みは【消え】ますよ。"]]}
 ];
