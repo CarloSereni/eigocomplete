@@ -448,6 +448,9 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b3_unit14.js"></script>
 <script src="data/b3_unit15.js"></script>
 <script src="data/b3_unit16.js"></script>
+<script src="data/b3_unit17.js"></script>
+<script src="data/b3_unit18.js"></script>
+<script src="data/b3_unit19.js"></script>
 <script src="data/b4_unit1.js"></script>
 <script src="data/b4_unit2.js"></script>
 <script src="data/b4_unit3.js"></script>
@@ -472,6 +475,8 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b5_unit10.js"></script>
 <script src="data/b5_unit11.js"></script>
 <script src="data/b5_unit12.js"></script>
+<script src="data/b5_unit13.js"></script>
+<script src="data/b5_unit14.js"></script>
 <script src="data/b15_unit1.js"></script>
 <script src="data/b15_unit2.js"></script>
 <script src="data/b15_unit3.js"></script>
@@ -479,6 +484,8 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b15_unit5.js"></script>
 <script src="data/b15_unit6.js"></script>
 <script src="data/b15_unit7.js"></script>
+<script src="data/b15_unit8.js"></script>
+<script src="data/b15_unit9.js"></script>
 <script src="data/b6_unit1.js"></script>
 <script src="data/b6_unit2.js"></script>
 <script src="data/b6_unit3.js"></script>
@@ -534,6 +541,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b9_unit4.js"></script>
 <script src="data/b9_unit5.js"></script>
 <script src="data/b9_unit6.js"></script>
+<script src="data/b9_unit7.js"></script>
 <script src="data/b11_unit1.js"></script>
 <script src="data/b11_unit2.js"></script>
 <script src="data/b11_unit3.js"></script>
@@ -542,6 +550,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b10_unit1.js"></script>
 <script src="data/b10_unit2.js"></script>
 <script src="data/b10_unit3.js"></script>
+<script src="data/b10_unit4.js"></script>
 <script src="dojo.js"></script>
 <script>
 /* ============ 単語データ（data/unitN.js から読み込み） ============ */
@@ -550,13 +559,13 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 const BOOKS = [
   /* 配列の順番＝画面の表示順。プログラム上の番号（語番号の百万の位など）は id の数字（b9 → 9）で決まるので、表示順を入れ替えても学習記録はずれない */
   {id:'b1', name:'中学修了～高校基礎レベル（ユメタン0）', units:8},
-  {id:'b9', name:'中学修了～高校基礎レベル２', units:6},
-  {id:'b10', name:'中学修了～高校基礎レベル熟語', units:3},
+  {id:'b9', name:'中学修了～高校基礎レベル２', units:7},
+  {id:'b10', name:'中学修了～高校基礎レベル熟語', units:4},
   {id:'b2', name:'大学合格必須レベル（ユメタン1）', units:10},
   {id:'b11', name:'大学合格必須レベル２', units:5},
-  {id:'b5', name:'大学合格必須レベル熟語', units:12},   // 旧「大学受験レベル熟語」(1702個) を共通テストレベルまでで分けた前半（Unit番号・語番号は振り直し済み）
-  {id:'b3', name:'難関大学突破レベル', units:16},   // Unit 13〜16 は旧「難関大学突破レベル２」（b12）
-  {id:'b15', name:'難関大学突破レベル熟語', units:7},   // 旧「大学受験レベル熟語」の後半（共通テストより上のレベル）
+  {id:'b5', name:'大学合格必須レベル熟語', units:14},   // 旧「大学受験レベル熟語」(1702個) を共通テストレベルまでで分けた前半（Unit番号・語番号は振り直し済み）
+  {id:'b3', name:'難関大学突破レベル', units:19},   // Unit 13〜16 は旧「難関大学突破レベル２」（b12）
+  {id:'b15', name:'難関大学突破レベル熟語', units:9},   // 旧「大学受験レベル熟語」の後半（共通テストより上のレベル）
   {id:'b4', name:'ハイレベル（英検準１級レベル）', units:12},
   {id:'b16', name:'ハイレベル熟語（英検準１級レベル）', units:5},   // 旧「スーパーハイレベル熟語」のうち、英検準１級レベル（TOEIC740点ほど）までの熟語（486個）
   {id:'b6', name:'スーパーハイレベル（英検１級）', units:19},
