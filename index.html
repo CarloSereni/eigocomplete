@@ -449,8 +449,6 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b3_unit15.js"></script>
 <script src="data/b3_unit16.js"></script>
 <script src="data/b3_unit17.js"></script>
-<script src="data/b3_unit18.js"></script>
-<script src="data/b3_unit19.js"></script>
 <script src="data/b4_unit1.js"></script>
 <script src="data/b4_unit2.js"></script>
 <script src="data/b4_unit3.js"></script>
@@ -463,6 +461,8 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b4_unit10.js"></script>
 <script src="data/b4_unit11.js"></script>
 <script src="data/b4_unit12.js"></script>
+<script src="data/b4_unit13.js"></script>
+<script src="data/b4_unit14.js"></script>
 <script src="data/b5_unit1.js"></script>
 <script src="data/b5_unit2.js"></script>
 <script src="data/b5_unit3.js"></script>
@@ -522,6 +522,7 @@ input,textarea{-webkit-user-select:text;user-select:text;}
 <script src="data/b7_unit15.js"></script>
 <script src="data/b7_unit16.js"></script>
 <script src="data/b7_unit17.js"></script>
+<script src="data/b7_unit18.js"></script>
 <script src="data/b8_unit1.js"></script>
 <script src="data/b8_unit2.js"></script>
 <script src="data/b8_unit3.js"></script>
@@ -564,12 +565,12 @@ const BOOKS = [
   {id:'b2', name:'大学合格必須レベル（ユメタン1）', units:10},
   {id:'b11', name:'大学合格必須レベル２', units:5},
   {id:'b5', name:'大学合格必須レベル熟語', units:14},   // 旧「大学受験レベル熟語」(1702個) を共通テストレベルまでで分けた前半（Unit番号・語番号は振り直し済み）
-  {id:'b3', name:'難関大学突破レベル', units:19},   // Unit 13〜16 は旧「難関大学突破レベル２」（b12）
+  {id:'b3', name:'難関大学突破レベル', units:17},   // Unit 13〜16 は旧「難関大学突破レベル２」（b12）
   {id:'b15', name:'難関大学突破レベル熟語', units:9},   // 旧「大学受験レベル熟語」の後半（共通テストより上のレベル）
-  {id:'b4', name:'ハイレベル（英検準１級レベル）', units:12},
+  {id:'b4', name:'ハイレベル（英検準１級レベル）', units:14},
   {id:'b16', name:'ハイレベル熟語（英検準１級レベル）', units:5},   // 旧「スーパーハイレベル熟語」のうち、英検準１級レベル（TOEIC740点ほど）までの熟語（486個）
   {id:'b6', name:'スーパーハイレベル（英検１級）', units:19},
-  {id:'b7', name:'スーパーハイレベル（TOEIC990レベル）', units:17},
+  {id:'b7', name:'スーパーハイレベル（TOEIC990レベル）', units:18},
   {id:'b8', name:'スーパーハイレベル熟語', units:8}   // 旧「スーパーハイレベル熟語」(1410個) のうち、準１級より上の熟語（737個）。Unit番号・語番号は振り直し済み
 ];
 const POS_LABEL = {n:'名詞', vt:'他動詞', vi:'自動詞', v:'動詞', a:'形容詞', adv:'副詞', idm:'熟語', conj:'接続詞', prep:'前置詞', pre:'接頭辞', suf:'接尾辞', int:'間投詞'};

@@ -1,0 +1,28 @@
+/* 英単熟語中学～高校卒業レベル「ハイレベル」 Unit 14 （25語） */
+window.BOOK_DATA=window.BOOK_DATA||{};(window.BOOK_DATA.b4=window.BOOK_DATA.b4||{})[14]=[
+{n:1302,p:"vt",e:"disqualify",i:"diskwɑ́ləfài",s:[["vt", "〜の資格を取り消す、〜を失格させる"]],x:[["They [[disqualified]] the runner.", "彼らはその走者【を失格にし】ました。"], ["A mistake [[disqualified]] him.", "ミスで彼は【失格に】なりました。"]],rl:"qualify 他 〜に資格を与える"},
+{n:1303,p:"n",e:"charter",i:"tʃɑ́ːrtər",s:[["n", "憲章、チャーター"], ["vt", "〜を借り切る"]],x:[["The [[charter]] sets out the rules.", "【憲章】が規則を定めています。"], ["We [[chartered]] a boat for the day.", "私たちは一日ボート【を借り切り】ました。"]],rl:"chartered 形 借り切りの"},
+{n:1304,p:"a",e:"compliant",i:"kəmpláiənt",s:[["a", "従順な、（規則に）従っている"]],x:[["The firm is [[compliant]] with the law.", "その会社は法律に【従って】います。"], ["He is a [[compliant]] child.", "彼は【従順な】子どもです。"]],rl:"comply 自 従う"},
+{n:1305,p:"a",e:"recessive",i:"risésiv",s:[["a", "劣性の、後退する"]],x:[["Blue eyes are a [[recessive]] trait.", "青い目は【劣性】形質です。"], ["It is a [[recessive]] gene.", "それは【劣性】遺伝子です。"]],an:"dominant 形 優性の"},
+{n:1306,p:"n",e:"elaboration",i:"ilæ̀bəréiʃən",s:[["n", "詳しい説明、入念に作ること"]],x:[["The idea needs more [[elaboration]].", "その案にはもっと【詳しい説明】が必要です。"], ["The [[elaboration]] of the design took months.", "そのデザインの【練り上げ】に数か月かかりました。"]],rl:"elaborate 他 〜を詳しく述べる"},
+{n:1307,p:"n",e:"artisan",i:"ɑ́ːrtəzən",s:[["n", "職人"]],x:[["The [[artisan]] made the bowl by hand.", "【職人】がその鉢を手で作りました。"], ["Local [[artisans]] sell their crafts here.", "地元の【職人】がここで工芸品を売っています。"]],sn:"craftsman 名 職人"},
+{n:1308,p:"n",e:"curator",i:"kjuəréitər",s:[["n", "学芸員、館長"]],x:[["The [[curator]] explained the paintings.", "【学芸員】がその絵を説明しました。"], ["She works as a museum [[curator]].", "彼女は美術館の【学芸員】として働いています。"]],rl:"curate 他 〜を企画する"},
+{n:1309,p:"vt",e:"engrave",i:"ingréiv",s:[["vt", "〜を彫る、〜を刻む"]],x:[["He [[engraved]] his name on the ring.", "彼は指輪に名前【を彫り】ました。"], ["The date was [[engraved]] on the stone.", "その日付は石に【刻ま】れていました。"]],rl:"engraving 名 彫刻"},
+{n:1310,p:"n",e:"appetizer",i:"ǽpitàizər",s:[["n", "前菜"]],x:[["We ordered a salad as an [[appetizer]].", "私たちは【前菜】にサラダを注文しました。"], ["The [[appetizer]] was delicious.", "その【前菜】はおいしかったです。"]],rl:"appetite 名 食欲"},
+{n:1311,p:"n",e:"affinity card",i:"əfínəti kɑːrd",s:[["n", "提携カード（特定団体との提携クレジットカード）"]],x:[["He applied for an [[affinity card]].", "彼は【提携カード】を申し込みました。"], ["The [[affinity card]] supports a charity.", "その【提携カード】は慈善団体を支援します。"]],rl:"affinity 名 親近感"},
+{n:1312,p:"n",e:"sideline",i:"sáidlàin",s:[["n", "副業、サイドライン"]],x:[["He sells crafts as a [[sideline]].", "彼は【副業】として工芸品を売っています。"], ["The coach stood on the [[sideline]].", "コーチは【サイドライン】に立っていました。"]],sn:"side job 名 副業"},
+{n:1313,p:"n",e:"synergy",i:"sínərdʒi",s:[["n", "相乗効果"]],x:[["The merger created [[synergy]].", "その合併は【相乗効果】を生みました。"], ["The two teams show real [[synergy]].", "その2チームは本当の【相乗効果】を見せています。"]],rl:"synergistic 形 相乗的な"},
+{n:1314,p:"n",e:"broker",i:"bróukər",s:[["n", "仲介人、ブローカー"]],x:[["He works as a stock [[broker]].", "彼は株式【仲買人】として働いています。"], ["The [[broker]] found a buyer.", "【ブローカー】が買い手を見つけました。"]],rl:"brokerage 名 仲介業"},
+{n:1315,p:"n",e:"logistics",i:"lədʒístiks",s:[["n", "物流、後方支援"]],x:[["The firm handles [[logistics]] for shops.", "その会社は店の【物流】を扱っています。"], ["[[Logistics]] is key to the event.", "【物流】はそのイベントの鍵です。"]],tp:"単数扱い"},
+{n:1316,p:"a",e:"upbeat",i:"ʌ́pbìːt",s:[["a", "楽観的な、明るい"]],x:[["He was [[upbeat]] about the plan.", "彼はその計画について【楽観的】でした。"], ["She gave an [[upbeat]] speech.", "彼女は【明るい】スピーチをしました。"]],sn:"optimistic 形 楽観的な"},
+{n:1317,p:"n",e:"upturn",i:"ʌ́ptə̀ːrn",s:[["n", "上昇、好転"]],x:[["The economy showed an [[upturn]].", "経済は【上向き】を見せました。"], ["Sales had an [[upturn]] in May.", "売り上げは5月に【好転し】ました。"]],an:"downturn 名 下降"},
+{n:1318,p:"n",e:"allegation",i:"ælәgéiʃən",s:[["n", "申し立て、主張"]],x:[["He denied the [[allegation]].", "彼はその【申し立て】を否定しました。"], ["The [[allegation]] was never proved.", "その【主張】は証明されませんでした。"]],rl:"allege 他 〜と主張する"},
+{n:1319,p:"n",e:"insertion",i:"insə́ːrʃən",s:[["n", "挿入、挿入物"]],x:[["The [[insertion]] of a coin starts the machine.", "硬貨の【挿入】で機械が動き出します。"], ["He made an [[insertion]] in the text.", "彼は本文に【挿入】をしました。"]],rl:"insert 他 〜を挿入する"},
+{n:1320,p:"n",e:"realtor",i:"ríːəltər",s:[["n", "不動産業者"]],x:[["The [[realtor]] showed us the house.", "【不動産業者】が私たちにその家を見せました。"], ["She works as a [[realtor]].", "彼女は【不動産業者】として働いています。"]],tp:"米国では登録商標（全米不動産協会の会員）"},
+{n:1321,p:"n",e:"drainage",i:"dréinidʒ",s:[["n", "排水、排水設備"]],x:[["The road has poor [[drainage]].", "その道路は【排水】が悪いです。"], ["They repaired the [[drainage]] system.", "彼らは【排水】設備を修理しました。"]],rl:"drain 他 〜を排水する"},
+{n:1322,p:"n",e:"drizzle",i:"drízl",s:[["n", "霧雨"], ["vi", "霧雨が降る"]],x:[["A light [[drizzle]] fell all day.", "一日中、弱い【霧雨】が降りました。"], ["It began to [[drizzle]].", "【霧雨が降り】始めました。"]],sn:"rain 名 雨"},
+{n:1323,p:"n",e:"pier",i:"pir",s:[["n", "桟橋"]],x:[["We walked along the [[pier]].", "私たちは【桟橋】に沿って歩きました。"], ["The ferry left the [[pier]].", "フェリーは【桟橋】を離れました。"]],sn:"dock 名 波止場"},
+{n:1324,p:"n",e:"podium",i:"póudiəm",s:[["n", "演壇、表彰台"]],x:[["The speaker stepped up to the [[podium]].", "講演者は【演壇】に上がりました。"], ["She stood on the [[podium]] with a medal.", "彼女はメダルを持って【表彰台】に立ちました。"]],sn:"platform 名 演壇"},
+{n:1325,p:"a",e:"walk-in",i:"wɔ́ːkìn",s:[["a", "予約なしで入れる、歩いて入れる"]],x:[["The clinic takes [[walk-in]] patients.", "その診療所は【予約なし】の患者を受け入れます。"], ["They have a [[walk-in]] closet.", "彼らは【ウォークイン】クローゼットがあります。"]],tp:"名詞では「飛び込み客」"},
+{n:1326,p:"n",e:"encryption",i:"inkrípʃən",s:[["n", "暗号化"]],x:[["[[Encryption]] protects your data.", "【暗号化】はあなたのデータを守ります。"], ["The files use strong [[encryption]].", "そのファイルは強力な【暗号化】を使っています。"]],rl:"encrypt 他 〜を暗号化する"}
+];
